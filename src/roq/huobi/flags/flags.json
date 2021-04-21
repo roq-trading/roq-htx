@@ -19,7 +19,7 @@
       "name": "rest_uri",
       "type": "roq::core::URI",
       "validator": "roq::core::flags::URI<std::string>",
-      "default": "https://testnet.binance.com/api/v1",
+      "default": "https://api.huobi.pro",
       "description": "REST end-point (URI)"
     },
     {
@@ -83,11 +83,25 @@
       "description": "cancel orders on disconnect? (bool)"
     },
     {
-      "name": "ws_uri",
+      "name": "ws_market_uri",
       "type": "roq::core::URI",
       "validator": "roq::core::flags::URI<std::string>",
-      "default": "wss://testnet.binance.com/realtime",
-      "description": "WebSocket end-point (URI)"
+      "default": "wss://api.huobi.pro/ws",
+      "description": "WebSocket end-point (URI) for market data (excl. incremental MBP)"
+    },
+    {
+      "name": "ws_mbp_uri",
+      "type": "roq::core::URI",
+      "validator": "roq::core::flags::URI<std::string>",
+      "default": "wss://api.huobi.pro/feed",
+      "description": "WebSocket end-point (URI) for MBP"
+    },
+    {
+      "name": "ws_account_uri",
+      "type": "roq::core::URI",
+      "validator": "roq::core::flags::URI<std::string>",
+      "default": "wss://api.huobi.pro/ws/v2",
+      "description": "WebSocket end-point (URI) for account and order"
     },
     {
       "name": "ws_ping_freq",
