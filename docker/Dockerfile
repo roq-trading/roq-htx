@@ -7,6 +7,6 @@ COPY pkgs/ /pkgs/
 RUN conda install --quiet --yes --override-channels --channel file:///pkgs --channel defaults roq-huobi
 RUN rm -rf /pkgs
 
-ENTRYPOINT [ "/opt/conda/bin/roq-binance-futures" ]
+ENTRYPOINT [ "/opt/conda/bin/roq-huobi" ]
 
 CMD [ "--help" ]
