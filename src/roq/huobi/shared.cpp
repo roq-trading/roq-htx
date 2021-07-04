@@ -2,8 +2,6 @@
 
 #include "roq/huobi/shared.h"
 
-#include <magic_enum.hpp>
-
 #include "roq/huobi/flags.h"
 
 namespace roq {
