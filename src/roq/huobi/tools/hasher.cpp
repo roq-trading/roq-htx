@@ -4,6 +4,7 @@
 
 #include <fmt/format.h>
 
+#include <array>
 #include <cassert>
 
 #include "roq/literals.h"
