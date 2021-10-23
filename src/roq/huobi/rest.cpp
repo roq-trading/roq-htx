@@ -1,0 +1,352 @@
+/* Copyright (c) 2017-2021, Hans Erik Thrane */
+
+#include "roq/huobi/rest.h"
+
+#include <utility>
+
+#include "roq/utils/mask.h"
+#include "roq/utils/update.h"
+
+#include "roq/core/back_emplacer.h"
+#include "roq/core/charconv.h"
+
+#include "roq/core/metrics/factory.h"
+
+#include "roq/huobi/flags.h"
+
+using namespace roq::literals;
+
+namespace roq {
+namespace huobi {
+
+namespace {
+static const auto NAME = "rest"_sv;
+static const auto SUPPORTS = utils::Mask{
+    SupportType::REFERENCE_DATA,
+    SupportType::MARKET_STATUS,
+};
+
+static const auto ALLOW_PIPELINING = true;
+
+struct create_metrics final : public core::metrics::Factory {
+  explicit create_metrics(const std::string_view &group, const std::string_view &function)
+      : core::metrics::Factory(server::Flags::name(), group, function) {}
+};
+
+template <typename T>
+void emplace(MBPUpdate &result, const T &value) {
+  new (&result) MBPUpdate{
+      .price = value.price,
+      .quantity = value.qty,
+      .implied_quantity = NaN,
+      .price_level = {},
+      .number_of_orders = {},
+  };
+}
+}  // namespace
+
+Rest::Rest(Handler &handler, core::io::Context &context, uint16_t stream_id, Shared &shared)
+    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"_sv, stream_id_, NAME)),
+      connection_(
+          *this,
+          context,
+          Flags::decode_buffer_size(),
+          Flags::encode_buffer_size(),
+          core::URI(Flags::rest_uri()),
+          ROQ_PACKAGE_NAME,
+          core::http::Connection::KEEP_ALIVE,
+          ALLOW_PIPELINING,
+          Flags::rest_request_timeout(),
+          Flags::rest_rate_limit_interval(),
+          Flags::rest_rate_limit_max_requests(),
+          Flags::rest_ping_freq(),
+          Flags::rest_ping_path()),
+      decode_buffer_(Flags::decode_buffer_size()),
+      counter_{
+          .disconnect = create_metrics(name_, "disconnect"_sv),
+      },
+      profile_{
+          .market_status = create_metrics(name_, "market_status"_sv),
+          .market_status_ack = create_metrics(name_, "market_status_ack"_sv),
+          .currencies = create_metrics(name_, "currencies"_sv),
+          .currencies_ack = create_metrics(name_, "currencies_ack"_sv),
+          .symbols = create_metrics(name_, "symbols"_sv),
+          .symbols_ack = create_metrics(name_, "symbols_ack"_sv),
+      },
+      latency_{
+          .ping = create_metrics(name_, "ping"_sv),
+      },
+      shared_(shared),
+      download_(Flags::rest_request_timeout(), [this](auto state) { return download(state); }) {
+}
+
+void Rest::operator()(const Event<Start> &) {
+  connection_.start();
+}
+
+void Rest::operator()(const Event<Stop> &) {
+  connection_.stop();
+}
+
+void Rest::operator()(const Event<Timer> &event) {
+  auto now = event.value.now;
+  connection_.refresh(now);
+  if (ready())
+    check_request_queue(now);
+}
+
+void Rest::operator()(metrics::Writer &writer) {
+  writer
+      // counter
+      .write(counter_.disconnect, metrics::COUNTER)
+      // profile
+      .write(profile_.market_status, metrics::PROFILE)
+      .write(profile_.market_status_ack, metrics::PROFILE)
+      .write(profile_.currencies, metrics::PROFILE)
+      .write(profile_.currencies_ack, metrics::PROFILE)
+      .write(profile_.symbols, metrics::PROFILE)
+      .write(profile_.symbols_ack, metrics::PROFILE)
+      // latency
+      .write(latency_.ping, metrics::LATENCY);
+}
+
+void Rest::operator()(const core::web::Client::Connected &) {
+  if (download_.downloading()) {
+    download_.bump();
+  } else {
+    (*this)(ConnectionStatus::DOWNLOADING);
+    download_.begin();
+  }
+}
+
+void Rest::operator()(const core::web::Client::Disconnected &) {
+  ++counter_.disconnect;
+  ready_ = false;
+  (*this)(ConnectionStatus::DISCONNECTED);
+  if (!download_.downloading())
+    download_.reset();
+}
+
+void Rest::operator()(const core::web::Client::Latency &latency) {
+  server::TraceInfo trace_info;
+  ExternalLatency external_latency{
+      .stream_id = stream_id_,
+      .latency = latency.sample,
+  };
+  server::create_trace_and_dispatch(trace_info, external_latency, handler_);
+  latency_.ping.update(latency.sample);
+}
+
+void Rest::operator()(ConnectionStatus status) {
+  if (utils::update(status_, status)) {
+    server::TraceInfo trace_info;
+    StreamStatus stream_status{
+        .stream_id = stream_id_,
+        .account = {},
+        .supports = SUPPORTS.get(),
+        .status = status_,
+        .type = StreamType::REST,
+        .priority = Priority::PRIMARY,
+    };
+    log::info("stream_status={}"_sv, stream_status);
+    server::create_trace_and_dispatch(trace_info, stream_status, handler_);
+  }
+}
+
+uint32_t Rest::download(RestState state) {
+  switch (state) {
+    case RestState::UNDEFINED:
+      assert(false);
+      break;
+    case RestState::MARKET_STATUS:
+      get_market_status();
+      return 1;
+    case RestState::CURRENCIES:
+      get_currencies();
+      return 1;
+    case RestState::SYMBOLS:
+      get_symbols();
+      return 1;
+    case RestState::DONE:
+      (*this)(ConnectionStatus::READY);
+      assert(!ready_);
+      ready_ = true;
+      return {};
+  }
+  assert(false);
+  return {};
+}
+
+// market-status
+
+void Rest::get_market_status() {
+  profile_.market_status([&]() {
+    auto method = core::http::Method::GET;
+    auto path = "/v2/market-status"_sv;
+    core::web::Request request{
+        .method = method,
+        .path = path,
+        .query = {},
+        .accept = core::http::Accept::JSON,
+        .content_type = {},
+        .headers = {},
+        .body = {},
+        .quality_of_service = {},
+        .rate_limit_weight = 1,
+    };
+    connection_(
+        "market_status"_sv, request, [this]([[maybe_unused]] auto &request_id, auto &response) {
+          server::TraceInfo trace_info;
+          server::Trace event(trace_info, response);
+          get_market_status_ack(event);
+        });
+  });
+}
+
+void Rest::get_market_status_ack(const server::Trace<core::web::Response> &event) {
+  profile_.market_status_ack([&]() {
+    auto &[trace_info, response] = event;
+    auto state = RestState::MARKET_STATUS;
+    try {
+      response.expect(core::http::Status::OK);
+      auto body = response.body();
+      log::debug(R"(body="{}")"_sv, body);
+      core::json::Buffer buffer(decode_buffer_);
+      auto market_status = core::json::Parser::create<json::MarketStatus>(body, buffer);
+      server::Trace event(trace_info, market_status);
+      (*this)(event);
+      download_.check(state);
+    } catch (core::NetworkError &e) {
+      log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
+      download_.retry(state);
+    }
+  });
+}
+
+void Rest::operator()(const server::Trace<json::MarketStatus> &event) {
+  auto &[trace_info, market_status] = event;
+  log::info<2>("market_status={}"_sv, market_status);
+}
+
+// currencies
+
+void Rest::get_currencies() {
+  profile_.currencies([&]() {
+    auto method = core::http::Method::GET;
+    auto path = "/v1/common/currencys"_sv;
+    core::web::Request request{
+        .method = method,
+        .path = path,
+        .query = {},
+        .accept = core::http::Accept::JSON,
+        .content_type = {},
+        .headers = {},
+        .body = {},
+        .quality_of_service = {},
+        .rate_limit_weight = 1,
+    };
+    connection_(
+        "currencies"_sv, request, [this]([[maybe_unused]] auto &request_id, auto &response) {
+          server::TraceInfo trace_info;
+          server::Trace event(trace_info, response);
+          get_currencies_ack(event);
+        });
+  });
+}
+
+void Rest::get_currencies_ack(const server::Trace<core::web::Response> &event) {
+  profile_.currencies_ack([&]() {
+    auto &[trace_info, response] = event;
+    auto state = RestState::CURRENCIES;
+    try {
+      response.expect(core::http::Status::OK);
+      auto body = response.body();
+      log::debug(R"(body="{}")"_sv, body);
+      core::json::Buffer buffer(decode_buffer_);
+      auto currencies = core::json::Parser::create<json::Currencies>(body, buffer);
+      server::Trace event(trace_info, currencies);
+      (*this)(event);
+      download_.check(state);
+    } catch (core::NetworkError &e) {
+      log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
+      download_.retry(state);
+    }
+  });
+}
+
+void Rest::operator()(const server::Trace<json::Currencies> &event) {
+  auto &[trace_info, currencies] = event;
+  log::info<2>("currencies={}"_sv, currencies);
+}
+
+// symbols
+
+void Rest::get_symbols() {
+  profile_.symbols([&]() {
+    auto method = core::http::Method::GET;
+    auto path = "/v1/common/symbols"_sv;
+    core::web::Request request{
+        .method = method,
+        .path = path,
+        .query = {},
+        .accept = core::http::Accept::JSON,
+        .content_type = {},
+        .headers = {},
+        .body = {},
+        .quality_of_service = {},
+        .rate_limit_weight = 1,
+    };
+    connection_("symbols"_sv, request, [this]([[maybe_unused]] auto &request_id, auto &response) {
+      server::TraceInfo trace_info;
+      server::Trace event(trace_info, response);
+      get_symbols_ack(event);
+    });
+  });
+}
+
+void Rest::get_symbols_ack(const server::Trace<core::web::Response> &event) {
+  profile_.symbols_ack([&]() {
+    auto &[trace_info, response] = event;
+    auto state = RestState::SYMBOLS;
+    try {
+      response.expect(core::http::Status::OK);
+      auto body = response.body();
+      log::debug(R"(body="{}")"_sv, body);
+      core::json::Buffer buffer(decode_buffer_);
+      auto symbols = core::json::Parser::create<json::Symbols>(body, buffer);
+      server::Trace event(trace_info, symbols);
+      (*this)(event);
+      download_.check(state);
+    } catch (core::NetworkError &e) {
+      log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
+      download_.retry(state);
+    }
+  });
+}
+
+void Rest::operator()(const server::Trace<json::Symbols> &event) {
+  auto &[trace_info, symbols] = event;
+  log::info<2>("symbols={}"_sv, symbols);
+}
+
+// queue
+
+void Rest::check_request_queue(std::chrono::nanoseconds now) {
+  while (!shared_.request_queue.empty()) {
+    auto &tmp = shared_.request_queue.front();
+    if (now < tmp.first)
+      break;
+    if (shared_.can_request(now, [&]() {
+          auto &symbol = tmp.second;
+          log::debug(R"(Requesting order book snapshot symbol="{}")"_sv, symbol);
+          // XXX HANS get_depth(symbol);
+          shared_.request_queue.pop_front();
+        })) {
+    } else {
+      return;
+    }
+  }
+}
+
+}  // namespace huobi
+}  // namespace roq

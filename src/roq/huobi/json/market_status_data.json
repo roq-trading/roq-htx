@@ -1,0 +1,7 @@
+{
+"name": "MarketStatusData",
+"type": "item",
+"values": [
+	{ "name": "marketStatus", "type": "int32_t" }
+]
+}

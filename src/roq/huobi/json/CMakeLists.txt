@@ -12,18 +12,20 @@ set(AUTOGEN_SCHEMAS
     balances_item.json
     book_ticker.json
     cancel_order.json
+    currencies.json
     depth.json
     depth_item.json
     depth_update.json
     error.json
     event_type.json
-    exchange_info.json
     execution_report.json
     execution_type.json
     field.json
     fill.json
     filter_type.json
     listen_key.json
+    market_status.json
+    market_status_data.json
     mini_ticker.json
     new_order.json
     order_status.json
@@ -35,6 +37,7 @@ set(AUTOGEN_SCHEMAS
     stream.json
     symbol.json
     symbol_status.json
+    symbols.json
     ticker.json
     time_in_force.json
     trade.json)

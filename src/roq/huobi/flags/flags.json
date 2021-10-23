@@ -18,7 +18,7 @@
       "name": "exchange",
       "type": "std::string",
       "validator": "roq::core::flags::NonEmpty<std::string>",
-      "default": "binance",
+      "default": "huobi",
       "description": "exchange identifier (string)"
     },
     {
@@ -39,7 +39,7 @@
       "name": "rest_ping_path",
       "type": "std::string",
       "validator": "roq::core::flags::Path<std::string>",
-      "default": "/api/v3/time",
+      "default": "/v1/common/timestamp",
       "description": "URI path used for REST connection keep-alive messages"
     },
     {
@@ -75,7 +75,7 @@
       "type": "std::chrono::nanoseconds",
       "validator": "roq::core::flags::TimePeriod",
       "default": "5000ms",
-      "description": "receive window, please refer to Binance documentation!"
+      "description": "receive window"
     },
     {
       "name": "rest_cancel_on_disconnect",
@@ -136,6 +136,19 @@
       "type": "bool",
       "default": false,
       "description": "report individual matches for trade summary? (bool)"
+    },
+    {
+      "name": "request_limit",
+      "type": "uint32_t",
+      "default": "8",
+      "description": "request limit per interval"
+    },
+    {
+      "name": "request_limit_interval",
+      "type": "std::chrono::nanoseconds",
+      "validator": "roq::core::flags::TimePeriod",
+      "default": "5s",
+      "description": "request limit monitor interval"
     },
     {
       "name": "encode_buffer_size",

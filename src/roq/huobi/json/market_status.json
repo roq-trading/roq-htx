@@ -1,0 +1,9 @@
+{
+"name": "MarketStatus",
+"type": "comp",
+"values": [
+	{ "name": "code", "type": "int32_t" },
+	{ "name": "message", "type": "std::string_view" },
+	{ "name": "data", "type": "MarketStatusData" }
+]
+}

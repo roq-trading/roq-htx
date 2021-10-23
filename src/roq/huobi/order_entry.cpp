@@ -64,7 +64,6 @@ OrderEntry::OrderEntry(
           .disconnect = create_metrics(name_, "disconnect"_sv),
       },
       profile_{
-          .exchange_info = create_metrics(name_, "exchange_info"_sv),
           .account = create_metrics(name_, "account"_sv),
           .listen_key = create_metrics(name_, "listen_key"_sv),
           .depth = create_metrics(name_, "depth"_sv),
@@ -96,7 +95,6 @@ void OrderEntry::operator()(metrics::Writer &writer) {
       // counter
       .write(counter_.disconnect, metrics::COUNTER)
       // profile
-      .write(profile_.exchange_info, metrics::PROFILE)
       .write(profile_.account, metrics::PROFILE)
       .write(profile_.listen_key, metrics::PROFILE)
       .write(profile_.depth, metrics::PROFILE)
@@ -191,41 +189,6 @@ void OrderEntry::operator()(ConnectionStatus status) {
 }
 
 template <>
-void OrderEntry::get(std::function<void(const core::Promise<json::ExchangeInfo> &)> &&callback) {
-  core::web::Request request{
-      .method = core::http::Method::GET,
-      .path = "/api/v3/exchangeInfo"_sv,
-      .query = {},
-      .accept = {},
-      .content_type = {},
-      .headers = {},
-      .body = {},
-      .quality_of_service = {},
-      .rate_limit_weight = 1,
-  };
-  connection_(
-      "exchange_info"_sv,
-      request,
-      [this, callback{std::move(callback)}]([[maybe_unused]] auto &request_id, auto &response) {
-        profile_.exchange_info([&]() {
-          try {
-            response.expect(core::http::Status::OK);
-            core::json::Buffer buffer(decode_buffer_);
-            auto exchange_info =
-                core::json::Parser::create<json::ExchangeInfo>(response.body(), buffer);
-            log::info<1>("exchange_info={}"_sv, exchange_info);
-            core::Promise<json::ExchangeInfo> promise(exchange_info);
-            callback(promise);
-          } catch (core::NetworkError &e) {
-            log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
-            core::Promise<json::ExchangeInfo> promise(std::current_exception());
-            callback(promise);
-          }
-        });
-      });
-}
-
-template <>
 void OrderEntry::get(std::function<void(const core::Promise<json::Account> &)> &&callback) {
   auto now = core::get_realtime_clock();
   auto [timestamp, signature] = security_.create_signature(now);
@@ -308,9 +271,6 @@ uint32_t OrderEntry::download(OrderEntryState state) {
     case OrderEntryState::ACCOUNT:
       download_account();
       return 1;
-    case OrderEntryState::EXCHANGE_INFO:
-      download_exchange_info();
-      return 1;
     case OrderEntryState::DONE:
       (*this)(ConnectionStatus::READY);
       return {};
@@ -338,21 +298,6 @@ void OrderEntry::download_account() {
   constexpr auto state = OrderEntryState::ACCOUNT;
   auto sequence = download_.sequence();
   get<json::Account>([this, sequence](auto &promise) {
-    try {
-      if (download_.skip(sequence, state))
-        return;
-      (*this)(promise.get());
-      download_.check(state);
-    } catch (core::NetworkError &) {
-      download_.retry(state);
-    }
-  });
-}
-
-void OrderEntry::download_exchange_info() {
-  constexpr auto state = OrderEntryState::EXCHANGE_INFO;
-  auto sequence = download_.sequence();
-  get<json::ExchangeInfo>([this, sequence](auto &promise) {
     try {
       if (download_.skip(sequence, state))
         return;
@@ -552,68 +497,6 @@ void OrderEntry::operator()(const json::Account &account) {
         .external_account = {},
     };
     create_trace_and_dispatch(trace_info, funds_update, handler_, true);
-  }
-}
-
-void OrderEntry::operator()(const json::ExchangeInfo &exchange_info) {
-  server::TraceInfo trace_info;  // note! not correct (*after* message parsing)
-  std::vector<std::string> symbols;
-  size_t counter = {};
-  for (const auto &item : exchange_info.symbols) {
-    log::info<1>("item={}"_sv, item);
-    if (shared_.discard_symbol(item.symbol)) {
-      log::info<1>(R"(Drop symbol="{}")"_sv, item.symbol);
-      continue;
-    }
-    // note! convert to lowercase
-    std::string symbol(item.symbol);
-    std::transform(
-        symbol.begin(), symbol.end(), symbol.begin(), [](auto c) { return std::tolower(c); });
-    if (all_symbols_.emplace(symbol).second)  // only include new
-      symbols.emplace_back(symbol);
-    ++counter;
-    auto tick_size = std::pow(10.0, -static_cast<double>(item.quote_precision));
-    auto min_trade_vol = std::pow(10.0, -static_cast<double>(item.base_asset_precision));
-    ReferenceData reference_data{
-        .stream_id = stream_id_,
-        .exchange = Flags::exchange(),
-        .symbol = item.symbol,
-        .description = {},
-        .security_type = {},
-        .base_currency = item.base_asset,
-        .quote_currency = item.quote_asset,
-        .commission_currency = {},
-        .tick_size = tick_size,
-        .multiplier = NaN,
-        .min_trade_vol = min_trade_vol,
-        .max_trade_vol = NaN,
-        .trade_vol_step_size = min_trade_vol,
-        .option_type = {},
-        .strike_currency = {},
-        .strike_price = NaN,
-        .underlying = {},
-        .time_zone = {},
-        .issue_date = {},
-        .settlement_date = {},
-        .expiry_datetime = {},
-        .expiry_datetime_utc = {},
-    };
-    create_trace_and_dispatch(trace_info, reference_data, handler_, false);
-    auto trading_status = json::map(item.status);
-    MarketStatus market_status{
-        .stream_id = stream_id_,
-        .exchange = Flags::exchange(),
-        .symbol = item.symbol,
-        .trading_status = trading_status,
-    };
-    create_trace_and_dispatch(trace_info, market_status, handler_, true);
-  }
-  log::info("Exchange info: including symbols {}/{}"_sv, counter, exchange_info.symbols.size());
-  if (!symbols.empty()) {
-    SymbolsUpdate symbols_update{
-        .symbols = symbols,
-    };
-    handler_(symbols_update);
   }
 }
 

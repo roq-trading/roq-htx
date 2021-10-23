@@ -44,17 +44,6 @@ class Config final : public server::Config, public server::ConfigReader::Handler
   absl::flat_hash_map<std::string, server::RateLimit> rate_limits;
 };
 
-/*
- * REST API
- * https://api-public.sandbox.pro.binance.com
- *
- * Websocket Feed
- * wss://ws-feed-public.sandbox.pro.binance.com
- *
- * FIX API
- * tcp+ssl://fix-public.sandbox.pro.binance.com:4198
- */
-
 }  // namespace huobi
 }  // namespace roq
 

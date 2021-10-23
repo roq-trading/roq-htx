@@ -29,7 +29,6 @@
 
 #include "roq/huobi/json/account.h"
 #include "roq/huobi/json/cancel_order.h"
-#include "roq/huobi/json/exchange_info.h"
 #include "roq/huobi/json/listen_key.h"
 #include "roq/huobi/json/new_order.h"
 
@@ -100,7 +99,6 @@ class OrderEntry final : public core::web::Client::Handler {
 
   void download_listen_key();
   void download_account();
-  void download_exchange_info();
 
   void refresh_listen_key();
 
@@ -120,7 +118,6 @@ class OrderEntry final : public core::web::Client::Handler {
 
   void operator()(const json::ListenKey &);
   void operator()(const json::Account &);
-  void operator()(const json::ExchangeInfo &);
 
  private:
   Handler &handler_;
@@ -136,7 +133,7 @@ class OrderEntry final : public core::web::Client::Handler {
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile exchange_info, account, listen_key, depth, new_order, cancel_order;
+    core::metrics::Profile account, listen_key, depth, new_order, cancel_order;
   } profile_;
   struct {
     core::metrics::Latency ping;

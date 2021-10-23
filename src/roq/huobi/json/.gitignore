@@ -12,6 +12,8 @@ book_ticker.h
 book_ticker.cpp
 cancel_order.h
 cancel_order.cpp
+currencies.h
+currencies.cpp
 depth.h
 depth.cpp
 depth_item.h
@@ -22,8 +24,6 @@ error.h
 error.cpp
 event_type.h
 event_type.cpp
-exchange_info.h
-exchange_info.cpp
 execution_report.h
 execution_report.cpp
 execution_type.h
@@ -36,6 +36,10 @@ filter_type.h
 filter_type.cpp
 listen_key.h
 listen_key.cpp
+market_status.h
+market_status.cpp
+market_status_data.h
+market_status_data.cpp
 mini_ticker.h
 mini_ticker.cpp
 new_order.h
@@ -58,6 +62,8 @@ symbol.h
 symbol.cpp
 symbol_status.h
 symbol_status.cpp
+symbols.h
+symbols.cpp
 ticker.h
 ticker.cpp
 time_in_force.h
