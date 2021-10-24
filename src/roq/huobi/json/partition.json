@@ -1,0 +1,11 @@
+{
+"name": "Partition",
+"type": "enum",
+"values": [
+	{ "name": "innovation" },
+	{ "name": "main" },
+	{ "name": "potentials" },
+	{ "name": "bifurcation" },
+	{ "name": "pioneer" }
+]
+}

@@ -52,10 +52,14 @@ outbound_account_info.h
 outbound_account_info.cpp
 outbound_account_position.h
 outbound_account_position.cpp
+partition.h
+partition.cpp
 result.h
 result.cpp
 side.h
 side.cpp
+state.h
+state.cpp
 stream.h
 stream.cpp
 symbol.h
@@ -70,3 +74,5 @@ time_in_force.h
 time_in_force.cpp
 trade.h
 trade.cpp
+trading.h
+trading.cpp

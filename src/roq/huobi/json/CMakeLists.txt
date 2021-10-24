@@ -32,15 +32,18 @@ set(AUTOGEN_SCHEMAS
     order_type.json
     outbound_account_info.json
     outbound_account_position.json
+    partition.json
     result.json
     side.json
+    state.json
     stream.json
     symbol.json
     symbol_status.json
     symbols.json
     ticker.json
     time_in_force.json
-    trade.json)
+    trade.json
+    trading.json)
 
 roq_autogen(
   OUTPUT

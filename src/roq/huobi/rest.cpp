@@ -327,6 +327,9 @@ void Rest::get_symbols_ack(const server::Trace<core::web::Response> &event) {
 void Rest::operator()(const server::Trace<json::Symbols> &event) {
   auto &[trace_info, symbols] = event;
   log::info<2>("symbols={}"_sv, symbols);
+  for (auto &item : symbols.data) {
+    log::debug("item={}"_sv, item);
+  }
 }
 
 // queue
