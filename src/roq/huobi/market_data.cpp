@@ -16,6 +16,8 @@
 
 #include "roq/huobi/flags.h"
 
+#include "roq/core/debug.h"
+
 using namespace roq::literals;
 
 namespace roq {
@@ -169,7 +171,8 @@ void MarketData::operator()(const core::web::Socket::Text &text) {
   parse(text.payload);
 }
 
-void MarketData::operator()(const core::web::Socket::Binary &) {
+void MarketData::operator()(const core::web::Socket::Binary &binary) {
+  core::print_string_with_escapes(std::data(binary.payload), std::size(binary.payload));
   log::fatal("Unexpected"_sv);
 }
 
