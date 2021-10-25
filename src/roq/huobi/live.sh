@@ -25,7 +25,7 @@ $PREFIX ./roq-huobi \
 	--client_listen_address $CWD/$NAME.sock \
 	--metrics_listen_address $CWD/${NAME}_metrics.sock \
 	--rest_uri "$REST_URI" \
-#	--ws_uri "$WS_URI" \
+	--ws_uri "$WS_URI" \
 #	--ws_mbp_uri "$WS_MBP_URI" \
 #	--ws_trd_uri "$WS_TRD_URI" \
 	$@

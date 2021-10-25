@@ -128,8 +128,12 @@ void DropCopy::operator()(const core::web::Socket::Latency &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void DropCopy::operator()(const core::web::Socket::Text &text) {
-  parse(text.payload);
+void DropCopy::operator()(const core::web::Socket::Text &) {
+  log::fatal("Unexpected"_sv);
+}
+
+void DropCopy::operator()(const core::web::Socket::Binary &binary) {
+  log::fatal("Not implemented"_sv);
 }
 
 void DropCopy::operator()(ConnectionStatus status) {

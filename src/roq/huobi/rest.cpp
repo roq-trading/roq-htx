@@ -14,6 +14,8 @@
 
 #include "roq/huobi/flags.h"
 
+#include "roq/huobi/json/utils.h"
+
 using namespace roq::literals;
 
 namespace roq {
@@ -327,8 +329,59 @@ void Rest::get_symbols_ack(const server::Trace<core::web::Response> &event) {
 void Rest::operator()(const server::Trace<json::Symbols> &event) {
   auto &[trace_info, symbols] = event;
   log::info<2>("symbols={}"_sv, symbols);
+  std::vector<std::string> symbols_2;
+  size_t counter = {};
   for (auto &item : symbols.data) {
-    log::debug("item={}"_sv, item);
+    if (shared_.discard_symbol(item.symbol)) {
+      log::info<1>(R"(Drop symbol="{}")"_sv, item.symbol);
+      continue;
+    }
+    auto &symbol = item.symbol;
+    if (all_symbols_.emplace(symbol).second)  // only include new
+      symbols_2.emplace_back(symbol);
+    ++counter;
+    auto tick_size = std::pow(10.0, -item.price_precision);
+    auto trade_vol_step_size = std::pow(10.0, -item.amount_precision);
+    ReferenceData reference_data{
+        .stream_id = stream_id_,
+        .exchange = Flags::exchange(),
+        .symbol = symbol,
+        .description = {},
+        .security_type = {},
+        .base_currency = item.base_currency,
+        .quote_currency = item.quote_currency,
+        .commission_currency = {},
+        .tick_size = tick_size,
+        .multiplier = NaN,
+        .min_trade_vol = item.min_order_amt,
+        .max_trade_vol = item.max_order_amt,
+        .trade_vol_step_size = trade_vol_step_size,
+        .option_type = {},
+        .strike_currency = {},
+        .strike_price = NaN,
+        .underlying = item.underlying,
+        .time_zone = {},
+        .issue_date = {},
+        .settlement_date = {},
+        .expiry_datetime = {},
+        .expiry_datetime_utc = {},
+    };
+    create_trace_and_dispatch(trace_info, reference_data, handler_, false);
+    auto trading_status = json::map(item.api_trading);
+    MarketStatus market_status{
+        .stream_id = stream_id_,
+        .exchange = Flags::exchange(),
+        .symbol = symbol,
+        .trading_status = trading_status,
+    };
+    create_trace_and_dispatch(trace_info, market_status, handler_, true);
+  }
+  log::info("Exchange info: including symbols {}/{}"_sv, counter, std::size(symbols.data));
+  if (!std::empty(symbols_2)) {
+    SymbolsUpdate symbols_update{
+        .symbols = symbols_2,
+    };
+    handler_(symbols_update);
   }
 }
 

@@ -60,6 +60,7 @@ class MarketData final : public core::web::Socket::Handler,
   void operator()(const core::web::Socket::Close &) override;
   void operator()(const core::web::Socket::Latency &) override;
   void operator()(const core::web::Socket::Text &) override;
+  void operator()(const core::web::Socket::Binary &) override;
 
  private:
   void operator()(ConnectionStatus);
@@ -68,11 +69,7 @@ class MarketData final : public core::web::Socket::Handler,
 
   void subscribe(const roq::span<std::string> &symbols);
 
-  void subscribe_agg_trade(const roq::span<std::string> &symbols);
-  void subscribe_trade(const roq::span<std::string> &symbols);
-  void subscribe_mini_ticker(const roq::span<std::string> &symbols);
-  void subscribe_book_ticker(const roq::span<std::string> &symbols);
-  void subscribe_depth(const roq::span<std::string> &symbols);
+  void subscribe_ticker(const roq::span<std::string> &symbols);
 
   void parse(const std::string_view &message);
 

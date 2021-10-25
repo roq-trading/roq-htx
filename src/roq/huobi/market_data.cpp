@@ -53,7 +53,7 @@ MarketData::MarketData(
       connection_(
           *this,
           context,
-          core::URI(Flags::ws_market_uri()),
+          core::URI(Flags::ws_uri()),
           {},  // query
           Flags::ws_ping_freq(),
           Flags::decode_buffer_size(),
@@ -169,6 +169,10 @@ void MarketData::operator()(const core::web::Socket::Text &text) {
   parse(text.payload);
 }
 
+void MarketData::operator()(const core::web::Socket::Binary &) {
+  log::fatal("Unexpected"_sv);
+}
+
 void MarketData::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     server::TraceInfo trace_info;
@@ -204,99 +208,30 @@ uint32_t MarketData::download(MarketDataState state) {
 }
 
 void MarketData::subscribe(const roq::span<std::string> &symbols) {
-  if (Flags::ws_subscribe_trade_details()) {
-    subscribe_trade(symbols);
-  } else {
-    subscribe_agg_trade(symbols);
+  subscribe_ticker(symbols);
+}
+
+void MarketData::subscribe_ticker(const roq::span<std::string> &symbols) {
+  assert(!std::empty(symbols));
+  for (auto &symbol : symbols) {
+    auto id = ++request_id_;
+    auto message = fmt::format(
+        R"({{)"
+        R"("sub":"market.{}.ticker",)"
+        R"("id":"ticker-{}")"
+        R"(}})"_sv,
+        symbol,
+        id);
+    connection_.send_text(message);
   }
-  subscribe_mini_ticker(symbols);
-  subscribe_book_ticker(symbols);
-  subscribe_depth(symbols);
 }
-
-void MarketData::subscribe_agg_trade(const roq::span<std::string> &symbols) {
-  assert(!symbols.empty());
-  auto id = ++request_id_;
-  auto message = fmt::format(
-      R"({{)"
-      R"("method":"SUBSCRIBE",)"
-      R"("params":["{}@aggTrade"],)"
-      R"("id":{})"
-      R"(}})"_sv,
-      fmt::join(symbols, R"(@aggTrade",")"_sv),
-      id);
-  connection_.send_text(message);
-}
-
-void MarketData::subscribe_trade(const roq::span<std::string> &symbols) {
-  assert(!symbols.empty());
-  auto id = ++request_id_;
-  auto message = fmt::format(
-      R"({{)"
-      R"("method":"SUBSCRIBE",)"
-      R"("params":["{}@trade"],)"
-      R"("id":{})"
-      R"(}})"_sv,
-      fmt::join(symbols, R"(@trade",")"_sv),
-      id);
-  connection_.send_text(message);
-}
-
-void MarketData::subscribe_mini_ticker(const roq::span<std::string> &symbols) {
-  assert(!symbols.empty());
-  auto id = ++request_id_;
-  auto message = fmt::format(
-      R"({{)"
-      R"("method":"SUBSCRIBE",)"
-      R"("params":["{}@miniTicker"],)"
-      R"("id":{})"
-      R"(}})"_sv,
-      fmt::join(symbols, R"(@miniTicker",")"_sv),
-      id);
-  connection_.send_text(message);
-}
-
-void MarketData::subscribe_book_ticker(const roq::span<std::string> &symbols) {
-  assert(!symbols.empty());
-  auto id = ++request_id_;
-  auto message = fmt::format(
-      R"({{)"
-      R"("method":"SUBSCRIBE",)"
-      R"("params":["{}@bookTicker"],)"
-      R"("id":{})"
-      R"(}})"_sv,
-      fmt::join(symbols, R"(@bookTicker",")"_sv),
-      id);
-  connection_.send_text(message);
-}
-
-void MarketData::subscribe_depth(const roq::span<std::string> &symbols) {
-  assert(!symbols.empty());
-  auto stream = fmt::format(
-      R"(@depth{}@{}ms)"_sv,
-      Flags::ws_subscribe_depth_levels(),
-      std::chrono::duration_cast<std::chrono::milliseconds>(Flags::ws_subscribe_depth_freq())
-          .count());
-  auto id = ++request_id_;
-  auto separator = fmt::format(R"({}",")"_sv, stream);
-  auto message = fmt::format(
-      R"({{)"
-      R"("method":"SUBSCRIBE",)"
-      R"("params":["{}{}"],)"
-      R"("id":{})"
-      R"(}})"_sv,
-      fmt::join(symbols, separator),
-      stream,
-      id);
-  connection_.send_text(message);
-}
-
 void MarketData::parse(const std::string_view &message) {
   profile_.parse([&]() {
     try {
+      log::debug(R"(message="{}")"_sv, message);
       server::TraceInfo trace_info;
       core::json::Buffer buffer(decode_buffer_);
-      json::MarketStreamParser::dispatch(*this, message, buffer, trace_info);
+      // json::MarketStreamParser::dispatch(*this, message, buffer, trace_info);
     } catch (...) {
       log::warn(R"(message="{}")"_sv, message);
       core::tools::UnhandledException::terminate();

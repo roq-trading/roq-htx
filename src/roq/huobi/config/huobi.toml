@@ -1,5 +1,6 @@
 # symbols = ".*"
-symbols = [ ".*BTC.*", ".*ETH.*" ]
+# symbols = [ ".*btc.*", ".*eth.*" ]
+symbols = "btcusdt"
 
 accounts = {}
 

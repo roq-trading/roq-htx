@@ -15,6 +15,7 @@
 #include "roq/huobi/json/side.h"
 #include "roq/huobi/json/symbol_status.h"
 #include "roq/huobi/json/time_in_force.h"
+#include "roq/huobi/json/trading.h"
 
 namespace roq {
 namespace huobi {
@@ -226,6 +227,20 @@ inline json::TimeInForce map(roq::TimeInForce time_in_force) {
       break;
   }
   return json::TimeInForce::UNDEFINED;
+}
+
+inline roq::TradingStatus map(json::Trading trading) {
+  switch (trading) {
+    case json::Trading::UNDEFINED:
+      break;
+    case json::Trading::UNKNOWN:
+      break;
+    case json::Trading::ENABLED:
+      return roq::TradingStatus::OPEN;
+    case json::Trading::DISABLED:
+      return roq::TradingStatus::HALT;
+  }
+  return roq::TradingStatus::UNDEFINED;
 }
 
 }  // namespace json

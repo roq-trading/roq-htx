@@ -84,6 +84,13 @@
       "description": "cancel orders on disconnect? (bool)"
     },
     {
+      "name": "ws_uri",
+      "type": "roq::core::URI",
+      "validator": "roq::core::flags::URI<std::string>",
+      "default": "wss://api.huobi.pro/ws",
+      "description": "WebSocket end-point (URI) for market data (excl. incremental MBP)"
+    },
+    {
       "name": "ws_market_uri",
       "type": "roq::core::URI",
       "validator": "roq::core::flags::URI<std::string>",
