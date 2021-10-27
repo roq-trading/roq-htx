@@ -67,15 +67,15 @@ class Rest final : public core::web::Client::Handler {
   uint32_t download(RestState state);
 
   void get_market_status();
-  void get_market_status_ack(const server::Trace<core::web::Response> &);
+  void get_market_status_ack(const server::Trace<core::web::Response> &, uint32_t sequence);
   void operator()(const server::Trace<json::MarketStatus> &);
 
   void get_currencies();
-  void get_currencies_ack(const server::Trace<core::web::Response> &);
+  void get_currencies_ack(const server::Trace<core::web::Response> &, uint32_t sequence);
   void operator()(const server::Trace<json::Currencies> &);
 
   void get_symbols();
-  void get_symbols_ack(const server::Trace<core::web::Response> &);
+  void get_symbols_ack(const server::Trace<core::web::Response> &, uint32_t sequence);
   void operator()(const server::Trace<json::Symbols> &);
 
   void check_request_queue(std::chrono::nanoseconds now);

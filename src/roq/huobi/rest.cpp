@@ -196,20 +196,26 @@ void Rest::get_market_status() {
         .quality_of_service = {},
         .rate_limit_weight = 1,
     };
+    auto sequence = download_.sequence();
     connection_(
-        "market_status"_sv, request, [this]([[maybe_unused]] auto &request_id, auto &response) {
+        "market_status"_sv,
+        request,
+        [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
           server::TraceInfo trace_info;
           server::Trace event(trace_info, response);
-          get_market_status_ack(event);
+          get_market_status_ack(event, sequence);
         });
   });
 }
 
-void Rest::get_market_status_ack(const server::Trace<core::web::Response> &event) {
+void Rest::get_market_status_ack(
+    const server::Trace<core::web::Response> &event, uint32_t sequence) {
+  auto state = RestState::MARKET_STATUS;
   profile_.market_status_ack([&]() {
     auto &[trace_info, response] = event;
-    auto state = RestState::MARKET_STATUS;
     try {
+      if (download_.skip(sequence, state))
+        return;
       response.expect(core::http::Status::OK);
       auto body = response.body();
       log::debug(R"(body="{}")"_sv, body);
@@ -247,20 +253,25 @@ void Rest::get_currencies() {
         .quality_of_service = {},
         .rate_limit_weight = 1,
     };
+    auto sequence = download_.sequence();
     connection_(
-        "currencies"_sv, request, [this]([[maybe_unused]] auto &request_id, auto &response) {
+        "currencies"_sv,
+        request,
+        [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
           server::TraceInfo trace_info;
           server::Trace event(trace_info, response);
-          get_currencies_ack(event);
+          get_currencies_ack(event, sequence);
         });
   });
 }
 
-void Rest::get_currencies_ack(const server::Trace<core::web::Response> &event) {
+void Rest::get_currencies_ack(const server::Trace<core::web::Response> &event, uint32_t sequence) {
+  auto state = RestState::CURRENCIES;
   profile_.currencies_ack([&]() {
     auto &[trace_info, response] = event;
-    auto state = RestState::CURRENCIES;
     try {
+      if (download_.skip(sequence, state))
+        return;
       response.expect(core::http::Status::OK);
       auto body = response.body();
       log::debug(R"(body="{}")"_sv, body);
@@ -298,19 +309,23 @@ void Rest::get_symbols() {
         .quality_of_service = {},
         .rate_limit_weight = 1,
     };
-    connection_("symbols"_sv, request, [this]([[maybe_unused]] auto &request_id, auto &response) {
-      server::TraceInfo trace_info;
-      server::Trace event(trace_info, response);
-      get_symbols_ack(event);
-    });
+    auto sequence = download_.sequence();
+    connection_(
+        "symbols"_sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
+          server::TraceInfo trace_info;
+          server::Trace event(trace_info, response);
+          get_symbols_ack(event, sequence);
+        });
   });
 }
 
-void Rest::get_symbols_ack(const server::Trace<core::web::Response> &event) {
+void Rest::get_symbols_ack(const server::Trace<core::web::Response> &event, uint32_t sequence) {
+  auto state = RestState::SYMBOLS;
   profile_.symbols_ack([&]() {
     auto &[trace_info, response] = event;
-    auto state = RestState::SYMBOLS;
     try {
+      if (download_.skip(sequence, state))
+        return;
       response.expect(core::http::Status::OK);
       auto body = response.body();
       log::debug(R"(body="{}")"_sv, body);
