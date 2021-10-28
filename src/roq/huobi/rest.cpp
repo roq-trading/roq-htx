@@ -210,15 +210,17 @@ void Rest::get_market_status() {
 
 void Rest::get_market_status_ack(
     const server::Trace<core::web::Response> &event, uint32_t sequence) {
-  auto state = RestState::MARKET_STATUS;
   profile_.market_status_ack([&]() {
     auto &[trace_info, response] = event;
+    auto state = RestState::MARKET_STATUS;
     try {
-      if (download_.skip(sequence, state))
+      auto [status, category, body] = response.result();
+      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
+      if (download_.skip(sequence, state)) {
+        log::info("Download state={} has already been processed"_sv, state);
         return;
+      }
       response.expect(core::http::Status::OK);
-      auto body = response.body();
-      log::debug(R"(body="{}")"_sv, body);
       core::json::Buffer buffer(decode_buffer_);
       auto market_status = core::json::Parser::create<json::MarketStatus>(body, buffer);
       server::Trace event(trace_info, market_status);
@@ -266,15 +268,17 @@ void Rest::get_currencies() {
 }
 
 void Rest::get_currencies_ack(const server::Trace<core::web::Response> &event, uint32_t sequence) {
-  auto state = RestState::CURRENCIES;
   profile_.currencies_ack([&]() {
     auto &[trace_info, response] = event;
+    auto state = RestState::CURRENCIES;
     try {
-      if (download_.skip(sequence, state))
+      auto [status, category, body] = response.result();
+      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
+      if (download_.skip(sequence, state)) {
+        log::info("Download state={} has already been processed"_sv, state);
         return;
+      }
       response.expect(core::http::Status::OK);
-      auto body = response.body();
-      log::debug(R"(body="{}")"_sv, body);
       core::json::Buffer buffer(decode_buffer_);
       auto currencies = core::json::Parser::create<json::Currencies>(body, buffer);
       server::Trace event(trace_info, currencies);
@@ -320,15 +324,17 @@ void Rest::get_symbols() {
 }
 
 void Rest::get_symbols_ack(const server::Trace<core::web::Response> &event, uint32_t sequence) {
-  auto state = RestState::SYMBOLS;
   profile_.symbols_ack([&]() {
     auto &[trace_info, response] = event;
+    auto state = RestState::SYMBOLS;
     try {
-      if (download_.skip(sequence, state))
+      auto [status, category, body] = response.result();
+      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
+      if (download_.skip(sequence, state)) {
+        log::info("Download state={} has already been processed"_sv, state);
         return;
+      }
       response.expect(core::http::Status::OK);
-      auto body = response.body();
-      log::debug(R"(body="{}")"_sv, body);
       core::json::Buffer buffer(decode_buffer_);
       auto symbols = core::json::Parser::create<json::Symbols>(body, buffer);
       server::Trace event(trace_info, symbols);

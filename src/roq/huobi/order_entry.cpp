@@ -231,10 +231,16 @@ void OrderEntry::get_listen_key() {
 
 void OrderEntry::get_listen_key_ack(
     const server::Trace<core::web::Response> &event, uint32_t sequence) {
-  auto state = OrderEntryState::LISTEN_KEY;
   profile_.listen_key_ack([&]() {
     auto &[trace_info, response] = event;
+    auto state = OrderEntryState::LISTEN_KEY;
     try {
+      auto [status, category, body] = response.result();
+      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
+      if (download_.skip(sequence, state)) {
+        log::info("Download state={} has already been processed"_sv, state);
+        return;
+      }
       response.expect(core::http::Status::OK);
       auto listen_key = core::json::Parser::create<json::ListenKey>(response.body());
       server::Trace event(trace_info, listen_key);
@@ -249,7 +255,7 @@ void OrderEntry::get_listen_key_ack(
 
 void OrderEntry::operator()(const server::Trace<json::ListenKey> &event) {
   auto &[trace_info, listen_key] = event;
-  log::info<1>("listen_key={}"_sv, listen_key);
+  log::info<2>("listen_key={}"_sv, listen_key);
   bool initial = listen_key_.empty();
   if (utils::update(listen_key_, listen_key.listen_key)) {
     if (initial) {
@@ -323,12 +329,17 @@ void OrderEntry::get_account() {
 
 void OrderEntry::get_account_ack(
     const server::Trace<core::web::Response> &event, uint32_t sequence) {
-  auto state = OrderEntryState::ACCOUNT;
   profile_.account_ack([&]() {
     auto &[trace_info, response] = event;
+    auto state = OrderEntryState::ACCOUNT;
     try {
+      auto [status, category, body] = response.result();
+      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
+      if (download_.skip(sequence, state)) {
+        log::info("Download state={} has already been processed"_sv, state);
+        return;
+      }
       response.expect(core::http::Status::OK);
-      auto body = response.body();
       core::json::Buffer buffer(decode_buffer_);
       auto account = core::json::Parser::create<json::Account>(body, buffer);
       server::Trace event(trace_info, account);
@@ -343,7 +354,7 @@ void OrderEntry::get_account_ack(
 
 void OrderEntry::operator()(const server::Trace<json::Account> &event) {
   auto &[trace_info, account] = event;
-  log::info<1>("account={}"_sv, account);
+  log::info<2>("account={}"_sv, account);
   for (auto &item : account.balances) {
     FundsUpdate funds_update{
         .stream_id = stream_id_,
@@ -371,7 +382,6 @@ void OrderEntry::new_order(
     auto side = json::map(create_order.side).as_raw_text();
     auto type = json::map(create_order.order_type).as_raw_text();
     auto time_in_force = json::map(create_order.time_in_force).as_raw_text();
-    // XXX use encode buffer
     auto body = fmt::format(
         R"({{)"
         R"("symbol":"{}",)"
@@ -425,8 +435,9 @@ void OrderEntry::new_order_ack(const server::Trace<core::web::Response> &event) 
   profile_.new_order_ack([&]() {
     auto &[trace_info, response] = event;
     try {
+      auto [status, category, body] = response.result();
+      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
       response.expect(core::http::Status::OK);
-      auto body = response.body();
       core::json::Buffer buffer(decode_buffer_);
       auto new_order = core::json::Parser::create<json::NewOrder>(body, buffer);
       server::Trace event(trace_info, new_order);
@@ -450,14 +461,13 @@ void OrderEntry::cancel_order(
     const Event<CancelOrder> &,
     const oms::Order &order,
     const std::string_view &request_id,
-    const std::string_view &previous_request_id) {
+    [[maybe_unused]] const std::string_view &previous_request_id) {
   profile_.cancel_order([&]() {
     auto method = core::http::Method::DELETE;
     auto path = "/api/v3/order"_sv;
     if (!ready())
       throw oms::NotReadyException();
     auto timestamp = core::get_realtime_clock();
-    // XXX use encode buffer
     auto body = fmt::format(
         R"({{)"
         R"("symbol":"{}",)"
@@ -497,8 +507,10 @@ void OrderEntry::cancel_order_ack(const server::Trace<core::web::Response> &even
   profile_.cancel_order_ack([&]() {
     auto &[trace_info, response] = event;
     try {
+      auto [status, category, body] = response.result();
+      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
       response.expect(core::http::Status::OK);
-      auto cancel_order = core::json::Parser::create<json::CancelOrder>(response.body());
+      auto cancel_order = core::json::Parser::create<json::CancelOrder>(body);
       server::Trace event(trace_info, cancel_order);
       (*this)(event);
     } catch (core::NetworkError &e) {
