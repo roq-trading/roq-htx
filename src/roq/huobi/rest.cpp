@@ -130,18 +130,18 @@ void Rest::operator()(const core::web::Client::Disconnected &) {
 }
 
 void Rest::operator()(const core::web::Client::Latency &latency) {
-  server::TraceInfo trace_info;
+  auto trace_info = server::create_trace_info();
   ExternalLatency external_latency{
       .stream_id = stream_id_,
       .latency = latency.sample,
   };
-  server::create_trace_and_dispatch(trace_info, external_latency, handler_);
+  server::create_trace_and_dispatch(handler_, trace_info, external_latency);
   latency_.ping.update(latency.sample);
 }
 
 void Rest::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
-    server::TraceInfo trace_info;
+    auto trace_info = server::create_trace_info();
     StreamStatus stream_status{
         .stream_id = stream_id_,
         .account = {},
@@ -151,7 +151,7 @@ void Rest::operator()(ConnectionStatus status) {
         .priority = Priority::PRIMARY,
     };
     log::info("stream_status={}"_sv, stream_status);
-    server::create_trace_and_dispatch(trace_info, stream_status, handler_);
+    server::create_trace_and_dispatch(handler_, trace_info, stream_status);
   }
 }
 
@@ -201,7 +201,7 @@ void Rest::get_market_status() {
         "market_status"_sv,
         request,
         [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
-          server::TraceInfo trace_info;
+          auto trace_info = server::create_trace_info();
           server::Trace event(trace_info, response);
           get_market_status_ack(event, sequence);
         });
@@ -260,7 +260,7 @@ void Rest::get_currencies() {
         "currencies"_sv,
         request,
         [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
-          server::TraceInfo trace_info;
+          auto trace_info = server::create_trace_info();
           server::Trace event(trace_info, response);
           get_currencies_ack(event, sequence);
         });
@@ -316,7 +316,7 @@ void Rest::get_symbols() {
     auto sequence = download_.sequence();
     connection_(
         "symbols"_sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
-          server::TraceInfo trace_info;
+          auto trace_info = server::create_trace_info();
           server::Trace event(trace_info, response);
           get_symbols_ack(event, sequence);
         });
@@ -387,7 +387,7 @@ void Rest::operator()(const server::Trace<json::Symbols> &event) {
         .expiry_datetime = {},
         .expiry_datetime_utc = {},
     };
-    create_trace_and_dispatch(trace_info, reference_data, handler_, false);
+    create_trace_and_dispatch(handler_, trace_info, reference_data, false);
     auto trading_status = json::map(item.api_trading);
     MarketStatus market_status{
         .stream_id = stream_id_,
@@ -395,7 +395,7 @@ void Rest::operator()(const server::Trace<json::Symbols> &event) {
         .symbol = symbol,
         .trading_status = trading_status,
     };
-    create_trace_and_dispatch(trace_info, market_status, handler_, true);
+    create_trace_and_dispatch(handler_, trace_info, market_status, true);
   }
   log::info("Exchange info: including symbols {}/{}"_sv, counter, std::size(symbols.data));
   if (!std::empty(symbols_2)) {

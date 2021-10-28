@@ -158,12 +158,12 @@ void MarketData::operator()(const core::web::Socket::Close &) {
 }
 
 void MarketData::operator()(const core::web::Socket::Latency &latency) {
-  server::TraceInfo trace_info;
+  auto trace_info = server::create_trace_info();
   ExternalLatency external_latency{
       .stream_id = stream_id_,
       .latency = latency.sample,
   };
-  server::create_trace_and_dispatch(trace_info, external_latency, handler_);
+  server::create_trace_and_dispatch(handler_, trace_info, external_latency);
   latency_.ping.update(latency.sample);
 }
 
@@ -178,7 +178,7 @@ void MarketData::operator()(const core::web::Socket::Binary &binary) {
 
 void MarketData::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
-    server::TraceInfo trace_info;
+    auto trace_info = server::create_trace_info();
     StreamStatus stream_status{
         .stream_id = stream_id_,
         .account = {},
@@ -188,7 +188,7 @@ void MarketData::operator()(ConnectionStatus status) {
         .priority = Priority::PRIMARY,
     };
     log::info("stream_status={}"_sv, stream_status);
-    server::create_trace_and_dispatch(trace_info, stream_status, handler_);
+    server::create_trace_and_dispatch(handler_, trace_info, stream_status);
   }
 }
 
@@ -232,7 +232,7 @@ void MarketData::parse(const std::string_view &message) {
   profile_.parse([&]() {
     try {
       log::debug(R"(message="{}")"_sv, message);
-      server::TraceInfo trace_info;
+      auto trace_info = server::create_trace_info();
       core::json::Buffer buffer(decode_buffer_);
       // json::MarketStreamParser::dispatch(*this, message, buffer, trace_info);
     } catch (...) {
@@ -268,7 +268,7 @@ void MarketData::operator()(const json::AggTrade &agg_trade, const server::Trace
         .trades = {&trade, 1},
         .exchange_time_utc = agg_trade.event_time,
     };
-    create_trace_and_dispatch(trace_info, trade_summary, handler_, true);
+    create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
   });
 }
 
@@ -290,7 +290,7 @@ void MarketData::operator()(const json::Trade &trade, const server::TraceInfo &t
         .trades = {&trade_, 1},
         .exchange_time_utc = trade.event_time,
     };
-    create_trace_and_dispatch(trace_info, trade_summary, handler_, true);
+    create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
   });
 }
 
@@ -312,7 +312,7 @@ void MarketData::operator()(
         .update_type = UpdateType::INCREMENTAL,
         .exchange_time_utc = mini_ticker.event_time,
     };
-    create_trace_and_dispatch(trace_info, statistics_update, handler_, true);
+    create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
   });
 }
 
@@ -333,7 +333,7 @@ void MarketData::operator()(
         .update_type = UpdateType::INCREMENTAL,
         .exchange_time_utc = {},
     };
-    create_trace_and_dispatch(trace_info, top_of_book, handler_, true);
+    create_trace_and_dispatch(handler_, trace_info, top_of_book, true);
   });
 }
 
@@ -356,7 +356,7 @@ void MarketData::operator()(
           .update_type = UpdateType::SNAPSHOT,
           .exchange_time_utc = {},
       };
-      create_trace_and_dispatch(trace_info, market_by_price_update, handler_, true, false);
+      create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
     }
   });
 }
