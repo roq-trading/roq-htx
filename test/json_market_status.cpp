@@ -9,6 +9,7 @@
 using namespace roq;
 using namespace roq::huobi;
 
+using namespace std::literals;
 using namespace std::chrono_literals;
 
 TEST(json_market_status, simple) {
@@ -22,7 +23,7 @@ TEST(json_market_status, simple) {
   core::Buffer buffer_(65536);
   core::json::Buffer buffer(buffer_);
   auto obj = core::json::Parser::create<json::MarketStatus>(message, buffer);
-  EXPECT_EQ(obj.message, "success"_sv);
+  EXPECT_EQ(obj.message, "success"sv);
   auto &data = obj.data;
   EXPECT_EQ(data.market_status, 1);
 }

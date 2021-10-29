@@ -16,13 +16,13 @@
 
 #include "roq/huobi/json/utils.h"
 
-using namespace roq::literals;
+using namespace std::literals;
 
 namespace roq {
 namespace huobi {
 
 namespace {
-static const auto NAME = "rest"_sv;
+static const auto NAME = "rest"sv;
 static const auto SUPPORTS = utils::Mask{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
@@ -48,7 +48,7 @@ void emplace(MBPUpdate &result, const T &value) {
 }  // namespace
 
 Rest::Rest(Handler &handler, core::io::Context &context, uint16_t stream_id, Shared &shared)
-    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"_sv, stream_id_, NAME)),
+    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)),
       connection_(
           *this,
           context,
@@ -65,18 +65,18 @@ Rest::Rest(Handler &handler, core::io::Context &context, uint16_t stream_id, Sha
           Flags::rest_ping_path()),
       decode_buffer_(Flags::decode_buffer_size()),
       counter_{
-          .disconnect = create_metrics(name_, "disconnect"_sv),
+          .disconnect = create_metrics(name_, "disconnect"sv),
       },
       profile_{
-          .market_status = create_metrics(name_, "market_status"_sv),
-          .market_status_ack = create_metrics(name_, "market_status_ack"_sv),
-          .currencies = create_metrics(name_, "currencies"_sv),
-          .currencies_ack = create_metrics(name_, "currencies_ack"_sv),
-          .symbols = create_metrics(name_, "symbols"_sv),
-          .symbols_ack = create_metrics(name_, "symbols_ack"_sv),
+          .market_status = create_metrics(name_, "market_status"sv),
+          .market_status_ack = create_metrics(name_, "market_status_ack"sv),
+          .currencies = create_metrics(name_, "currencies"sv),
+          .currencies_ack = create_metrics(name_, "currencies_ack"sv),
+          .symbols = create_metrics(name_, "symbols"sv),
+          .symbols_ack = create_metrics(name_, "symbols_ack"sv),
       },
       latency_{
-          .ping = create_metrics(name_, "ping"_sv),
+          .ping = create_metrics(name_, "ping"sv),
       },
       shared_(shared),
       download_(Flags::rest_request_timeout(), [this](auto state) { return download(state); }) {
@@ -150,7 +150,7 @@ void Rest::operator()(ConnectionStatus status) {
         .type = StreamType::REST,
         .priority = Priority::PRIMARY,
     };
-    log::info("stream_status={}"_sv, stream_status);
+    log::info("stream_status={}"sv, stream_status);
     server::create_trace_and_dispatch(handler_, trace_info, stream_status);
   }
 }
@@ -184,7 +184,7 @@ uint32_t Rest::download(RestState state) {
 void Rest::get_market_status() {
   profile_.market_status([&]() {
     auto method = core::http::Method::GET;
-    auto path = "/v2/market-status"_sv;
+    auto path = "/v2/market-status"sv;
     core::web::Request request{
         .method = method,
         .path = path,
@@ -198,7 +198,7 @@ void Rest::get_market_status() {
     };
     auto sequence = download_.sequence();
     connection_(
-        "market_status"_sv,
+        "market_status"sv,
         request,
         [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
           auto trace_info = server::create_trace_info();
@@ -215,9 +215,9 @@ void Rest::get_market_status_ack(
     auto state = RestState::MARKET_STATUS;
     try {
       auto [status, category, body] = response.result();
-      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
+      log::debug(R"(status={}, category={}, body="{}")"sv, status, category, body);
       if (download_.skip(sequence, state)) {
-        log::info("Download state={} has already been processed"_sv, state);
+        log::info("Download state={} has already been processed"sv, state);
         return;
       }
       response.expect(core::http::Status::OK);
@@ -227,7 +227,7 @@ void Rest::get_market_status_ack(
       (*this)(event);
       download_.check(state);
     } catch (core::NetworkError &e) {
-      log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
+      log::warn(R"(Exception type={}, what="{}")"sv, typeid(e).name(), e.what());
       download_.retry(state);
     }
   });
@@ -235,7 +235,7 @@ void Rest::get_market_status_ack(
 
 void Rest::operator()(const server::Trace<json::MarketStatus> &event) {
   auto &[trace_info, market_status] = event;
-  log::info<2>("market_status={}"_sv, market_status);
+  log::info<2>("market_status={}"sv, market_status);
 }
 
 // currencies
@@ -243,7 +243,7 @@ void Rest::operator()(const server::Trace<json::MarketStatus> &event) {
 void Rest::get_currencies() {
   profile_.currencies([&]() {
     auto method = core::http::Method::GET;
-    auto path = "/v1/common/currencys"_sv;
+    auto path = "/v1/common/currencys"sv;
     core::web::Request request{
         .method = method,
         .path = path,
@@ -257,7 +257,7 @@ void Rest::get_currencies() {
     };
     auto sequence = download_.sequence();
     connection_(
-        "currencies"_sv,
+        "currencies"sv,
         request,
         [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
           auto trace_info = server::create_trace_info();
@@ -273,9 +273,9 @@ void Rest::get_currencies_ack(const server::Trace<core::web::Response> &event, u
     auto state = RestState::CURRENCIES;
     try {
       auto [status, category, body] = response.result();
-      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
+      log::debug(R"(status={}, category={}, body="{}")"sv, status, category, body);
       if (download_.skip(sequence, state)) {
-        log::info("Download state={} has already been processed"_sv, state);
+        log::info("Download state={} has already been processed"sv, state);
         return;
       }
       response.expect(core::http::Status::OK);
@@ -285,7 +285,7 @@ void Rest::get_currencies_ack(const server::Trace<core::web::Response> &event, u
       (*this)(event);
       download_.check(state);
     } catch (core::NetworkError &e) {
-      log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
+      log::warn(R"(Exception type={}, what="{}")"sv, typeid(e).name(), e.what());
       download_.retry(state);
     }
   });
@@ -293,7 +293,7 @@ void Rest::get_currencies_ack(const server::Trace<core::web::Response> &event, u
 
 void Rest::operator()(const server::Trace<json::Currencies> &event) {
   auto &[trace_info, currencies] = event;
-  log::info<2>("currencies={}"_sv, currencies);
+  log::info<2>("currencies={}"sv, currencies);
 }
 
 // symbols
@@ -301,7 +301,7 @@ void Rest::operator()(const server::Trace<json::Currencies> &event) {
 void Rest::get_symbols() {
   profile_.symbols([&]() {
     auto method = core::http::Method::GET;
-    auto path = "/v1/common/symbols"_sv;
+    auto path = "/v1/common/symbols"sv;
     core::web::Request request{
         .method = method,
         .path = path,
@@ -315,7 +315,7 @@ void Rest::get_symbols() {
     };
     auto sequence = download_.sequence();
     connection_(
-        "symbols"_sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
+        "symbols"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
           auto trace_info = server::create_trace_info();
           server::Trace event(trace_info, response);
           get_symbols_ack(event, sequence);
@@ -329,9 +329,9 @@ void Rest::get_symbols_ack(const server::Trace<core::web::Response> &event, uint
     auto state = RestState::SYMBOLS;
     try {
       auto [status, category, body] = response.result();
-      log::debug(R"(status={}, category={}, body="{}")"_sv, status, category, body);
+      log::debug(R"(status={}, category={}, body="{}")"sv, status, category, body);
       if (download_.skip(sequence, state)) {
-        log::info("Download state={} has already been processed"_sv, state);
+        log::info("Download state={} has already been processed"sv, state);
         return;
       }
       response.expect(core::http::Status::OK);
@@ -341,7 +341,7 @@ void Rest::get_symbols_ack(const server::Trace<core::web::Response> &event, uint
       (*this)(event);
       download_.check(state);
     } catch (core::NetworkError &e) {
-      log::warn(R"(Exception type={}, what="{}")"_sv, typeid(e).name(), e.what());
+      log::warn(R"(Exception type={}, what="{}")"sv, typeid(e).name(), e.what());
       download_.retry(state);
     }
   });
@@ -349,12 +349,12 @@ void Rest::get_symbols_ack(const server::Trace<core::web::Response> &event, uint
 
 void Rest::operator()(const server::Trace<json::Symbols> &event) {
   auto &[trace_info, symbols] = event;
-  log::info<2>("symbols={}"_sv, symbols);
+  log::info<2>("symbols={}"sv, symbols);
   std::vector<std::string> symbols_2;
   size_t counter = {};
   for (auto &item : symbols.data) {
     if (shared_.discard_symbol(item.symbol)) {
-      log::info<1>(R"(Drop symbol="{}")"_sv, item.symbol);
+      log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
       continue;
     }
     auto &symbol = item.symbol;
@@ -397,7 +397,7 @@ void Rest::operator()(const server::Trace<json::Symbols> &event) {
     };
     create_trace_and_dispatch(handler_, trace_info, market_status, true);
   }
-  log::info("Exchange info: including symbols {}/{}"_sv, counter, std::size(symbols.data));
+  log::info("Exchange info: including symbols {}/{}"sv, counter, std::size(symbols.data));
   if (!std::empty(symbols_2)) {
     SymbolsUpdate symbols_update{
         .symbols = symbols_2,
@@ -415,7 +415,7 @@ void Rest::check_request_queue(std::chrono::nanoseconds now) {
       break;
     if (shared_.can_request(now, [&]() {
           auto &symbol = tmp.second;
-          log::debug(R"(Requesting order book snapshot symbol="{}")"_sv, symbol);
+          log::debug(R"(Requesting order book snapshot symbol="{}")"sv, symbol);
           // XXX HANS get_depth(symbol);
           shared_.request_queue.pop_front();
         })) {

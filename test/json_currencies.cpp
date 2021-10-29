@@ -9,6 +9,7 @@
 using namespace roq;
 using namespace roq::huobi;
 
+using namespace std::literals;
 using namespace std::chrono_literals;
 
 TEST(json_currencies, simple) {
@@ -456,11 +457,11 @@ TEST(json_currencies, simple) {
   core::Buffer buffer_(65536);
   core::json::Buffer buffer(buffer_);
   auto obj = core::json::Parser::create<json::Currencies>(message, buffer);
-  EXPECT_EQ(obj.status, "ok"_sv);
+  EXPECT_EQ(obj.status, "ok"sv);
   auto &data = obj.data;
   ASSERT_EQ(std::size(data), 436);
   auto &d0 = data[0];
-  EXPECT_EQ(d0, "usdt"_sv);
+  EXPECT_EQ(d0, "usdt"sv);
   auto &d435 = data[435];
-  EXPECT_EQ(d435, "gal"_sv);
+  EXPECT_EQ(d435, "gal"sv);
 }
