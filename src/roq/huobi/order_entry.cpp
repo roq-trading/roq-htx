@@ -55,8 +55,6 @@ OrderEntry::OrderEntry(
           core::http::Connection::KEEP_ALIVE,
           ALLOW_PIPELINING,
           Flags::rest_request_timeout(),
-          Flags::rest_rate_limit_interval(),
-          Flags::rest_rate_limit_max_requests(),
           Flags::rest_ping_freq(),
           Flags::rest_ping_path()),
       decode_buffer_(Flags::decode_buffer_size()),
@@ -215,7 +213,6 @@ void OrderEntry::get_listen_key() {
         .headers = headers,
         .body = {},
         .quality_of_service = {},
-        .rate_limit_weight = 1,
     };
     auto sequence = download_.sequence();
     connection_(
@@ -230,22 +227,18 @@ void OrderEntry::get_listen_key() {
 }
 
 void OrderEntry::get_listen_key_ack(
-    const server::Trace<core::web::Response> &event, uint32_t sequence) {
+    const server::Trace<core::web::Response> &event, [[maybe_unused]] uint32_t sequence) {
   profile_.listen_key_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = OrderEntryState::LISTEN_KEY;
     try {
       auto [status, category, body] = response.result();
       log::debug(R"(status={}, category={}, body="{}")"sv, status, category, body);
-      if (download_.skip(sequence, state)) {
-        log::info("Download state={} has already been processed"sv, state);
-        return;
-      }
       response.expect(core::http::Status::OK);
       auto listen_key = core::json::Parser::create<json::ListenKey>(response.body());
       server::Trace event(trace_info, listen_key);
       (*this)(event);
-      download_.check(state);
+      download_.check_relaxed(state);
     } catch (core::NetworkError &e) {
       log::warn(R"(Exception type={}, what="{}")"sv, typeid(e).name(), e.what());
       download_.retry(state);
@@ -315,7 +308,6 @@ void OrderEntry::get_account() {
         .headers = headers,
         .body = {},
         .quality_of_service = {},
-        .rate_limit_weight = 1,
     };
     auto sequence = download_.sequence();
     connection_(
@@ -421,7 +413,6 @@ void OrderEntry::new_order(
         .headers = headers,
         .body = body,
         .quality_of_service = core::web::QualityOfService::IMMEDIATE,
-        .rate_limit_weight = 1,
     };
     connection_(request_id, request, [this]([[maybe_unused]] auto &request_id, auto &response) {
       auto trace_info = server::create_trace_info();
@@ -493,7 +484,6 @@ void OrderEntry::cancel_order(
         .headers = headers,
         .body = body,
         .quality_of_service = core::web::QualityOfService::IMMEDIATE,
-        .rate_limit_weight = 1,
     };
     connection_(request_id, request, [this]([[maybe_unused]] auto &request_id, auto &response) {
       auto trace_info = server::create_trace_info();
