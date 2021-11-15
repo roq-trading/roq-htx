@@ -139,25 +139,25 @@ void MarketData::update_subscriptions(std::vector<std::string> &symbols) {
     subscribe({&symbols_[offset], length});
 }
 
-void MarketData::operator()(const core::web::Socket::Connected &) {
+void MarketData::operator()(const core::web::ClientSocket::Connected &) {
 }
 
-void MarketData::operator()(const core::web::Socket::Disconnected &) {
+void MarketData::operator()(const core::web::ClientSocket::Disconnected &) {
   ++counter_.disconnect;
   ready_ = false;
   (*this)(ConnectionStatus::DISCONNECTED);
   download_.reset();
 }
 
-void MarketData::operator()(const core::web::Socket::Ready &) {
+void MarketData::operator()(const core::web::ClientSocket::Ready &) {
   (*this)(ConnectionStatus::DOWNLOADING);
   download_.begin();
 }
 
-void MarketData::operator()(const core::web::Socket::Close &) {
+void MarketData::operator()(const core::web::ClientSocket::Close &) {
 }
 
-void MarketData::operator()(const core::web::Socket::Latency &latency) {
+void MarketData::operator()(const core::web::ClientSocket::Latency &latency) {
   auto trace_info = server::create_trace_info();
   ExternalLatency external_latency{
       .stream_id = stream_id_,
@@ -167,11 +167,11 @@ void MarketData::operator()(const core::web::Socket::Latency &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void MarketData::operator()(const core::web::Socket::Text &text) {
+void MarketData::operator()(const core::web::ClientSocket::Text &text) {
   parse(text.payload);
 }
 
-void MarketData::operator()(const core::web::Socket::Binary &binary) {
+void MarketData::operator()(const core::web::ClientSocket::Binary &binary) {
   core::print_string_with_escapes(std::data(binary.payload), std::size(binary.payload));
   log::fatal("Unexpected"sv);
 }
