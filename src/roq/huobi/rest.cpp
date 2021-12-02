@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2021, Hans Erik Thrane */
+/* Copyright (c) 2017-2022, Hans Erik Thrane */
 
 #include "roq/huobi/rest.h"
 
@@ -404,7 +404,7 @@ void Rest::operator()(const server::Trace<json::Symbols> &event) {
 // queue
 
 void Rest::check_request_queue(std::chrono::nanoseconds now) {
-  while (!shared_.request_queue.empty()) {
+  while (!std::empty(shared_.request_queue)) {
     auto &tmp = shared_.request_queue.front();
     if (now < tmp.first)
       break;

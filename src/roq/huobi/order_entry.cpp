@@ -1,4 +1,4 @@
-/* Copyright (c) 2017-2021, Hans Erik Thrane */
+/* Copyright (c) 2017-2022, Hans Erik Thrane */
 
 #include "roq/huobi/order_entry.h"
 
@@ -249,7 +249,7 @@ void OrderEntry::get_listen_key_ack(
 void OrderEntry::operator()(const server::Trace<json::ListenKey> &event) {
   auto &[trace_info, listen_key] = event;
   log::info<2>("listen_key={}"sv, listen_key);
-  bool initial = listen_key_.empty();
+  bool initial = std::empty(listen_key_);
   if (utils::update(listen_key_, listen_key.listen_key)) {
     if (initial) {
       log::info(R"(Listen key has been acquired (value="{}"))"sv, listen_key_);
