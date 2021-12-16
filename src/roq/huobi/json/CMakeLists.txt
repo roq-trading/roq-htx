@@ -1,49 +1,38 @@
 set(TARGET_NAME "${PROJECT_NAME}-json")
 
-set(SOURCES market_stream_parser.cpp user_stream_parser.cpp)
+set(SOURCES parser.cpp)
 
 include(RoqAutogen)
 
 set(AUTOGEN_SCHEMAS
-    account.json
-    agg_trade.json
-    balance.json
-    balance_update.json
-    balances_item.json
-    book_ticker.json
-    cancel_order.json
+    bbo.json
+    bbo_tick.json
     currencies.json
-    depth.json
-    depth_item.json
-    depth_update.json
+    currencies.json
+    detail.json
+    detail_tick.json
     error.json
     event_type.json
-    execution_report.json
-    execution_type.json
-    field.json
-    fill.json
-    filter_type.json
-    listen_key.json
-    market_status.json
+    frame.json
     market_status_data.json
-    mini_ticker.json
-    new_order.json
-    order_status.json
-    order_type.json
-    outbound_account_info.json
-    outbound_account_position.json
+    market_status.json
     partition.json
-    result.json
+    ping.json
+    quotation.json
     side.json
     state.json
-    stream.json
-    symbol.json
-    symbol_status.json
+    status.json
+    subbed.json
+    symbols_item.json
     symbols.json
+    symbol_status.json
     ticker.json
-    time_in_force.json
+    ticker_tick.json
+    topic.json
     trade.json
-    trading.json)
+    trade_tick_item.json
+    trading.json
+    trade_tick.json)
 
 roq_autogen(
   OUTPUT

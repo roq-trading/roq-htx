@@ -22,13 +22,12 @@
 #include "roq/huobi/market_data_state.h"
 #include "roq/huobi/shared.h"
 
-#include "roq/huobi/json/market_stream_parser.h"
+#include "roq/huobi/json/parser.h"
 
 namespace roq {
 namespace huobi {
 
-class MarketData final : public core::web::ClientSocket::Handler,
-                         public json::MarketStreamParser::Handler {
+class MarketData final : public core::web::ClientSocket::Handler, public json::Parser::Handler {
  public:
   struct Handler {
     virtual void operator()(const server::Trace<StreamStatus> &) = 0;
@@ -71,25 +70,23 @@ class MarketData final : public core::web::ClientSocket::Handler,
 
   void subscribe(const roq::span<std::string> &symbols);
 
-  void subscribe_ticker(const roq::span<std::string> &symbols);
+  void subscribe(
+      const roq::span<std::string> &symbols,
+      const std::string_view &source,
+      const std::string_view &theme);
+
+  void send_pong(std::chrono::milliseconds timestamp);
 
   void parse(const std::string_view &message);
 
-  // response
-  void operator()(int32_t, const json::Error &) override;
-  void operator()(int32_t, const json::Result &) override;
-
-  // update
-  void operator()(const json::AggTrade &, const server::TraceInfo &) override;
-  void operator()(const json::Trade &, const server::TraceInfo &) override;
-  void operator()(const json::MiniTicker &, const server::TraceInfo &) override;
-  void operator()(const json::BookTicker &, const server::TraceInfo &) override;
-  void operator()(
-      const std::string_view &symbol, const json::Depth &depth, const server::TraceInfo &) override;
-  void operator()(
-      const std::string_view &symbol,
-      const json::DepthUpdate &,
-      const server::TraceInfo &) override;
+  void operator()(const server::Trace<json::Ping> &) override;
+  void operator()(const server::Trace<json::Error> &) override;
+  void operator()(const server::Trace<json::Subbed> &) override;
+  void operator()(const server::Trace<json::BBO> &) override;
+  // void operator()(const server::Trace<Depth> &)override;
+  void operator()(const server::Trace<json::Trade> &) override;
+  void operator()(const server::Trace<json::Detail> &) override;
+  void operator()(const server::Trace<json::Ticker> &) override;
 
  private:
   Handler &handler_;
@@ -107,8 +104,7 @@ class MarketData final : public core::web::ClientSocket::Handler,
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse, error, result, agg_trade, trade, mini_ticker, book_ticker, depth,
-        depth_update;
+    core::metrics::Profile parse, ping, error, subbed, bbo, trade, detail, ticker;
   } profile_;
   struct {
     core::metrics::Latency ping, heartbeat;

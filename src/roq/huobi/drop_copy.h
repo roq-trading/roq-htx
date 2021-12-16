@@ -20,12 +20,12 @@
 #include "roq/huobi/security.h"
 #include "roq/huobi/shared.h"
 
-#include "roq/huobi/json/user_stream_parser.h"
+#include "roq/huobi/json/parser.h"
 
 namespace roq {
 namespace huobi {
 
-class DropCopy final : public core::web::ClientSocket::Handler, public json::UserStreamParser::Handler {
+class DropCopy final : public core::web::ClientSocket::Handler, public json::Parser::Handler {
  public:
   struct Handler {
     virtual void operator()(const server::Trace<StreamStatus> &) = 0;
@@ -68,10 +68,14 @@ class DropCopy final : public core::web::ClientSocket::Handler, public json::Use
 
   void parse(const std::string_view &message);
 
-  void operator()(const json::OutboundAccountInfo &, const server::TraceInfo &) override;
-  void operator()(const json::OutboundAccountPosition &, const server::TraceInfo &) override;
-  void operator()(const json::BalanceUpdate &, const server::TraceInfo &) override;
-  void operator()(const json::ExecutionReport &, const server::TraceInfo &) override;
+  void operator()(const server::Trace<json::Ping> &) override;
+  void operator()(const server::Trace<json::Error> &) override;
+  void operator()(const server::Trace<json::Subbed> &) override;
+  void operator()(const server::Trace<json::BBO> &) override;
+  // void operator()(const server::Trace<Depth> &)override;
+  void operator()(const server::Trace<json::Trade> &) override;
+  void operator()(const server::Trace<json::Detail> &) override;
+  void operator()(const server::Trace<json::Ticker> &) override;
 
  private:
   Handler &handler_;

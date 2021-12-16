@@ -44,6 +44,7 @@ struct Shared final {
 
  public:
   core::page_aligned_vector<MBPUpdate> bids, asks, final_bids, final_asks;
+  core::page_aligned_vector<Trade> trades;
 
   std::deque<std::pair<std::chrono::nanoseconds, std::string> > request_queue;
 

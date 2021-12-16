@@ -2,8 +2,6 @@
 "name": "OrderEntryState",
 "type": "enum",
 "values": [
-	{ "name": "listen_key" },
-	{ "name": "account" },
 	{ "name": "done" }
 ]
 }

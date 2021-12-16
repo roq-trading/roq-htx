@@ -1,5 +1,5 @@
 {
-"name": "Symbol",
+"name": "SymbolsItem",
 "type": "item",
 "values": [
 	{ "name": "base-currency", "type": "std::string_view" },
