@@ -14,6 +14,8 @@
 
 #include "roq/core/web/client_socket.h"
 
+#include "roq/core/zlib/inflate.h"
+
 #include "roq/download.h"
 #include "roq/server.h"
 
@@ -118,6 +120,9 @@ class MarketData final : public core::web::ClientSocket::Handler,
   bool ready_ = false;
   ConnectionStatus status_ = {};
   server::Download<MarketDataState> download_;
+  // zlib
+  core::zlib::Inflate inflate_;
+  std::vector<std::byte> inflate_buffer_;
 };
 
 }  // namespace huobi

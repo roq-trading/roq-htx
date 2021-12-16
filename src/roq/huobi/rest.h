@@ -78,8 +78,6 @@ class Rest final : public core::web::Client::Handler {
   void get_symbols_ack(const server::Trace<core::web::Response> &, uint32_t sequence);
   void operator()(const server::Trace<json::Symbols> &);
 
-  void check_request_queue(std::chrono::nanoseconds now);
-
  private:
   Handler &handler_;
   // config

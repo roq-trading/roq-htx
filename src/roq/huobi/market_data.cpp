@@ -81,7 +81,8 @@ MarketData::MarketData(
           .ping = create_metrics(name_, "ping"sv),
           .heartbeat = create_metrics(name_, "heartbeat"sv),
       },
-      shared_(shared), download_({}, [this](auto state) { return download(state); }) {
+      shared_(shared), download_({}, [this](auto state) { return download(state); }),
+      inflate_(core::zlib::Inflate::GZIP_NO_HEADER) {
 }
 
 bool MarketData::ready() const {
@@ -167,13 +168,20 @@ void MarketData::operator()(const core::web::ClientSocket::Latency &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void MarketData::operator()(const core::web::ClientSocket::Text &text) {
-  parse(text.payload);
+void MarketData::operator()(const core::web::ClientSocket::Text &) {
+  log::fatal("Unexpected"sv);
 }
 
 void MarketData::operator()(const core::web::ClientSocket::Binary &binary) {
-  core::print_string_with_escapes(std::data(binary.payload), std::size(binary.payload));
-  log::fatal("Unexpected"sv);
+  if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
+        std::string_view message{
+            reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
+        log::info<5>(R"(message="{}")"sv, message);
+        parse(message);
+      })) {
+  } else {
+    log::fatal("Failed to decode message"sv);
+  }
 }
 
 void MarketData::operator()(ConnectionStatus status) {

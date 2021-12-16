@@ -91,8 +91,6 @@ void Rest::operator()(const Event<Stop> &) {
 void Rest::operator()(const Event<Timer> &event) {
   auto now = event.value.now;
   connection_.refresh(now);
-  if (ready())
-    check_request_queue(now);
 }
 
 void Rest::operator()(metrics::Writer &writer) {
@@ -398,25 +396,6 @@ void Rest::operator()(const server::Trace<json::Symbols> &event) {
         .symbols = symbols_2,
     };
     handler_(symbols_update);
-  }
-}
-
-// queue
-
-void Rest::check_request_queue(std::chrono::nanoseconds now) {
-  while (!std::empty(shared_.request_queue)) {
-    auto &tmp = shared_.request_queue.front();
-    if (now < tmp.first)
-      break;
-    if (shared_.can_request(now, [&]() {
-          auto &symbol = tmp.second;
-          log::debug(R"(Requesting order book snapshot symbol="{}")"sv, symbol);
-          // XXX HANS get_depth(symbol);
-          shared_.request_queue.pop_front();
-        })) {
-    } else {
-      return;
-    }
   }
 }
 
