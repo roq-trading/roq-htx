@@ -11,8 +11,11 @@
 #include "roq/server.h"
 
 #include "roq/core/memory.h"
+#include "roq/core/symbols.h"
 
 #include "roq/core/limit/rate_limiter.h"
+
+#include "roq/core/market/mbp_sequencer.h"
 
 namespace roq {
 namespace huobi {
@@ -52,6 +55,10 @@ struct Shared final {
   server::Dispatcher &dispatcher_;
 
   core::limit::RateLimiter rate_limiter_;
+
+ public:
+  core::Symbols symbols;
+  absl::flat_hash_map<std::string, core::market::MBP_Sequencer> mbp_collector;
 };
 
 }  // namespace huobi

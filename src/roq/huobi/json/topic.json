@@ -5,6 +5,7 @@
 	{ "name": "bbo" },
 	{ "name": "trade" },
 	{ "name": "detail" },
-	{ "name": "ticker" }
+	{ "name": "ticker" },
+	{ "name": "mbp" }
 ]
 }

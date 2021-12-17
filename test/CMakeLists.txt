@@ -5,6 +5,8 @@ set(SOURCES
     json_currencies.cpp
     json_detail.cpp
     json_market_status.cpp
+    json_mbp.cpp
+    json_mbp_snapshot.cpp
     json_symbols.cpp
     json_ticker.cpp
     json_trade.cpp

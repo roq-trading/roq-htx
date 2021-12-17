@@ -10,6 +10,8 @@
 	{ "name": "ch", "type": "std::string_view" },
 	{ "name": "tick" },
 	{ "name": "ping", "type": "std::chrono::milliseconds" },
-	{ "name": "subbed", "type": "std::string_view", "comment": "UNDOC" }
+	{ "name": "subbed", "type": "std::string_view", "comment": "UNDOC" },
+	{ "name": "rep", "type": "std::string_view" },
+	{ "name": "data" }
 ]
 }

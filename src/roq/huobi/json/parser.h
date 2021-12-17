@@ -9,9 +9,10 @@
 #include "roq/server.h"
 
 #include "roq/huobi/json/bbo.h"
-// #include "roq/huobi/json/depth.h"
 #include "roq/huobi/json/detail.h"
 #include "roq/huobi/json/error.h"
+#include "roq/huobi/json/mbp.h"
+#include "roq/huobi/json/mbp_snapshot.h"
 #include "roq/huobi/json/ping.h"
 #include "roq/huobi/json/subbed.h"
 #include "roq/huobi/json/ticker.h"
@@ -27,10 +28,11 @@ struct Parser final {
     virtual void operator()(const server::Trace<Error> &) = 0;
     virtual void operator()(const server::Trace<Subbed> &) = 0;
     virtual void operator()(const server::Trace<BBO> &) = 0;
-    // virtual void operator()(const server::Trace<Depth> &) = 0;
     virtual void operator()(const server::Trace<Trade> &) = 0;
     virtual void operator()(const server::Trace<Detail> &) = 0;
     virtual void operator()(const server::Trace<Ticker> &) = 0;
+    virtual void operator()(const server::Trace<MBP> &) = 0;
+    virtual void operator()(const server::Trace<MBPSnapshot> &) = 0;
   };
 
   static bool dispatch(

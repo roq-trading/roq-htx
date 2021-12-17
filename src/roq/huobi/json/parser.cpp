@@ -36,13 +36,6 @@ bool Parser::dispatch(
             server::create_trace_and_dispatch(handler, trace_info, bbo);
             return true;
           }
-            /*
-case Topic::DEPTH: {
-auto depth = core::json::Parser::create<json::Depth>(message, buffer);
-server::create_trace_and_dispatch(handler, trace_info, depth);
-return true;
-}
-*/
           case Topic::TRADE: {
             auto trade = core::json::Parser::create<json::Trade>(message, buffer);
             server::create_trace_and_dispatch(handler, trace_info, trade);
@@ -56,6 +49,11 @@ return true;
           case Topic::TICKER: {
             auto ticker = core::json::Parser::create<json::Ticker>(message, buffer);
             server::create_trace_and_dispatch(handler, trace_info, ticker);
+            return true;
+          }
+          case Topic::MBP: {
+            auto mbp = core::json::Parser::create<json::MBP>(message, buffer);
+            server::create_trace_and_dispatch(handler, trace_info, mbp);
             return true;
           }
           default:
@@ -76,6 +74,14 @@ return true;
           server::create_trace_and_dispatch(handler, trace_info, subbed);
           return true;
         } else {
+          if (!std::empty(frame.rep)) {
+            Topic topic{extract_topic(frame.rep)};
+            if (topic == Topic::MBP) {
+              auto mbp_snapshot = core::json::Parser::create<json::MBPSnapshot>(message, buffer);
+              server::create_trace_and_dispatch(handler, trace_info, mbp_snapshot);
+              return true;
+            }
+          }
           log::fatal("DEBUG {}"sv, message);  // ???
         }
         break;

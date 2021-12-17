@@ -197,12 +197,6 @@ void DropCopy::operator()(const server::Trace<json::BBO> &) {
   log::fatal("Unexpected"sv);
 }
 
-/*
-void DropCopy::operator()(const server::Trace<json::Depth> &) {
-  log::fatal("Unexpected"sv);
-}
-*/
-
 void DropCopy::operator()(const server::Trace<json::Trade> &) {
   log::fatal("Unexpected"sv);
 }
@@ -212,6 +206,14 @@ void DropCopy::operator()(const server::Trace<json::Detail> &) {
 }
 
 void DropCopy::operator()(const server::Trace<json::Ticker> &) {
+  log::fatal("Unexpected"sv);
+}
+
+void DropCopy::operator()(const server::Trace<json::MBP> &) {
+  log::fatal("Unexpected"sv);
+}
+
+void DropCopy::operator()(const server::Trace<json::MBPSnapshot> &) {
   log::fatal("Unexpected"sv);
 }
 

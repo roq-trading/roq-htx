@@ -74,11 +74,13 @@ void Gateway::operator()(const Event<Start> &event) {
     if (static_cast<bool>(drop_copy))
       (*drop_copy)(event);
   assert(std::empty(market_data_));
-  // order_entry_.download.begin();
+  assert(std::empty(mbp_feed_));
 }
 
 void Gateway::operator()(const Event<Stop> &event) {
   log::info("Stopping the gateway..."sv);
+  for (auto &iter : mbp_feed_)
+    (*iter)(event);
   for (auto &iter : market_data_)
     (*iter)(event);
   for (auto &[_, drop_copy] : drop_copy_)
@@ -97,6 +99,8 @@ void Gateway::operator()(const Event<Timer> &event) {
     if (static_cast<bool>(drop_copy))
       (*drop_copy)(event);
   for (auto &iter : market_data_)
+    (*iter)(event);
+  for (auto &iter : mbp_feed_)
     (*iter)(event);
   context_.dispatch(true);
 }
@@ -155,22 +159,34 @@ void Gateway::operator()(const server::Trace<FundsUpdate> &event, bool is_last) 
 }
 
 void Gateway::operator()(Rest::SymbolsUpdate &symbols_update) {
-  auto &symbols = symbols_update.symbols;
-  for (auto &iter : market_data_) {
-    if (std::empty(symbols))
-      break;
-    (*iter).update_subscriptions(symbols);
-  }
-  for (;;) {
-    if (std::empty(symbols))
-      break;
-    log::info("Create market-data (user-stream)"sv);
-    auto market_data = std::make_unique<MarketData>(*this, context_, ++stream_id_, shared_);
-    (*market_data).update_subscriptions(symbols);
+  auto [size, start_from] = shared_.symbols(symbols_update.symbols);
+  ensure_symbol_slices(size);
+  for (auto &iter : market_data_)
+    (*iter).subscribe(start_from);
+  for (auto &iter : mbp_feed_)
+    (*iter).subscribe(start_from);
+}
+
+void Gateway::ensure_symbol_slices(size_t size) {
+  // market data
+  while (std::size(market_data_) < size) {
+    log::debug("Create market-data (user-stream)"sv);
+    auto market_data = std::make_unique<MarketData>(
+        *this, context_, ++stream_id_, shared_, std::size(market_data_));
     MessageInfo message_info;  // XXX something sensible
     Start start;
     create_event_and_dispatch(*market_data, message_info, start);
     market_data_.emplace_back(std::move(market_data));
+  }
+  // mbp feed
+  while (std::size(mbp_feed_) < size) {
+    log::debug("Create market-data (user-stream)"sv);
+    auto mbp_feed =
+        std::make_unique<MBPFeed>(*this, context_, ++stream_id_, shared_, std::size(mbp_feed_));
+    MessageInfo message_info;  // XXX something sensible
+    Start start;
+    create_event_and_dispatch(*mbp_feed, message_info, start);
+    mbp_feed_.emplace_back(std::move(mbp_feed));
   }
 }
 

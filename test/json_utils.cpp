@@ -17,6 +17,7 @@ TEST(json_utils, extract_symbol) {
   EXPECT_EQ(json::extract_symbol("market.btcusdt.bbo"sv), "btcusdt"sv);
   EXPECT_EQ(json::extract_symbol("market.btcusdt.trade.detail"sv), "btcusdt"sv);
   EXPECT_EQ(json::extract_symbol("market.btcusdt.detail"sv), "btcusdt"sv);
+  EXPECT_EQ(json::extract_symbol("market.btcusdt.mbp.20"sv), "btcusdt"sv);
 }
 
 TEST(json_utils, extract_topic) {
@@ -24,4 +25,5 @@ TEST(json_utils, extract_topic) {
   EXPECT_EQ(json::extract_topic("market.btcusdt.bbo"sv), "bbo"sv);
   EXPECT_EQ(json::extract_topic("market.btcusdt.trade.detail"sv), "trade"sv);
   EXPECT_EQ(json::extract_topic("market.btcusdt.detail"sv), "detail"sv);
+  EXPECT_EQ(json::extract_topic("market.btcusdt.mbp.20"sv), "mbp"sv);
 }

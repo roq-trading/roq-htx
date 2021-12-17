@@ -16,6 +16,7 @@
 #include "roq/huobi/config.h"
 #include "roq/huobi/drop_copy.h"
 #include "roq/huobi/market_data.h"
+#include "roq/huobi/mbp_feed.h"
 #include "roq/huobi/order_entry.h"
 #include "roq/huobi/rest.h"
 #include "roq/huobi/security.h"
@@ -28,7 +29,8 @@ class Gateway final : public server::Handler,
                       public Rest::Handler,
                       public OrderEntry::Handler,
                       public DropCopy::Handler,
-                      public MarketData::Handler {
+                      public MarketData::Handler,
+                      public MBPFeed::Handler {
  public:
   Gateway(server::Dispatcher &, const Config &);
 
@@ -70,6 +72,7 @@ class Gateway final : public server::Handler,
 
   void operator()(Rest::SymbolsUpdate &) override;
 
+  void ensure_symbol_slices(size_t);
   // utilities
 
   OrderEntry &get_order_entry(const std::string_view &account);
@@ -89,6 +92,7 @@ class Gateway final : public server::Handler,
   absl::flat_hash_map<std::string, std::unique_ptr<OrderEntry>> order_entry_;
   absl::flat_hash_map<std::string, std::unique_ptr<DropCopy>> drop_copy_;
   std::vector<std::unique_ptr<MarketData>> market_data_;
+  std::vector<std::unique_ptr<MBPFeed>> mbp_feed_;
 };
 
 }  // namespace huobi

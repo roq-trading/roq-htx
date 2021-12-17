@@ -16,6 +16,10 @@ set(AUTOGEN_SCHEMAS
     frame.json
     market_status_data.json
     market_status.json
+    mbp.json
+    mbp_snapshot_data.json
+    mbp_snapshot.json
+    mbp_tick.json
     partition.json
     ping.json
     quotation.json

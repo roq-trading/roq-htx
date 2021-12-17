@@ -20,6 +20,14 @@ market_status_data.h
 market_status_data.cpp
 market_status.h
 market_status.cpp
+mbp.h
+mbp.cpp
+mbp_snapshot_data.h
+mbp_snapshot_data.cpp
+mbp_snapshot.h
+mbp_snapshot.cpp
+mbp_tick.h
+mbp_tick.cpp
 partition.h
 partition.cpp
 ping.h
