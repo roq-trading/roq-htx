@@ -170,20 +170,22 @@ void Gateway::operator()(Rest::SymbolsUpdate &symbols_update) {
 void Gateway::ensure_symbol_slices(size_t size) {
   // market data
   while (std::size(market_data_) < size) {
-    log::debug("Create market-data (user-stream)"sv);
-    auto market_data = std::make_unique<MarketData>(
-        *this, context_, ++stream_id_, shared_, std::size(market_data_));
-    MessageInfo message_info;  // XXX something sensible
+    auto stream_id = ++stream_id_;
+    auto index = std::size(market_data_);
+    log::debug("Create MarketData (stream_id={}, index={})"sv, stream_id, index);
+    auto market_data = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index);
+    MessageInfo message_info;
     Start start;
     create_event_and_dispatch(*market_data, message_info, start);
     market_data_.emplace_back(std::move(market_data));
   }
   // mbp feed
   while (std::size(mbp_feed_) < size) {
-    log::debug("Create market-data (user-stream)"sv);
-    auto mbp_feed =
-        std::make_unique<MBPFeed>(*this, context_, ++stream_id_, shared_, std::size(mbp_feed_));
-    MessageInfo message_info;  // XXX something sensible
+    auto stream_id = ++stream_id_;
+    auto index = std::size(mbp_feed_);
+    log::debug("Create MBPFeed (stream_id={}, index={})"sv, stream_id, index);
+    auto mbp_feed = std::make_unique<MBPFeed>(*this, context_, stream_id, shared_, index);
+    MessageInfo message_info;
     Start start;
     create_event_and_dispatch(*mbp_feed, message_info, start);
     mbp_feed_.emplace_back(std::move(mbp_feed));
