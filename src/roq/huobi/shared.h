@@ -3,7 +3,6 @@
 #pragma once
 
 #include <chrono>
-#include <deque>
 #include <string>
 #include <utility>
 
@@ -12,6 +11,7 @@
 
 #include "roq/core/memory.h"
 #include "roq/core/symbols.h"
+#include "roq/core/timer_queue.h"
 
 #include "roq/core/limit/rate_limiter.h"
 
@@ -40,24 +40,17 @@ struct Shared final {
     return dispatcher_(std::forward<Args>(args)...);
   }
 
-  template <typename F>
-  bool can_request(std::chrono::nanoseconds now, F callback) {
-    return rate_limiter_.can_request(now, callback);
-  }
-
  public:
   core::page_aligned_vector<MBPUpdate> bids, asks, final_bids, final_asks;
   core::page_aligned_vector<Trade> trades;
 
-  std::deque<std::pair<std::chrono::nanoseconds, std::string> > request_queue;
-
  private:
   server::Dispatcher &dispatcher_;
 
-  core::limit::RateLimiter rate_limiter_;
-
  public:
+  core::limit::RateLimiter rate_limiter;
   core::Symbols symbols;
+  core::TimerQueue mbp_request_queue;
   absl::flat_hash_map<std::string, core::market::MBP_Sequencer> mbp_collector;
 };
 
