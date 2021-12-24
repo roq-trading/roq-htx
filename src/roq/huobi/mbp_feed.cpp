@@ -274,7 +274,9 @@ void MBPFeed::operator()(const server::Trace<json::Ticker> &) {
 
 void MBPFeed::operator()(const server::Trace<json::MBP> &event) {
   profile_.mbp([&]() {
-    auto &[trace_info, mbp] = event;
+    // auto &[trace_info, mbp] = event;
+    auto &trace_info = event.trace_info;
+    auto &mbp = event.value;
     auto symbol = json::extract_symbol(mbp.ch);
     auto &tick = mbp.tick;
     auto &collector = shared_.mbp_collector[symbol];
@@ -351,7 +353,9 @@ void MBPFeed::operator()(const server::Trace<json::MBP> &event) {
 
 void MBPFeed::operator()(const server::Trace<json::MBPSnapshot> &event) {
   profile_.mbp_snapshot([&]() {
-    auto &[trace_info, mbp_snapshot] = event;
+    // auto &[trace_info, mbp_snapshot] = event;
+    auto &trace_info = event.trace_info;
+    auto &mbp_snapshot = event.value;
     auto symbol = json::extract_symbol(mbp_snapshot.rep);
     auto &data = mbp_snapshot.data;
     auto &collector = shared_.mbp_collector[symbol];
