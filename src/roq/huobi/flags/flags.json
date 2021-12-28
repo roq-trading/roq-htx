@@ -77,13 +77,6 @@
       "description": "WebSocket end-point (URI) for market data (excl. incremental MBP)"
     },
     {
-      "name": "ws_market_uri",
-      "type": "roq::core::URI",
-      "validator": "roq::core::flags::URI<std::string>",
-      "default": "wss://api.huobi.pro/ws",
-      "description": "WebSocket end-point (URI) for market data (excl. incremental MBP)"
-    },
-    {
       "name": "ws_mbp_uri",
       "type": "roq::core::URI",
       "validator": "roq::core::flags::URI<std::string>",
@@ -91,7 +84,7 @@
       "description": "WebSocket end-point (URI) for MBP"
     },
     {
-      "name": "ws_account_uri",
+      "name": "ws_order_uri",
       "type": "roq::core::URI",
       "validator": "roq::core::flags::URI<std::string>",
       "default": "wss://api.huobi.pro/ws/v2",
