@@ -364,6 +364,7 @@ void Rest::operator()(const server::Trace<json::Symbols> &event) {
         .security_type = {},
         .base_currency = item.base_currency,
         .quote_currency = item.quote_currency,
+        .margin_currency = {},
         .commission_currency = {},
         .tick_size = tick_size,
         .multiplier = NaN,

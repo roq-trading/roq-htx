@@ -132,7 +132,7 @@ void DropCopy::operator()(const core::web::ClientSocket::Text &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const core::web::ClientSocket::Binary &binary) {
+void DropCopy::operator()(const core::web::ClientSocket::Binary &) {
   log::fatal("Not implemented"sv);
 }
 

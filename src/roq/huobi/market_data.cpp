@@ -351,8 +351,8 @@ void MarketData::operator()(const server::Trace<json::Detail> &event) {
   });
 }
 
-void MarketData::operator()(const server::Trace<json::Ticker> &event) {
-  profile_.ticker([&]() { auto &[trace_info, detail] = event; });
+void MarketData::operator()(const server::Trace<json::Ticker> &) {
+  // profile_.ticker([&]() { auto &[trace_info, ticker] = event; });
 }
 
 void MarketData::operator()(const server::Trace<json::MBP> &) {
