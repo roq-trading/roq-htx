@@ -346,7 +346,12 @@ void Rest::operator()(const server::Trace<json::Symbols> &event) {
   std::vector<std::string> symbols_2;
   size_t counter = {};
   for (auto &item : symbols.data) {
+    log::debug("item={}"sv, item);
     if (shared_.discard_symbol(item.symbol)) {
+      log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
+      continue;
+    }
+    if (item.state != json::State::ONLINE || item.api_trading != json::Trading::ENABLED) {
       log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
       continue;
     }
