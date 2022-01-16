@@ -3,7 +3,7 @@
 "type": "comp",
 "values": [
 	{ "name": "seqNum", "type": "int64_t" },
-	{ "name": "bids", "type": "roq::span<Quotation>" },
-	{ "name": "asks", "type": "roq::span<Quotation>" }
+	{ "name": "bids", "type": "std::span<Quotation>" },
+	{ "name": "asks", "type": "std::span<Quotation>" }
 ]
 }

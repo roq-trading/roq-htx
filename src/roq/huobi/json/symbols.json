@@ -3,6 +3,6 @@
 "type": "comp",
 "values": [
 	{ "name": "status", "type": "std::string_view" },
-	{ "name": "data", "type": "roq::span<SymbolsItem>" }
+	{ "name": "data", "type": "std::span<SymbolsItem>" }
 ]
 }
