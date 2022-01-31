@@ -25,8 +25,8 @@ namespace roq {
 namespace huobi {
 
 namespace {
-static const auto NAME = "md"sv;
-static const auto SUPPORTS = utils::Mask{
+const auto NAME = "md"sv;
+const auto SUPPORTS = utils::Mask{
     SupportType::TOP_OF_BOOK,
     SupportType::TRADE_SUMMARY,
     SupportType::STATISTICS,
