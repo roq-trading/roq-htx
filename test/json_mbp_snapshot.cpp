@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 
 #include "roq/core/json/parser.h"
 
@@ -12,8 +12,10 @@ using namespace roq::huobi;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
+using namespace Catch::literals;
+
 // note! reduced
-TEST(json_mbp_snapshot, simple) {
+TEST_CASE("json_mbp_snapshot_simple", "json_mbp_snapshot") {
   auto message = R"({)"
                  R"("id":"3000002",)"
                  R"("status":"ok",)"

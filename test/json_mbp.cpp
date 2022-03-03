@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 
 #include "roq/core/json/parser.h"
 
@@ -12,7 +12,9 @@ using namespace roq::huobi;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
-TEST(json_mbp, simple) {
+using namespace Catch::literals;
+
+TEST_CASE("json_mbp_simple", "json_mbp") {
   auto message = R"({)"
                  R"("ch":"market.btcusdt.mbp.20",)"
                  R"("ts":1639744309814,)"

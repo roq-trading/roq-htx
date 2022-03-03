@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 
 #include "roq/core/json/parser.h"
 
@@ -12,8 +12,10 @@ using namespace roq::huobi;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
+using namespace Catch::literals;
+
 // note! heavily truncated
-TEST(json_symbols, simple) {
+TEST_CASE("json_symbols_simple", "json_symbols") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":[{)"
@@ -64,49 +66,49 @@ TEST(json_symbols, simple) {
   core::Buffer buffer_(65536);
   core::json::Buffer buffer(buffer_);
   auto obj = core::json::Parser::create<json::Symbols>(message, buffer);
-  EXPECT_EQ(obj.status, "ok"sv);
+  CHECK(obj.status == "ok"sv);
   auto &data = obj.data;
-  ASSERT_EQ(std::size(data), 2);
+  REQUIRE(std::size(data) == 2);
   auto &d0 = data[0];
-  EXPECT_EQ(d0.base_currency, "stk"sv);
-  EXPECT_EQ(d0.quote_currency, "eth"sv);
-  EXPECT_EQ(d0.price_precision, 8);
-  EXPECT_EQ(d0.amount_precision, 2);
-  EXPECT_EQ(d0.symbol_partition, json::Partition::INNOVATION);
-  EXPECT_EQ(d0.symbol, "stketh"sv);
-  EXPECT_EQ(d0.state, json::State::OFFLINE);
-  EXPECT_EQ(d0.value_precision, 8);
-  EXPECT_DOUBLE_EQ(d0.min_order_amt, 1.0);
-  EXPECT_DOUBLE_EQ(d0.max_order_amt, 10000000.0);
-  EXPECT_DOUBLE_EQ(d0.min_order_value, 0.01);
-  EXPECT_DOUBLE_EQ(d0.limit_order_min_order_amt, 1.0);
-  EXPECT_DOUBLE_EQ(d0.limit_order_max_order_amt, 10000000.0);
-  EXPECT_DOUBLE_EQ(d0.limit_order_max_buy_amt, 10000000.0);
-  EXPECT_DOUBLE_EQ(d0.limit_order_max_sell_amt, 10000000.0);
-  EXPECT_DOUBLE_EQ(d0.sell_market_min_order_amt, 1.0);
-  EXPECT_DOUBLE_EQ(d0.sell_market_max_order_amt, 1000000.0);
-  EXPECT_DOUBLE_EQ(d0.buy_market_max_order_value, 500.0);
-  EXPECT_EQ(d0.api_trading, json::Trading::ENABLED);
-  EXPECT_EQ(d0.tags, ""sv);
+  CHECK(d0.base_currency == "stk"sv);
+  CHECK(d0.quote_currency == "eth"sv);
+  CHECK(d0.price_precision == 8);
+  CHECK(d0.amount_precision == 2);
+  CHECK(d0.symbol_partition == json::Partition::INNOVATION);
+  CHECK(d0.symbol == "stketh"sv);
+  CHECK(d0.state == json::State::OFFLINE);
+  CHECK(d0.value_precision == 8);
+  CHECK(d0.min_order_amt == 1.0_a);
+  CHECK(d0.max_order_amt == 10000000.0_a);
+  CHECK(d0.min_order_value == 0.01_a);
+  CHECK(d0.limit_order_min_order_amt == 1.0_a);
+  CHECK(d0.limit_order_max_order_amt == 10000000.0_a);
+  CHECK(d0.limit_order_max_buy_amt == 10000000.0_a);
+  CHECK(d0.limit_order_max_sell_amt == 10000000.0_a);
+  CHECK(d0.sell_market_min_order_amt == 1.0_a);
+  CHECK(d0.sell_market_max_order_amt == 1000000.0_a);
+  CHECK(d0.buy_market_max_order_value == 500.0_a);
+  CHECK(d0.api_trading == json::Trading::ENABLED);
+  CHECK(d0.tags == ""sv);
   auto &d1 = data[1];
-  EXPECT_EQ(d1.base_currency, "poly"sv);
-  EXPECT_EQ(d1.quote_currency, "eth"sv);
-  EXPECT_EQ(d1.price_precision, 6);
-  EXPECT_EQ(d1.amount_precision, 4);
-  EXPECT_EQ(d1.symbol_partition, json::Partition::INNOVATION);
-  EXPECT_EQ(d1.symbol, "polyeth"sv);
-  EXPECT_EQ(d1.state, json::State::ONLINE);
-  EXPECT_EQ(d1.value_precision, 8);
-  EXPECT_DOUBLE_EQ(d1.min_order_amt, 0.1);
-  EXPECT_DOUBLE_EQ(d1.max_order_amt, 1000000.0);
-  EXPECT_DOUBLE_EQ(d1.min_order_value, 0.01);
-  EXPECT_DOUBLE_EQ(d1.limit_order_min_order_amt, 0.1);
-  EXPECT_DOUBLE_EQ(d1.limit_order_max_order_amt, 1000000.0);
-  EXPECT_DOUBLE_EQ(d1.limit_order_max_buy_amt, 1000000.0);
-  EXPECT_DOUBLE_EQ(d1.limit_order_max_sell_amt, 1000000.0);
-  EXPECT_DOUBLE_EQ(d1.sell_market_min_order_amt, 0.1);
-  EXPECT_DOUBLE_EQ(d1.sell_market_max_order_amt, 100000.0);
-  EXPECT_DOUBLE_EQ(d1.buy_market_max_order_value, 50.0);
-  EXPECT_EQ(d1.api_trading, json::Trading::ENABLED);
-  EXPECT_EQ(d1.tags, ""sv);
+  CHECK(d1.base_currency == "poly"sv);
+  CHECK(d1.quote_currency == "eth"sv);
+  CHECK(d1.price_precision == 6);
+  CHECK(d1.amount_precision == 4);
+  CHECK(d1.symbol_partition == json::Partition::INNOVATION);
+  CHECK(d1.symbol == "polyeth"sv);
+  CHECK(d1.state == json::State::ONLINE);
+  CHECK(d1.value_precision == 8);
+  CHECK(d1.min_order_amt == 0.1_a);
+  CHECK(d1.max_order_amt == 1000000.0_a);
+  CHECK(d1.min_order_value == 0.01_a);
+  CHECK(d1.limit_order_min_order_amt == 0.1_a);
+  CHECK(d1.limit_order_max_order_amt == 1000000.0_a);
+  CHECK(d1.limit_order_max_buy_amt == 1000000.0_a);
+  CHECK(d1.limit_order_max_sell_amt == 1000000.0_a);
+  CHECK(d1.sell_market_min_order_amt == 0.1_a);
+  CHECK(d1.sell_market_max_order_amt == 100000.0_a);
+  CHECK(d1.buy_market_max_order_value == 50.0_a);
+  CHECK(d1.api_trading == json::Trading::ENABLED);
+  CHECK(d1.tags == ""sv);
 }

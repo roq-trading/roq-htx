@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 
 #include "roq/core/json/parser.h"
 
@@ -12,18 +12,20 @@ using namespace roq::huobi;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
-TEST(json_utils, extract_symbol) {
-  EXPECT_EQ(json::extract_symbol("market.btcusdt.ticker"sv), "btcusdt"sv);
-  EXPECT_EQ(json::extract_symbol("market.btcusdt.bbo"sv), "btcusdt"sv);
-  EXPECT_EQ(json::extract_symbol("market.btcusdt.trade.detail"sv), "btcusdt"sv);
-  EXPECT_EQ(json::extract_symbol("market.btcusdt.detail"sv), "btcusdt"sv);
-  EXPECT_EQ(json::extract_symbol("market.btcusdt.mbp.20"sv), "btcusdt"sv);
+using namespace Catch::literals;
+
+TEST_CASE("json_utils_extract_symbol", "json_utils") {
+  CHECK(json::extract_symbol("market.btcusdt.ticker"sv) == "btcusdt"sv);
+  CHECK(json::extract_symbol("market.btcusdt.bbo"sv) == "btcusdt"sv);
+  CHECK(json::extract_symbol("market.btcusdt.trade.detail"sv) == "btcusdt"sv);
+  CHECK(json::extract_symbol("market.btcusdt.detail"sv) == "btcusdt"sv);
+  CHECK(json::extract_symbol("market.btcusdt.mbp.20"sv) == "btcusdt"sv);
 }
 
-TEST(json_utils, extract_topic) {
-  EXPECT_EQ(json::extract_topic("market.btcusdt.ticker"sv), "ticker"sv);
-  EXPECT_EQ(json::extract_topic("market.btcusdt.bbo"sv), "bbo"sv);
-  EXPECT_EQ(json::extract_topic("market.btcusdt.trade.detail"sv), "trade"sv);
-  EXPECT_EQ(json::extract_topic("market.btcusdt.detail"sv), "detail"sv);
-  EXPECT_EQ(json::extract_topic("market.btcusdt.mbp.20"sv), "mbp"sv);
+TEST_CASE("json_utils_extract_topic", "json_utils") {
+  CHECK(json::extract_topic("market.btcusdt.ticker"sv) == "ticker"sv);
+  CHECK(json::extract_topic("market.btcusdt.bbo"sv) == "bbo"sv);
+  CHECK(json::extract_topic("market.btcusdt.trade.detail"sv) == "trade"sv);
+  CHECK(json::extract_topic("market.btcusdt.detail"sv) == "detail"sv);
+  CHECK(json::extract_topic("market.btcusdt.mbp.20"sv) == "mbp"sv);
 }

@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include <gtest/gtest.h>
+#include <catch2/catch.hpp>
 
 #include "roq/core/json/parser.h"
 
@@ -12,7 +12,9 @@ using namespace roq::huobi;
 using namespace std::literals;
 using namespace std::chrono_literals;
 
-TEST(json_currencies, simple) {
+using namespace Catch::literals;
+
+TEST_CASE("json_currencies_simple", "json_currencies") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":[)"
@@ -457,11 +459,11 @@ TEST(json_currencies, simple) {
   core::Buffer buffer_(65536);
   core::json::Buffer buffer(buffer_);
   auto obj = core::json::Parser::create<json::Currencies>(message, buffer);
-  EXPECT_EQ(obj.status, "ok"sv);
+  CHECK(obj.status == "ok"sv);
   auto &data = obj.data;
-  ASSERT_EQ(std::size(data), 436);
+  REQUIRE(std::size(data) == 436);
   auto &d0 = data[0];
-  EXPECT_EQ(d0, "usdt"sv);
+  CHECK(d0 == "usdt"sv);
   auto &d435 = data[435];
-  EXPECT_EQ(d435, "gal"sv);
+  CHECK(d435 == "gal"sv);
 }
