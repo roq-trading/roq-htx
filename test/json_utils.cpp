@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("json_utils_extract_symbol", "json_utils") {
+TEST_CASE("json_utils_extract_symbol", "[json_utils]") {
   CHECK(json::extract_symbol("market.btcusdt.ticker"sv) == "btcusdt"sv);
   CHECK(json::extract_symbol("market.btcusdt.bbo"sv) == "btcusdt"sv);
   CHECK(json::extract_symbol("market.btcusdt.trade.detail"sv) == "btcusdt"sv);
@@ -22,7 +22,7 @@ TEST_CASE("json_utils_extract_symbol", "json_utils") {
   CHECK(json::extract_symbol("market.btcusdt.mbp.20"sv) == "btcusdt"sv);
 }
 
-TEST_CASE("json_utils_extract_topic", "json_utils") {
+TEST_CASE("json_utils_extract_topic", "[json_utils]") {
   CHECK(json::extract_topic("market.btcusdt.ticker"sv) == "ticker"sv);
   CHECK(json::extract_topic("market.btcusdt.bbo"sv) == "bbo"sv);
   CHECK(json::extract_topic("market.btcusdt.trade.detail"sv) == "trade"sv);

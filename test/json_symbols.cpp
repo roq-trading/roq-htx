@@ -15,7 +15,7 @@ using namespace std::chrono_literals;
 using namespace Catch::literals;
 
 // note! heavily truncated
-TEST_CASE("json_symbols_simple", "json_symbols") {
+TEST_CASE("json_symbols_simple", "[json_symbols]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":[{)"

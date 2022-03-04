@@ -15,7 +15,7 @@ using namespace std::chrono_literals;
 using namespace Catch::literals;
 
 // note! reduced
-TEST_CASE("json_mbp_snapshot_simple", "json_mbp_snapshot") {
+TEST_CASE("json_mbp_snapshot_simple", "[json_mbp_snapshot]") {
   auto message = R"({)"
                  R"("id":"3000002",)"
                  R"("status":"ok",)"
