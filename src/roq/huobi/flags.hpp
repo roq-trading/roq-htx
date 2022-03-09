@@ -2,7 +2,7 @@
 
 #pragma once
 
-#include "roq/huobi/flags/flags.h"
+#include "roq/huobi/flags/flags.hpp"
 
 namespace roq {
 namespace huobi {

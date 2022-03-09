@@ -1,17 +1,17 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/huobi/order_entry.h"
+#include "roq/huobi/order_entry.hpp"
 
 #include <utility>
 
-#include "roq/utils/mask.h"
-#include "roq/utils/update.h"
+#include "roq/utils/mask.hpp"
+#include "roq/utils/update.hpp"
 
-#include "roq/core/metrics/factory.h"
+#include "roq/core/metrics/factory.hpp"
 
-#include "roq/huobi/flags.h"
+#include "roq/huobi/flags.hpp"
 
-#include "roq/huobi/json/utils.h"
+#include "roq/huobi/json/utils.hpp"
 
 using namespace std::literals;
 

@@ -1,8 +1,8 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/huobi/shared.h"
+#include "roq/huobi/shared.hpp"
 
-#include "roq/huobi/flags.h"
+#include "roq/huobi/flags.hpp"
 
 namespace roq {
 namespace huobi {

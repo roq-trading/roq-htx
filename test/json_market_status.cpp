@@ -2,9 +2,9 @@
 
 #include <catch2/catch.hpp>
 
-#include "roq/core/json/parser.h"
+#include "roq/core/json/parser.hpp"
 
-#include "roq/huobi/json/market_status.h"
+#include "roq/huobi/json/market_status.hpp"
 
 using namespace roq;
 using namespace roq::huobi;

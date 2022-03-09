@@ -4,19 +4,19 @@
 
 #include <string_view>
 
-#include "roq/core/json/buffer.h"
+#include "roq/core/json/buffer.hpp"
 
-#include "roq/server.h"
+#include "roq/server.hpp"
 
-#include "roq/huobi/json/bbo.h"
-#include "roq/huobi/json/detail.h"
-#include "roq/huobi/json/error.h"
-#include "roq/huobi/json/mbp.h"
-#include "roq/huobi/json/mbp_snapshot.h"
-#include "roq/huobi/json/ping.h"
-#include "roq/huobi/json/subbed.h"
-#include "roq/huobi/json/ticker.h"
-#include "roq/huobi/json/trade.h"
+#include "roq/huobi/json/bbo.hpp"
+#include "roq/huobi/json/detail.hpp"
+#include "roq/huobi/json/error.hpp"
+#include "roq/huobi/json/mbp.hpp"
+#include "roq/huobi/json/mbp_snapshot.hpp"
+#include "roq/huobi/json/ping.hpp"
+#include "roq/huobi/json/subbed.hpp"
+#include "roq/huobi/json/ticker.hpp"
+#include "roq/huobi/json/trade.hpp"
 
 namespace roq {
 namespace huobi {

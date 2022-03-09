@@ -9,18 +9,18 @@
 #include <utility>
 #include <vector>
 
-#include "roq/server.h"
+#include "roq/server.hpp"
 
-#include "roq/core/io/context.h"
+#include "roq/core/io/context.hpp"
 
-#include "roq/huobi/config.h"
-#include "roq/huobi/drop_copy.h"
-#include "roq/huobi/market_data.h"
-#include "roq/huobi/mbp_feed.h"
-#include "roq/huobi/order_entry.h"
-#include "roq/huobi/rest.h"
-#include "roq/huobi/security.h"
-#include "roq/huobi/shared.h"
+#include "roq/huobi/config.hpp"
+#include "roq/huobi/drop_copy.hpp"
+#include "roq/huobi/market_data.hpp"
+#include "roq/huobi/mbp_feed.hpp"
+#include "roq/huobi/order_entry.hpp"
+#include "roq/huobi/rest.hpp"
+#include "roq/huobi/security.hpp"
+#include "roq/huobi/shared.hpp"
 
 namespace roq {
 namespace huobi {

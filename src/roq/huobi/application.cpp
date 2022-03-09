@@ -1,10 +1,10 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/huobi/application.h"
+#include "roq/huobi/application.hpp"
 
-#include "roq/huobi/config.h"
-#include "roq/huobi/flags.h"
-#include "roq/huobi/gateway.h"
+#include "roq/huobi/config.hpp"
+#include "roq/huobi/flags.hpp"
+#include "roq/huobi/gateway.hpp"
 
 using namespace std::literals;
 

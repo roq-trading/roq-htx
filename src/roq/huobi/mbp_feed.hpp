@@ -6,23 +6,23 @@
 #include <string_view>
 #include <vector>
 
-#include "roq/core/download.h"
+#include "roq/core/download.hpp"
 
-#include "roq/core/metrics/counter.h"
-#include "roq/core/metrics/latency.h"
-#include "roq/core/metrics/profile.h"
+#include "roq/core/metrics/counter.hpp"
+#include "roq/core/metrics/latency.hpp"
+#include "roq/core/metrics/profile.hpp"
 
-#include "roq/core/io/context.h"
+#include "roq/core/io/context.hpp"
 
-#include "roq/core/web/client_socket.h"
+#include "roq/core/web/client_socket.hpp"
 
-#include "roq/core/zlib/inflate.h"
+#include "roq/core/zlib/inflate.hpp"
 
-#include "roq/server.h"
+#include "roq/server.hpp"
 
-#include "roq/huobi/shared.h"
+#include "roq/huobi/shared.hpp"
 
-#include "roq/huobi/json/parser.h"
+#include "roq/huobi/json/parser.hpp"
 
 namespace roq {
 namespace huobi {

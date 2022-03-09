@@ -8,24 +8,24 @@
 #include <string_view>
 #include <vector>
 
-#include "roq/core/download.h"
+#include "roq/core/download.hpp"
 
-#include "roq/core/metrics/counter.h"
-#include "roq/core/metrics/latency.h"
-#include "roq/core/metrics/profile.h"
+#include "roq/core/metrics/counter.hpp"
+#include "roq/core/metrics/latency.hpp"
+#include "roq/core/metrics/profile.hpp"
 
-#include "roq/core/io/context.h"
+#include "roq/core/io/context.hpp"
 
-#include "roq/core/web/client.h"
+#include "roq/core/web/client.hpp"
 
-#include "roq/server.h"
+#include "roq/server.hpp"
 
-#include "roq/huobi/rest_state.h"
-#include "roq/huobi/shared.h"
+#include "roq/huobi/rest_state.hpp"
+#include "roq/huobi/shared.hpp"
 
-#include "roq/huobi/json/currencies.h"
-#include "roq/huobi/json/market_status.h"
-#include "roq/huobi/json/symbols.h"
+#include "roq/huobi/json/currencies.hpp"
+#include "roq/huobi/json/market_status.hpp"
+#include "roq/huobi/json/symbols.hpp"
 
 namespace roq {
 namespace huobi {

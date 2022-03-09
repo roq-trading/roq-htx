@@ -4,54 +4,55 @@
 
 #include <string>
 #include <string_view>
+#include <vector>
 
-#include "roq/core/download.h"
+#include "roq/core/download.hpp"
 
-#include "roq/core/metrics/counter.h"
-#include "roq/core/metrics/latency.h"
-#include "roq/core/metrics/profile.h"
+#include "roq/core/metrics/counter.hpp"
+#include "roq/core/metrics/latency.hpp"
+#include "roq/core/metrics/profile.hpp"
 
-#include "roq/core/io/context.h"
+#include "roq/core/io/context.hpp"
 
-#include "roq/core/web/client_socket.h"
+#include "roq/core/web/client_socket.hpp"
 
-#include "roq/server.h"
+#include "roq/core/zlib/inflate.hpp"
 
-#include "roq/huobi/drop_copy_state.h"
-#include "roq/huobi/security.h"
-#include "roq/huobi/shared.h"
+#include "roq/server.hpp"
 
-#include "roq/huobi/json/parser.h"
+#include "roq/huobi/shared.hpp"
+
+#include "roq/huobi/json/parser.hpp"
 
 namespace roq {
 namespace huobi {
 
-class DropCopy final : public core::web::ClientSocket::Handler, public json::Parser::Handler {
+class MarketData final : public core::web::ClientSocket::Handler, public json::Parser::Handler {
  public:
   struct Handler {
     virtual void operator()(const server::Trace<StreamStatus> &) = 0;
     virtual void operator()(const server::Trace<ExternalLatency> &) = 0;
-    virtual void operator()(const server::Trace<FundsUpdate> &, bool is_last) = 0;
+    virtual void operator()(const server::Trace<TopOfBook> &, bool is_last) = 0;
+    virtual void operator()(
+        const server::Trace<MarketByPriceUpdate> &, bool is_last, bool refresh) = 0;
+    virtual void operator()(const server::Trace<TradeSummary> &, bool is_last) = 0;
+    virtual void operator()(const server::Trace<StatisticsUpdate> &, bool is_last) = 0;
   };
 
-  DropCopy(
-      Handler &,
-      core::io::Context &,
-      uint16_t stream_id,
-      Security &,
-      Shared &,
-      const std::string_view &listen_key);
+  MarketData(Handler &, core::io::Context &, uint32_t stream_id, Shared &, size_t index);
 
-  DropCopy(DropCopy &&) = delete;
-  DropCopy(const DropCopy &) = delete;
+  MarketData(MarketData &&) = delete;
+  MarketData(const MarketData &) = delete;
 
-  bool ready() const;
+  bool ready() const { return status_ == ConnectionStatus::READY; }
 
   void operator()(const Event<Start> &);
   void operator()(const Event<Stop> &);
   void operator()(const Event<Timer> &);
 
   void operator()(metrics::Writer &);
+
+  void subscribe(size_t start_from = 0);
 
  protected:
   void operator()(const core::web::ClientSocket::Connected &) override;
@@ -65,7 +66,13 @@ class DropCopy final : public core::web::ClientSocket::Handler, public json::Par
  private:
   void operator()(ConnectionStatus);
 
-  uint32_t download(DropCopyState);
+  void subscribe(const std::span<std::string const> &symbols);
+  void subscribe(
+      const std::span<std::string const> &symbols,
+      const std::string_view &source,
+      const std::string_view &theme);
+
+  void send_pong(std::chrono::milliseconds timestamp);
 
   void parse(const std::string_view &message);
 
@@ -84,30 +91,30 @@ class DropCopy final : public core::web::ClientSocket::Handler, public json::Par
   // config
   const uint16_t stream_id_;
   const std::string name_;
+  const size_t index_;
   // web socket
   core::web::ClientSocket connection_;
   // buffers
   core::Buffer decode_buffer_;
+  // session
+  uint64_t request_id_ = {};
   // metrics
   struct {
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse, outbound_account_info, outbound_account_position, balance_update,
-        execution_report;
+    core::metrics::Profile parse, ping, error, subbed, bbo, trade, detail, ticker;
   } profile_;
   struct {
     core::metrics::Latency ping, heartbeat;
   } latency_;
-  // security
-  Security &security_;
   // cache
   Shared &shared_;
   // state
-  // state
-  bool ready_ = false;
   ConnectionStatus status_ = {};
-  core::Download<DropCopyState> download_;
+  // zlib
+  core::zlib::Inflate inflate_;
+  std::vector<std::byte> inflate_buffer_;
 };
 
 }  // namespace huobi

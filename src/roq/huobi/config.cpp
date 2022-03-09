@@ -1,12 +1,12 @@
 /* Copyright (c) 2017-2022, Hans Erik Thrane */
 
-#include "roq/huobi/config.h"
+#include "roq/huobi/config.hpp"
 
 #include <utility>
 
-#include "roq/logging.h"
+#include "roq/logging.hpp"
 
-#include "roq/huobi/flags.h"
+#include "roq/huobi/flags.hpp"
 
 using namespace std::literals;
 

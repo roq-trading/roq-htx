@@ -4,14 +4,14 @@
 
 #include <chrono>
 
-#include "roq/core/utility.h"
+#include "roq/core/utility.hpp"
 
-#include "roq/core/json/parser.h"
+#include "roq/core/json/parser.hpp"
 
-#include "roq/core/charconv/datetime.h"
+#include "roq/core/charconv/datetime.hpp"
 
-#include "roq/huobi/json/side.h"
-#include "roq/huobi/json/trading.h"
+#include "roq/huobi/json/side.hpp"
+#include "roq/huobi/json/trading.hpp"
 
 namespace roq {
 namespace huobi {
