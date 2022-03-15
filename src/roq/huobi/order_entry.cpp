@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "roq/utils/mask.hpp"
+#include "roq/mask.hpp"
 #include "roq/utils/update.hpp"
 
 #include "roq/core/metrics/factory.hpp"
@@ -20,7 +20,7 @@ namespace huobi {
 
 namespace {
 const auto NAME = "om"sv;
-const auto SUPPORTS = utils::Mask{
+const auto SUPPORTS = Mask{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
     SupportType::CREATE_ORDER,

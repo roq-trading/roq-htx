@@ -4,7 +4,7 @@
 
 #include <utility>
 
-#include "roq/utils/mask.hpp"
+#include "roq/mask.hpp"
 #include "roq/utils/update.hpp"
 
 #include "roq/core/back_emplacer.hpp"
@@ -23,7 +23,7 @@ namespace huobi {
 
 namespace {
 const auto NAME = "rest"sv;
-const auto SUPPORTS = utils::Mask{
+const auto SUPPORTS = Mask{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
 };
