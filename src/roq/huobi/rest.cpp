@@ -348,7 +348,7 @@ void Rest::get_symbols_ack(const server::Trace<core::web::Response> &event, uint
 void Rest::operator()(const server::Trace<json::Symbols> &event) {
   auto &[trace_info, symbols] = event;
   log::info<2>("symbols={}"sv, symbols);
-  std::vector<std::string> symbols_2;
+  std::vector<Symbol> symbols_2;
   size_t counter = {};
   for (auto &item : symbols.data) {
     log::debug("item={}"sv, item);

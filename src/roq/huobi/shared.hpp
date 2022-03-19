@@ -51,7 +51,7 @@ struct Shared final {
   core::limit::RateLimiter rate_limiter;
   core::Symbols symbols;
   core::TimerQueue mbp_request_queue;
-  absl::flat_hash_map<std::string, core::market::MBP_Sequencer> mbp_collector;
+  absl::flat_hash_map<Symbol, core::market::MBP_Sequencer> mbp_collector;
 };
 
 }  // namespace huobi

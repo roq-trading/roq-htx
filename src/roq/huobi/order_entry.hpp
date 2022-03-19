@@ -35,10 +35,6 @@ class OrderEntry final : public core::web::Client::Handler {
     std::string_view listen_key;
   };
 
-  struct SymbolsUpdate final {
-    std::vector<std::string> &symbols;
-  };
-
   struct Handler {
     virtual void operator()(const server::Trace<StreamStatus> &) = 0;
     virtual void operator()(const server::Trace<ExternalLatency> &) = 0;

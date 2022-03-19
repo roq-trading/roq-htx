@@ -176,12 +176,12 @@ void MBPFeed::operator()(ConnectionStatus status) {
   }
 }
 
-void MBPFeed::subscribe(const std::span<std::string const> &symbols) {
+void MBPFeed::subscribe(const std::span<Symbol const> &symbols) {
   subscribe(symbols, "market"sv, "mbp.20"sv);  // note! 150 is throttled
 }
 
 void MBPFeed::subscribe(
-    const std::span<std::string const> &symbols,
+    const std::span<Symbol const> &symbols,
     const std::string_view &source,
     const std::string_view &theme) {
   assert(!std::empty(symbols));
