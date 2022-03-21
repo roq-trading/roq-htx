@@ -137,6 +137,7 @@ uint16_t OrderEntry::operator()(
 uint16_t OrderEntry::operator()(
     const Event<CancelAllOrders> &, [[maybe_unused]] const std::string_view &request_id) {
   log::fatal("*** CANCEL ALL ORDERS *NOT* SUPPORTED ***"sv);
+  return 0;
 }
 
 void OrderEntry::operator()(const core::web::Client::Connected &) {
