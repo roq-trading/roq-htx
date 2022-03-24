@@ -208,8 +208,7 @@ void Rest::get_market_status() {
   });
 }
 
-void Rest::get_market_status_ack(
-    const Trace<core::web::Response> &event, uint32_t sequence) {
+void Rest::get_market_status_ack(const Trace<core::web::Response> &event, uint32_t sequence) {
   profile_.market_status_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::MARKET_STATUS;
