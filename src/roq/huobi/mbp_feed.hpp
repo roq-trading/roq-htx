@@ -30,10 +30,10 @@ namespace huobi {
 class MBPFeed final : public core::web::ClientSocket::Handler, public json::Parser::Handler {
  public:
   struct Handler {
-    virtual void operator()(const server::Trace<StreamStatus> &) = 0;
-    virtual void operator()(const server::Trace<ExternalLatency> &) = 0;
+    virtual void operator()(const Trace<StreamStatus> &) = 0;
+    virtual void operator()(const Trace<ExternalLatency> &) = 0;
     virtual void operator()(
-        const server::Trace<MarketByPriceUpdate> &, bool is_last, bool refresh) = 0;
+        const Trace<MarketByPriceUpdate> &, bool is_last, bool refresh) = 0;
   };
 
   MBPFeed(Handler &, core::io::Context &, uint32_t stream_id, Shared &, size_t index);
@@ -78,15 +78,15 @@ class MBPFeed final : public core::web::ClientSocket::Handler, public json::Pars
 
   void parse(const std::string_view &message);
 
-  void operator()(const server::Trace<json::Ping> &) override;
-  void operator()(const server::Trace<json::Error> &) override;
-  void operator()(const server::Trace<json::Subbed> &) override;
-  void operator()(const server::Trace<json::BBO> &) override;
-  void operator()(const server::Trace<json::Trade> &) override;
-  void operator()(const server::Trace<json::Detail> &) override;
-  void operator()(const server::Trace<json::Ticker> &) override;
-  void operator()(const server::Trace<json::MBP> &) override;
-  void operator()(const server::Trace<json::MBPSnapshot> &) override;
+  void operator()(const Trace<json::Ping> &) override;
+  void operator()(const Trace<json::Error> &) override;
+  void operator()(const Trace<json::Subbed> &) override;
+  void operator()(const Trace<json::BBO> &) override;
+  void operator()(const Trace<json::Trade> &) override;
+  void operator()(const Trace<json::Detail> &) override;
+  void operator()(const Trace<json::Ticker> &) override;
+  void operator()(const Trace<json::MBP> &) override;
+  void operator()(const Trace<json::MBPSnapshot> &) override;
 
  private:
   Handler &handler_;

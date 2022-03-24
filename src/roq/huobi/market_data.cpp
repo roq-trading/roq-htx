@@ -156,7 +156,7 @@ void MarketData::operator()(const core::web::ClientSocket::Latency &latency) {
       .account = {},
       .latency = latency.sample,
   };
-  server::create_trace_and_dispatch(handler_, trace_info, external_latency);
+  create_trace_and_dispatch(handler_, trace_info, external_latency);
   latency_.ping.update(latency.sample);
 }
 
@@ -188,7 +188,7 @@ void MarketData::operator()(ConnectionStatus status) {
         .priority = Priority::PRIMARY,
     };
     log::info("stream_status={}"sv, stream_status);
-    server::create_trace_and_dispatch(handler_, trace_info, stream_status);
+    create_trace_and_dispatch(handler_, trace_info, stream_status);
   }
 }
 
@@ -246,28 +246,28 @@ void MarketData::parse(const std::string_view &message) {
   });
 }
 
-void MarketData::operator()(const server::Trace<json::Ping> &event) {
+void MarketData::operator()(const Trace<json::Ping> &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void MarketData::operator()(const server::Trace<json::Error> &event) {
+void MarketData::operator()(const Trace<json::Error> &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::warn("error={}"sv, error);
   });
 }
 
-void MarketData::operator()(const server::Trace<json::Subbed> &event) {
+void MarketData::operator()(const Trace<json::Subbed> &event) {
   profile_.subbed([&]() {
     auto &[trace_info, subbed] = event;
     log::info<1>("subbed={}"sv, subbed);
   });
 }
 
-void MarketData::operator()(const server::Trace<json::BBO> &event) {
+void MarketData::operator()(const Trace<json::BBO> &event) {
   profile_.bbo([&]() {
     auto &[trace_info, bbo] = event;
     auto symbol = json::extract_symbol(bbo.ch);
@@ -285,11 +285,11 @@ void MarketData::operator()(const server::Trace<json::BBO> &event) {
         .update_type = UpdateType::INCREMENTAL,
         .exchange_time_utc = utils::safe_cast(bbo.ts),
     };
-    server::create_trace_and_dispatch(handler_, trace_info, top_of_book, true);
+    create_trace_and_dispatch(handler_, trace_info, top_of_book, true);
   });
 }
 
-void MarketData::operator()(const server::Trace<json::Trade> &event) {
+void MarketData::operator()(const Trace<json::Trade> &event) {
   profile_.trade([&]() {
     auto &[trace_info, trade] = event;
     auto symbol = json::extract_symbol(trade.ch);
@@ -304,11 +304,11 @@ void MarketData::operator()(const server::Trace<json::Trade> &event) {
         .trades = trades,
         .exchange_time_utc = utils::safe_cast(trade.ts),
     };
-    server::create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
+    create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
   });
 }
 
-void MarketData::operator()(const server::Trace<json::Detail> &event) {
+void MarketData::operator()(const Trace<json::Detail> &event) {
   profile_.detail([&]() {
     auto &[trace_info, detail] = event;
     auto symbol = json::extract_symbol(detail.ch);
@@ -353,19 +353,19 @@ void MarketData::operator()(const server::Trace<json::Detail> &event) {
         .update_type = UpdateType::INCREMENTAL,
         .exchange_time_utc = utils::safe_cast(detail.ts),
     };
-    server::create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
+    create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
   });
 }
 
-void MarketData::operator()(const server::Trace<json::Ticker> &) {
+void MarketData::operator()(const Trace<json::Ticker> &) {
   // profile_.ticker([&]() { auto &[trace_info, ticker] = event; });
 }
 
-void MarketData::operator()(const server::Trace<json::MBP> &) {
+void MarketData::operator()(const Trace<json::MBP> &) {
   log::fatal("Unexpected"sv);
 }
 
-void MarketData::operator()(const server::Trace<json::MBPSnapshot> &) {
+void MarketData::operator()(const Trace<json::MBPSnapshot> &) {
   log::fatal("Unexpected"sv);
 }
 

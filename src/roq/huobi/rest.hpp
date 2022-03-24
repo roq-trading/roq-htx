@@ -37,10 +37,10 @@ class Rest final : public core::web::Client::Handler {
   };
 
   struct Handler {
-    virtual void operator()(const server::Trace<StreamStatus> &) = 0;
-    virtual void operator()(const server::Trace<ExternalLatency> &) = 0;
-    virtual void operator()(const server::Trace<ReferenceData> &, bool is_last) = 0;
-    virtual void operator()(const server::Trace<MarketStatus> &, bool is_last) = 0;
+    virtual void operator()(const Trace<StreamStatus> &) = 0;
+    virtual void operator()(const Trace<ExternalLatency> &) = 0;
+    virtual void operator()(const Trace<ReferenceData> &, bool is_last) = 0;
+    virtual void operator()(const Trace<MarketStatus> &, bool is_last) = 0;
     // cross-communication
     virtual void operator()(SymbolsUpdate &) = 0;
   };
@@ -68,16 +68,16 @@ class Rest final : public core::web::Client::Handler {
   uint32_t download(RestState state);
 
   void get_market_status();
-  void get_market_status_ack(const server::Trace<core::web::Response> &, uint32_t sequence);
-  void operator()(const server::Trace<json::MarketStatus> &);
+  void get_market_status_ack(const Trace<core::web::Response> &, uint32_t sequence);
+  void operator()(const Trace<json::MarketStatus> &);
 
   void get_currencies();
-  void get_currencies_ack(const server::Trace<core::web::Response> &, uint32_t sequence);
-  void operator()(const server::Trace<json::Currencies> &);
+  void get_currencies_ack(const Trace<core::web::Response> &, uint32_t sequence);
+  void operator()(const Trace<json::Currencies> &);
 
   void get_symbols();
-  void get_symbols_ack(const server::Trace<core::web::Response> &, uint32_t sequence);
-  void operator()(const server::Trace<json::Symbols> &);
+  void get_symbols_ack(const Trace<core::web::Response> &, uint32_t sequence);
+  void operator()(const Trace<json::Symbols> &);
 
  private:
   Handler &handler_;

@@ -140,7 +140,7 @@ void MBPFeed::operator()(const core::web::ClientSocket::Latency &latency) {
       .account = {},
       .latency = latency.sample,
   };
-  server::create_trace_and_dispatch(handler_, trace_info, external_latency);
+  create_trace_and_dispatch(handler_, trace_info, external_latency);
   latency_.ping.update(latency.sample);
 }
 
@@ -172,7 +172,7 @@ void MBPFeed::operator()(ConnectionStatus status) {
         .priority = Priority::PRIMARY,
     };
     log::info("stream_status={}"sv, stream_status);
-    server::create_trace_and_dispatch(handler_, trace_info, stream_status);
+    create_trace_and_dispatch(handler_, trace_info, stream_status);
   }
 }
 
@@ -241,44 +241,44 @@ void MBPFeed::parse(const std::string_view &message) {
   });
 }
 
-void MBPFeed::operator()(const server::Trace<json::Ping> &event) {
+void MBPFeed::operator()(const Trace<json::Ping> &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void MBPFeed::operator()(const server::Trace<json::Error> &event) {
+void MBPFeed::operator()(const Trace<json::Error> &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::warn("error={}"sv, error);
   });
 }
 
-void MBPFeed::operator()(const server::Trace<json::Subbed> &event) {
+void MBPFeed::operator()(const Trace<json::Subbed> &event) {
   profile_.subbed([&]() {
     auto &[trace_info, subbed] = event;
     log::info<1>("subbed={}"sv, subbed);
   });
 }
 
-void MBPFeed::operator()(const server::Trace<json::BBO> &) {
+void MBPFeed::operator()(const Trace<json::BBO> &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(const server::Trace<json::Trade> &) {
+void MBPFeed::operator()(const Trace<json::Trade> &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(const server::Trace<json::Detail> &) {
+void MBPFeed::operator()(const Trace<json::Detail> &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(const server::Trace<json::Ticker> &) {
+void MBPFeed::operator()(const Trace<json::Ticker> &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(const server::Trace<json::MBP> &event) {
+void MBPFeed::operator()(const Trace<json::MBP> &event) {
   profile_.mbp([&]() {
     // auto &[trace_info, mbp] = event;
     auto &trace_info = event.trace_info;
@@ -313,7 +313,7 @@ void MBPFeed::operator()(const server::Trace<json::MBP> &event) {
                 .quantity_decimals = {},
                 .checksum = {},
             };
-            server::create_trace_and_dispatch(
+            create_trace_and_dispatch(
                 handler_, trace_info, market_by_price_update, true, false);
           },
           [&](auto &bids, auto &asks, auto sequence) {  // snapshot
@@ -331,7 +331,7 @@ void MBPFeed::operator()(const server::Trace<json::MBP> &event) {
                 .quantity_decimals = {},
                 .checksum = {},
             };
-            server::Trace event(trace_info, market_by_price_update);
+            Trace event(trace_info, market_by_price_update);
             shared_(event, true, [&](auto &market_by_price) {
               collector.apply(market_by_price, sequence, false);
             });
@@ -357,7 +357,7 @@ void MBPFeed::operator()(const server::Trace<json::MBP> &event) {
   });
 }
 
-void MBPFeed::operator()(const server::Trace<json::MBPSnapshot> &event) {
+void MBPFeed::operator()(const Trace<json::MBPSnapshot> &event) {
   profile_.mbp_snapshot([&]() {
     // auto &[trace_info, mbp_snapshot] = event;
     auto &trace_info = event.trace_info;
@@ -390,7 +390,7 @@ void MBPFeed::operator()(const server::Trace<json::MBPSnapshot> &event) {
                 .quantity_decimals = {},
                 .checksum = {},
             };
-            server::Trace event(trace_info, market_by_price_update);
+            Trace event(trace_info, market_by_price_update);
             shared_(event, true, [&](auto &market_by_price) {
               collector.apply(market_by_price, sequence, false);
             });

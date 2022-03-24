@@ -24,7 +24,7 @@ bool Parser::dispatch(
     Parser::Handler &handler,
     const std::string_view &message,
     core::json::Buffer &buffer,
-    const server::TraceInfo &trace_info) {
+    const TraceInfo &trace_info) {
   auto frame = core::json::Parser::create<json::Frame>(message, buffer);
   if (!frame.ping.count()) {
     switch (frame.status) {
@@ -33,27 +33,27 @@ bool Parser::dispatch(
         switch (topic) {
           case Topic::BBO: {
             auto bbo = core::json::Parser::create<json::BBO>(message, buffer);
-            server::create_trace_and_dispatch(handler, trace_info, bbo);
+            create_trace_and_dispatch(handler, trace_info, bbo);
             return true;
           }
           case Topic::TRADE: {
             auto trade = core::json::Parser::create<json::Trade>(message, buffer);
-            server::create_trace_and_dispatch(handler, trace_info, trade);
+            create_trace_and_dispatch(handler, trace_info, trade);
             return true;
           }
           case Topic::DETAIL: {
             auto detail = core::json::Parser::create<json::Detail>(message, buffer);
-            server::create_trace_and_dispatch(handler, trace_info, detail);
+            create_trace_and_dispatch(handler, trace_info, detail);
             return true;
           }
           case Topic::TICKER: {
             auto ticker = core::json::Parser::create<json::Ticker>(message, buffer);
-            server::create_trace_and_dispatch(handler, trace_info, ticker);
+            create_trace_and_dispatch(handler, trace_info, ticker);
             return true;
           }
           case Topic::MBP: {
             auto mbp = core::json::Parser::create<json::MBP>(message, buffer);
-            server::create_trace_and_dispatch(handler, trace_info, mbp);
+            create_trace_and_dispatch(handler, trace_info, mbp);
             return true;
           }
           default:
@@ -71,14 +71,14 @@ bool Parser::dispatch(
               .ts = frame.ts,
               .status = frame.status,
           };
-          server::create_trace_and_dispatch(handler, trace_info, subbed);
+          create_trace_and_dispatch(handler, trace_info, subbed);
           return true;
         } else {
           if (!std::empty(frame.rep)) {
             Topic topic{extract_topic(frame.rep)};
             if (topic == Topic::MBP) {
               auto mbp_snapshot = core::json::Parser::create<json::MBPSnapshot>(message, buffer);
-              server::create_trace_and_dispatch(handler, trace_info, mbp_snapshot);
+              create_trace_and_dispatch(handler, trace_info, mbp_snapshot);
               return true;
             }
           }
@@ -92,14 +92,14 @@ bool Parser::dispatch(
             .err_msg = frame.err_msg,
             .ts = frame.ts,
         };
-        server::create_trace_and_dispatch(handler, trace_info, error);
+        create_trace_and_dispatch(handler, trace_info, error);
         return true;
     }
   } else {
     Ping ping{
         .timestamp = frame.ping,
     };
-    server::create_trace_and_dispatch(handler, trace_info, ping);
+    create_trace_and_dispatch(handler, trace_info, ping);
     return true;
   }
   log::warn(R"(Unexpected: message="{}")"sv, message);
