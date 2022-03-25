@@ -1,36 +1,126 @@
 {
-"name": "SymbolsItem",
-"type": "item",
-"values": [
-	{ "name": "base-currency", "type": "std::string_view" },
-	{ "name": "quote-currency", "type": "std::string_view" },
-	{ "name": "price-precision", "type": "int32_t" },
-	{ "name": "amount-precision", "type": "int32_t" },
-	{ "name": "symbol-partition", "type": "Partition" },
-	{ "name": "symbol", "type": "std::string_view" },
-	{ "name": "state", "type": "State" },
-	{ "name": "value-precision", "type": "int32_t" },
-	{ "name": "min-order-amt", "type": "double" },
-	{ "name": "max-order-amt", "type": "double" },
-	{ "name": "min-order-value", "type": "double" },
-	{ "name": "max-order-value", "type": "double" },
-	{ "name": "limit-order-min-order-amt", "type": "double" },
-	{ "name": "limit-order-max-order-amt", "type": "double" },
-	{ "name": "limit-order-max-buy-amt", "type": "double" },
-	{ "name": "limit-order-max-sell-amt", "type": "double" },
-	{ "name": "sell-market-min-order-amt", "type": "double" },
-	{ "name": "sell-market-max-order-amt", "type": "double" },
-	{ "name": "buy-market-max-order-value", "type": "double" },
-	{ "name": "api-trading", "type": "Trading" },
-	{ "name": "tags", "type": "std::string_view" },
-	{ "name": "leverage-ratio", "type": "double" },
-	{ "name": "underlying", "type": "std::string_view" },
-	{ "name": "super-margin-leverage-ratio", "type": "double" },
-	{ "name": "mgmt-fee-rate", "type": "double" },
-	{ "name": "charge-time", "type": "std::string_view" },
-	{ "name": "rebal-time", "type": "std::string_view" },
-	{ "name": "rebal-threshold", "type": "double" },
-	{ "name": "init-nav", "type": "double" },
-	{ "name": "funding-leverage-ratio", "type": "double" }
-]
+  "name": "SymbolsItem",
+  "type": "item",
+  "values": [
+    {
+      "name": "base-currency",
+      "type": "std::string_view"
+    },
+    {
+      "name": "quote-currency",
+      "type": "std::string_view"
+    },
+    {
+      "name": "price-precision",
+      "type": "int32_t"
+    },
+    {
+      "name": "amount-precision",
+      "type": "int32_t"
+    },
+    {
+      "name": "symbol-partition",
+      "type": "Partition"
+    },
+    {
+      "name": "symbol",
+      "type": "std::string_view"
+    },
+    {
+      "name": "state",
+      "type": "State"
+    },
+    {
+      "name": "value-precision",
+      "type": "int32_t"
+    },
+    {
+      "name": "min-order-amt",
+      "type": "double"
+    },
+    {
+      "name": "max-order-amt",
+      "type": "double"
+    },
+    {
+      "name": "min-order-value",
+      "type": "double"
+    },
+    {
+      "name": "max-order-value",
+      "type": "double"
+    },
+    {
+      "name": "limit-order-min-order-amt",
+      "type": "double"
+    },
+    {
+      "name": "limit-order-max-order-amt",
+      "type": "double"
+    },
+    {
+      "name": "limit-order-max-buy-amt",
+      "type": "double"
+    },
+    {
+      "name": "limit-order-max-sell-amt",
+      "type": "double"
+    },
+    {
+      "name": "sell-market-min-order-amt",
+      "type": "double"
+    },
+    {
+      "name": "sell-market-max-order-amt",
+      "type": "double"
+    },
+    {
+      "name": "buy-market-max-order-value",
+      "type": "double"
+    },
+    {
+      "name": "api-trading",
+      "type": "Trading"
+    },
+    {
+      "name": "tags",
+      "type": "std::string_view"
+    },
+    {
+      "name": "leverage-ratio",
+      "type": "double"
+    },
+    {
+      "name": "underlying",
+      "type": "std::string_view"
+    },
+    {
+      "name": "super-margin-leverage-ratio",
+      "type": "double"
+    },
+    {
+      "name": "mgmt-fee-rate",
+      "type": "double"
+    },
+    {
+      "name": "charge-time",
+      "type": "std::string_view"
+    },
+    {
+      "name": "rebal-time",
+      "type": "std::string_view"
+    },
+    {
+      "name": "rebal-threshold",
+      "type": "double"
+    },
+    {
+      "name": "init-nav",
+      "type": "double"
+    },
+    {
+      "name": "funding-leverage-ratio",
+      "type": "double"
+    }
+  ]
 }

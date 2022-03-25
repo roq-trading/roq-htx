@@ -1,10 +1,22 @@
 {
-"name": "MBPTick",
-"type": "comp",
-"values": [
-	{ "name": "seqNum", "type": "int64_t" },
-	{ "name": "prevSeqNum", "type": "int64_t" },
-	{ "name": "bids", "type": "std::span<Quotation>" },
-	{ "name": "asks", "type": "std::span<Quotation>" }
-]
+  "name": "MBPTick",
+  "type": "comp",
+  "values": [
+    {
+      "name": "seqNum",
+      "type": "int64_t"
+    },
+    {
+      "name": "prevSeqNum",
+      "type": "int64_t"
+    },
+    {
+      "name": "bids",
+      "type": "std::span<Quotation>"
+    },
+    {
+      "name": "asks",
+      "type": "std::span<Quotation>"
+    }
+  ]
 }

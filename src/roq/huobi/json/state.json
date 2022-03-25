@@ -1,8 +1,12 @@
 {
-"name": "State",
-"type": "enum",
-"values": [
-	{ "name": "offline" },
-	{ "name": "online" }
-]
+  "name": "State",
+  "type": "enum",
+  "values": [
+    {
+      "name": "offline"
+    },
+    {
+      "name": "online"
+    }
+  ]
 }

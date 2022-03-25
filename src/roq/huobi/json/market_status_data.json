@@ -1,7 +1,10 @@
 {
-"name": "MarketStatusData",
-"type": "item",
-"values": [
-	{ "name": "marketStatus", "type": "int32_t" }
-]
+  "name": "MarketStatusData",
+  "type": "item",
+  "values": [
+    {
+      "name": "marketStatus",
+      "type": "int32_t"
+    }
+  ]
 }

@@ -1,19 +1,58 @@
 {
-"name": "TickerTick",
-"type": "comp",
-"values": [
-	{ "name": "open", "type": "double" },
-	{ "name": "high", "type": "double" },
-	{ "name": "low", "type": "double" },
-	{ "name": "close", "type": "double" },
-	{ "name": "amount", "type": "double" },
-	{ "name": "vol", "type": "double" },
-	{ "name": "count", "type": "int64_t" },
-	{ "name": "bid", "type": "double" },
-	{ "name": "bidSize", "type": "double" },
-	{ "name": "ask", "type": "double" },
-	{ "name": "askSize", "type": "double" },
-	{ "name": "lastPrice", "type": "double" },
-	{ "name": "lastSize", "type": "double" }
-]
+  "name": "TickerTick",
+  "type": "comp",
+  "values": [
+    {
+      "name": "open",
+      "type": "double"
+    },
+    {
+      "name": "high",
+      "type": "double"
+    },
+    {
+      "name": "low",
+      "type": "double"
+    },
+    {
+      "name": "close",
+      "type": "double"
+    },
+    {
+      "name": "amount",
+      "type": "double"
+    },
+    {
+      "name": "vol",
+      "type": "double"
+    },
+    {
+      "name": "count",
+      "type": "int64_t"
+    },
+    {
+      "name": "bid",
+      "type": "double"
+    },
+    {
+      "name": "bidSize",
+      "type": "double"
+    },
+    {
+      "name": "ask",
+      "type": "double"
+    },
+    {
+      "name": "askSize",
+      "type": "double"
+    },
+    {
+      "name": "lastPrice",
+      "type": "double"
+    },
+    {
+      "name": "lastSize",
+      "type": "double"
+    }
+  ]
 }

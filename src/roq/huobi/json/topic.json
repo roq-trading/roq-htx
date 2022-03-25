@@ -1,11 +1,21 @@
 {
-"name": "Topic",
-"type": "enum",
-"values": [
-	{ "name": "bbo" },
-	{ "name": "trade" },
-	{ "name": "detail" },
-	{ "name": "ticker" },
-	{ "name": "mbp" }
-]
+  "name": "Topic",
+  "type": "enum",
+  "values": [
+    {
+      "name": "bbo"
+    },
+    {
+      "name": "trade"
+    },
+    {
+      "name": "detail"
+    },
+    {
+      "name": "ticker"
+    },
+    {
+      "name": "mbp"
+    }
+  ]
 }

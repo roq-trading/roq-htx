@@ -1,11 +1,26 @@
 {
-"name": "MBPSnapshot",
-"type": "comp",
-"values": [
-	{ "name": "id", "type": "int64_t" },
-	{ "name": "status", "type": "Status" },
-	{ "name": "ts", "type": "std::chrono::milliseconds" },
-	{ "name": "rep", "type": "std::string_view" },
-	{ "name": "data", "type": "MBPSnapshotData" }
-]
+  "name": "MBPSnapshot",
+  "type": "comp",
+  "values": [
+    {
+      "name": "id",
+      "type": "int64_t"
+    },
+    {
+      "name": "status",
+      "type": "Status"
+    },
+    {
+      "name": "ts",
+      "type": "std::chrono::milliseconds"
+    },
+    {
+      "name": "rep",
+      "type": "std::string_view"
+    },
+    {
+      "name": "data",
+      "type": "MBPSnapshotData"
+    }
+  ]
 }

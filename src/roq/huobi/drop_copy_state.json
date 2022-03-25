@@ -1,7 +1,9 @@
 {
-"name": "DropCopyState",
-"type": "enum",
-"values": [
-	{ "name": "done" }
-]
+  "name": "DropCopyState",
+  "type": "enum",
+  "values": [
+    {
+      "name": "done"
+    }
+  ]
 }

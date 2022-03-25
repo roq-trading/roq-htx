@@ -1,13 +1,34 @@
 {
-"name": "BBOTick",
-"type": "comp",
-"values": [
-	{ "name": "seqId", "type": "int64_t" },
-	{ "name": "ask", "type": "double" },
-	{ "name": "askSize", "type": "double" },
-	{ "name": "bid", "type": "double" },
-	{ "name": "bidSize", "type": "double" },
-	{ "name": "quoteTime", "type": "std::chrono::milliseconds" },
-	{ "name": "symbol", "type": "std::string_view" }
-]
+  "name": "BBOTick",
+  "type": "comp",
+  "values": [
+    {
+      "name": "seqId",
+      "type": "int64_t"
+    },
+    {
+      "name": "ask",
+      "type": "double"
+    },
+    {
+      "name": "askSize",
+      "type": "double"
+    },
+    {
+      "name": "bid",
+      "type": "double"
+    },
+    {
+      "name": "bidSize",
+      "type": "double"
+    },
+    {
+      "name": "quoteTime",
+      "type": "std::chrono::milliseconds"
+    },
+    {
+      "name": "symbol",
+      "type": "std::string_view"
+    }
+  ]
 }

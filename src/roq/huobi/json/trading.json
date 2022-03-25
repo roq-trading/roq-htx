@@ -1,8 +1,12 @@
 {
-"name": "Trading",
-"type": "enum",
-"values": [
-	{ "name": "enabled" },
-	{ "name": "disabled" }
-]
+  "name": "Trading",
+  "type": "enum",
+  "values": [
+    {
+      "name": "enabled"
+    },
+    {
+      "name": "disabled"
+    }
+  ]
 }

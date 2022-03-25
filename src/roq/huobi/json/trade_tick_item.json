@@ -1,12 +1,30 @@
 {
-"name": "TradeTickItem",
-"type": "item",
-"values": [
-	{ "name": "id", "type": "int64_t" },
-	{ "name": "ts", "type": "std::chrono::milliseconds" },
-	{ "name": "tradeId", "type": "int64_t" },
-	{ "name": "amount", "type": "double" },
-	{ "name": "price", "type": "double" },
-	{ "name": "direction", "type": "Side" }
-]
+  "name": "TradeTickItem",
+  "type": "item",
+  "values": [
+    {
+      "name": "id",
+      "type": "int64_t"
+    },
+    {
+      "name": "ts",
+      "type": "std::chrono::milliseconds"
+    },
+    {
+      "name": "tradeId",
+      "type": "int64_t"
+    },
+    {
+      "name": "amount",
+      "type": "double"
+    },
+    {
+      "name": "price",
+      "type": "double"
+    },
+    {
+      "name": "direction",
+      "type": "Side"
+    }
+  ]
 }

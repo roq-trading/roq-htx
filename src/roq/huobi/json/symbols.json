@@ -1,8 +1,14 @@
 {
-"name": "Symbols",
-"type": "comp",
-"values": [
-	{ "name": "status", "type": "std::string_view" },
-	{ "name": "data", "type": "std::span<SymbolsItem>" }
-]
+  "name": "Symbols",
+  "type": "comp",
+  "values": [
+    {
+      "name": "status",
+      "type": "std::string_view"
+    },
+    {
+      "name": "data",
+      "type": "std::span<SymbolsItem>"
+    }
+  ]
 }

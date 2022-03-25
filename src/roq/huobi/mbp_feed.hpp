@@ -32,8 +32,7 @@ class MBPFeed final : public core::web::ClientSocket::Handler, public json::Pars
   struct Handler {
     virtual void operator()(const Trace<StreamStatus> &) = 0;
     virtual void operator()(const Trace<ExternalLatency> &) = 0;
-    virtual void operator()(
-        const Trace<MarketByPriceUpdate> &, bool is_last, bool refresh) = 0;
+    virtual void operator()(const Trace<MarketByPriceUpdate> &, bool is_last, bool refresh) = 0;
   };
 
   MBPFeed(Handler &, core::io::Context &, uint32_t stream_id, Shared &, size_t index);

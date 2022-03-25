@@ -1,15 +1,42 @@
 {
-"name": "DetailTick",
-"type": "comp",
-"values": [
-	{ "name": "id", "type": "int64_t" },
-	{ "name": "low", "type": "double" },
-	{ "name": "high", "type": "double" },
-	{ "name": "open", "type": "double" },
-	{ "name": "close", "type": "double" },
-	{ "name": "vol", "type": "double" },
-	{ "name": "amount", "type": "double" },
-	{ "name": "version", "type": "int64_t" },
-	{ "name": "count", "type": "int64_t" }
-]
+  "name": "DetailTick",
+  "type": "comp",
+  "values": [
+    {
+      "name": "id",
+      "type": "int64_t"
+    },
+    {
+      "name": "low",
+      "type": "double"
+    },
+    {
+      "name": "high",
+      "type": "double"
+    },
+    {
+      "name": "open",
+      "type": "double"
+    },
+    {
+      "name": "close",
+      "type": "double"
+    },
+    {
+      "name": "vol",
+      "type": "double"
+    },
+    {
+      "name": "amount",
+      "type": "double"
+    },
+    {
+      "name": "version",
+      "type": "int64_t"
+    },
+    {
+      "name": "count",
+      "type": "int64_t"
+    }
+  ]
 }
