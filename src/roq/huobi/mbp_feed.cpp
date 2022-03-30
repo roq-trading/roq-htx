@@ -26,7 +26,7 @@ namespace huobi {
 
 namespace {
 const auto NAME = "mbp"sv;
-const auto SUPPORTS = Mask{
+const Mask<SupportType> SUPPORTS{
     SupportType::MARKET_BY_PRICE,
 };
 
@@ -166,7 +166,7 @@ void MBPFeed::operator()(ConnectionStatus status) {
     StreamStatus stream_status{
         .stream_id = stream_id_,
         .account = {},
-        .supports = SUPPORTS.get(),
+        .supports = SUPPORTS,
         .status = status_,
         .type = StreamType::WEB_SOCKET,
         .priority = Priority::PRIMARY,
