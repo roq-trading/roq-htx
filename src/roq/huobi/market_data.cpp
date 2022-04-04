@@ -26,7 +26,7 @@ namespace huobi {
 
 namespace {
 const auto NAME = "md"sv;
-const Mask<SupportType> SUPPORTS{
+const Mask SUPPORTS{
     SupportType::TOP_OF_BOOK,
     SupportType::TRADE_SUMMARY,
     SupportType::STATISTICS,

@@ -26,7 +26,7 @@ namespace huobi {
 
 namespace {
 const auto NAME = "mbp"sv;
-const Mask<SupportType> SUPPORTS{
+const Mask SUPPORTS{
     SupportType::MARKET_BY_PRICE,
 };
 

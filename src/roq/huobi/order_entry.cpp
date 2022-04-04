@@ -20,7 +20,7 @@ namespace huobi {
 
 namespace {
 const auto NAME = "om"sv;
-const Mask<SupportType> SUPPORTS{
+const Mask SUPPORTS{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
     SupportType::CREATE_ORDER,
