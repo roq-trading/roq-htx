@@ -28,30 +28,32 @@ bool Parser::dispatch(
   auto frame = core::json::Parser::create<json::Frame>(message, buffer);
   if (!frame.ping.count()) {
     switch (frame.status) {
-      case Status::UNDEFINED: {
+      using enum Status::type_t;
+      case UNDEFINED: {
         Topic topic{extract_topic(frame.ch)};
         switch (topic) {
-          case Topic::BBO: {
+          using enum Topic::type_t;
+          case BBO: {
             auto bbo = core::json::Parser::create<json::BBO>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, bbo);
             return true;
           }
-          case Topic::TRADE: {
+          case TRADE: {
             auto trade = core::json::Parser::create<json::Trade>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, trade);
             return true;
           }
-          case Topic::DETAIL: {
+          case DETAIL: {
             auto detail = core::json::Parser::create<json::Detail>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, detail);
             return true;
           }
-          case Topic::TICKER: {
+          case TICKER: {
             auto ticker = core::json::Parser::create<json::Ticker>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, ticker);
             return true;
           }
-          case Topic::MBP: {
+          case MBP: {
             auto mbp = core::json::Parser::create<json::MBP>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, mbp);
             return true;
@@ -61,9 +63,9 @@ bool Parser::dispatch(
         }
         break;
       }
-      case Status::UNKNOWN:
+      case UNKNOWN:
         break;
-      case Status::OK:
+      case OK:
         if (!std::empty(frame.subbed)) {
           Subbed subbed{
               .id = frame.id,
@@ -85,7 +87,7 @@ bool Parser::dispatch(
           log::fatal("DEBUG {}"sv, message);  // ???
         }
         break;
-      case Status::ERROR:
+      case ERROR:
         Error error{
             .id = frame.id,
             .err_code = frame.err_code,

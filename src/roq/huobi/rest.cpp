@@ -158,19 +158,20 @@ void Rest::operator()(ConnectionStatus status) {
 
 uint32_t Rest::download(RestState state) {
   switch (state) {
-    case RestState::UNDEFINED:
+    using enum RestState;
+    case UNDEFINED:
       assert(false);
       break;
-    case RestState::MARKET_STATUS:
+    case MARKET_STATUS:
       get_market_status();
       return 1;
-    case RestState::CURRENCIES:
+    case CURRENCIES:
       get_currencies();
       return 1;
-    case RestState::SYMBOLS:
+    case SYMBOLS:
       get_symbols();
       return 1;
-    case RestState::DONE:
+    case DONE:
       (*this)(ConnectionStatus::READY);
       assert(!ready_);
       ready_ = true;
