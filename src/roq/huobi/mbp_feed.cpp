@@ -135,7 +135,7 @@ void MBPFeed::operator()(const core::web::ClientSocket::Close &) {
 
 void MBPFeed::operator()(const core::web::ClientSocket::Latency &latency) {
   auto trace_info = server::create_trace_info();
-  ExternalLatency external_latency{
+  const ExternalLatency external_latency{
       .stream_id = stream_id_,
       .account = {},
       .latency = latency.sample,
@@ -163,7 +163,7 @@ void MBPFeed::operator()(const core::web::ClientSocket::Binary &binary) {
 void MBPFeed::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     auto trace_info = server::create_trace_info();
-    StreamStatus stream_status{
+    const StreamStatus stream_status{
         .stream_id = stream_id_,
         .account = {},
         .supports = SUPPORTS,
@@ -243,44 +243,44 @@ void MBPFeed::parse(const std::string_view &message) {
   });
 }
 
-void MBPFeed::operator()(const Trace<json::Ping> &event) {
+void MBPFeed::operator()(const Trace<json::Ping const> &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void MBPFeed::operator()(const Trace<json::Error> &event) {
+void MBPFeed::operator()(const Trace<json::Error const> &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::warn("error={}"sv, error);
   });
 }
 
-void MBPFeed::operator()(const Trace<json::Subbed> &event) {
+void MBPFeed::operator()(const Trace<json::Subbed const> &event) {
   profile_.subbed([&]() {
     auto &[trace_info, subbed] = event;
     log::info<1>("subbed={}"sv, subbed);
   });
 }
 
-void MBPFeed::operator()(const Trace<json::BBO> &) {
+void MBPFeed::operator()(const Trace<json::BBO const> &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(const Trace<json::Trade> &) {
+void MBPFeed::operator()(const Trace<json::Trade const> &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(const Trace<json::Detail> &) {
+void MBPFeed::operator()(const Trace<json::Detail const> &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(const Trace<json::Ticker> &) {
+void MBPFeed::operator()(const Trace<json::Ticker const> &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(const Trace<json::MBP> &event) {
+void MBPFeed::operator()(const Trace<json::MBP const> &event) {
   profile_.mbp([&]() {
     // auto &[trace_info, mbp] = event;
     auto &trace_info = event.trace_info;
@@ -301,8 +301,8 @@ void MBPFeed::operator()(const Trace<json::MBP> &event) {
           tick.seq_num,
           tick.prev_seq_num,
           [&](auto &bids, auto &asks) {  // update
-            // log::debug(R"(PUBLISH UPDATE symbol="{}")"sv, symbol);
-            MarketByPriceUpdate market_by_price_update{
+                                         // log::debug(R"(PUBLISH UPDATE symbol="{}")"sv, symbol);
+            const MarketByPriceUpdate market_by_price_update{
                 .stream_id = stream_id_,
                 .exchange = Flags::exchange(),
                 .symbol = symbol,
@@ -319,7 +319,7 @@ void MBPFeed::operator()(const Trace<json::MBP> &event) {
           },
           [&](auto &bids, auto &asks, auto sequence) {  // snapshot
             log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
-            MarketByPriceUpdate market_by_price_update{
+            const MarketByPriceUpdate market_by_price_update{
                 .stream_id = stream_id_,
                 .exchange = Flags::exchange(),
                 .symbol = symbol,
@@ -358,7 +358,7 @@ void MBPFeed::operator()(const Trace<json::MBP> &event) {
   });
 }
 
-void MBPFeed::operator()(const Trace<json::MBPSnapshot> &event) {
+void MBPFeed::operator()(const Trace<json::MBPSnapshot const> &event) {
   profile_.mbp_snapshot([&]() {
     // auto &[trace_info, mbp_snapshot] = event;
     auto &trace_info = event.trace_info;
@@ -378,7 +378,7 @@ void MBPFeed::operator()(const Trace<json::MBPSnapshot> &event) {
           data.seq_num,
           [&](auto &bids, auto &asks, auto sequence) {  // snapshot
             log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
-            MarketByPriceUpdate market_by_price_update{
+            const MarketByPriceUpdate market_by_price_update{
                 .stream_id = stream_id_,
                 .exchange = Flags::exchange(),
                 .symbol = symbol,

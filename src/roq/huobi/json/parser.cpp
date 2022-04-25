@@ -34,27 +34,27 @@ bool Parser::dispatch(
         switch (topic) {
           using enum Topic::type_t;
           case BBO: {
-            auto bbo = core::json::Parser::create<json::BBO>(message, buffer);
+            const auto bbo = core::json::Parser::create<json::BBO>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, bbo);
             return true;
           }
           case TRADE: {
-            auto trade = core::json::Parser::create<json::Trade>(message, buffer);
+            const auto trade = core::json::Parser::create<json::Trade>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, trade);
             return true;
           }
           case DETAIL: {
-            auto detail = core::json::Parser::create<json::Detail>(message, buffer);
+            const auto detail = core::json::Parser::create<json::Detail>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, detail);
             return true;
           }
           case TICKER: {
-            auto ticker = core::json::Parser::create<json::Ticker>(message, buffer);
+            const auto ticker = core::json::Parser::create<json::Ticker>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, ticker);
             return true;
           }
           case MBP: {
-            auto mbp = core::json::Parser::create<json::MBP>(message, buffer);
+            const auto mbp = core::json::Parser::create<json::MBP>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, mbp);
             return true;
           }
@@ -67,7 +67,7 @@ bool Parser::dispatch(
         break;
       case OK:
         if (!std::empty(frame.subbed)) {
-          Subbed subbed{
+          const Subbed subbed{
               .id = frame.id,
               .subbed = frame.subbed,
               .ts = frame.ts,
@@ -79,7 +79,8 @@ bool Parser::dispatch(
           if (!std::empty(frame.rep)) {
             Topic topic{extract_topic(frame.rep)};
             if (topic == Topic::MBP) {
-              auto mbp_snapshot = core::json::Parser::create<json::MBPSnapshot>(message, buffer);
+              const auto mbp_snapshot =
+                  core::json::Parser::create<json::MBPSnapshot>(message, buffer);
               create_trace_and_dispatch(handler, trace_info, mbp_snapshot);
               return true;
             }
@@ -88,7 +89,7 @@ bool Parser::dispatch(
         }
         break;
       case ERROR:
-        Error error{
+        const Error error{
             .id = frame.id,
             .err_code = frame.err_code,
             .err_msg = frame.err_msg,
@@ -98,7 +99,7 @@ bool Parser::dispatch(
         return true;
     }
   } else {
-    Ping ping{
+    const Ping ping{
         .timestamp = frame.ping,
     };
     create_trace_and_dispatch(handler, trace_info, ping);

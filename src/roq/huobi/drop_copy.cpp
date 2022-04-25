@@ -122,7 +122,7 @@ void DropCopy::operator()(const core::web::ClientSocket::Close &) {
 
 void DropCopy::operator()(const core::web::ClientSocket::Latency &latency) {
   auto trace_info = server::create_trace_info();
-  ExternalLatency external_latency{
+  const ExternalLatency external_latency{
       .stream_id = stream_id_,
       .account = security_.get_account(),
       .latency = latency.sample,
@@ -142,7 +142,7 @@ void DropCopy::operator()(const core::web::ClientSocket::Binary &) {
 void DropCopy::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     auto trace_info = server::create_trace_info();
-    StreamStatus stream_status{
+    const StreamStatus stream_status{
         .stream_id = stream_id_,
         .account = security_.get_account(),
         .supports = SUPPORTS,
@@ -187,39 +187,39 @@ void DropCopy::parse(const std::string_view &message) {
   });
 }
 
-void DropCopy::operator()(const Trace<json::Ping> &) {
+void DropCopy::operator()(const Trace<json::Ping const> &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::Error> &) {
+void DropCopy::operator()(const Trace<json::Error const> &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::Subbed> &) {
+void DropCopy::operator()(const Trace<json::Subbed const> &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::BBO> &) {
+void DropCopy::operator()(const Trace<json::BBO const> &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::Trade> &) {
+void DropCopy::operator()(const Trace<json::Trade const> &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::Detail> &) {
+void DropCopy::operator()(const Trace<json::Detail const> &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::Ticker> &) {
+void DropCopy::operator()(const Trace<json::Ticker const> &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::MBP> &) {
+void DropCopy::operator()(const Trace<json::MBP const> &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::MBPSnapshot> &) {
+void DropCopy::operator()(const Trace<json::MBPSnapshot const> &) {
   log::fatal("Unexpected"sv);
 }
 

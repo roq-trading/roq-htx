@@ -131,7 +131,7 @@ void Rest::operator()(const core::web::Client::Disconnected &) {
 
 void Rest::operator()(const core::web::Client::Latency &latency) {
   auto trace_info = server::create_trace_info();
-  ExternalLatency external_latency{
+  const ExternalLatency external_latency{
       .stream_id = stream_id_,
       .account = {},
       .latency = latency.sample,
@@ -143,7 +143,7 @@ void Rest::operator()(const core::web::Client::Latency &latency) {
 void Rest::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     auto trace_info = server::create_trace_info();
-    StreamStatus stream_status{
+    const StreamStatus stream_status{
         .stream_id = stream_id_,
         .account = {},
         .supports = SUPPORTS,
@@ -211,7 +211,7 @@ void Rest::get_market_status() {
   });
 }
 
-void Rest::get_market_status_ack(const Trace<core::web::Response> &event, uint32_t sequence) {
+void Rest::get_market_status_ack(const Trace<core::web::Response const> &event, uint32_t sequence) {
   profile_.market_status_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::MARKET_STATUS;
@@ -224,7 +224,7 @@ void Rest::get_market_status_ack(const Trace<core::web::Response> &event, uint32
       }
       response.expect(core::http::Status::OK);
       core::json::Buffer buffer(decode_buffer_);
-      auto market_status = core::json::Parser::create<json::MarketStatus>(body, buffer);
+      const auto market_status = core::json::Parser::create<json::MarketStatus>(body, buffer);
       Trace event(trace_info, market_status);
       (*this)(event);
       download_.check(state);
@@ -235,7 +235,7 @@ void Rest::get_market_status_ack(const Trace<core::web::Response> &event, uint32
   });
 }
 
-void Rest::operator()(const Trace<json::MarketStatus> &event) {
+void Rest::operator()(const Trace<json::MarketStatus const> &event) {
   auto &[trace_info, market_status] = event;
   log::info<2>("market_status={}"sv, market_status);
 }
@@ -268,7 +268,7 @@ void Rest::get_currencies() {
   });
 }
 
-void Rest::get_currencies_ack(const Trace<core::web::Response> &event, uint32_t sequence) {
+void Rest::get_currencies_ack(const Trace<core::web::Response const> &event, uint32_t sequence) {
   profile_.currencies_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::CURRENCIES;
@@ -281,7 +281,7 @@ void Rest::get_currencies_ack(const Trace<core::web::Response> &event, uint32_t 
       }
       response.expect(core::http::Status::OK);
       core::json::Buffer buffer(decode_buffer_);
-      auto currencies = core::json::Parser::create<json::Currencies>(body, buffer);
+      const auto currencies = core::json::Parser::create<json::Currencies>(body, buffer);
       Trace event(trace_info, currencies);
       (*this)(event);
       download_.check(state);
@@ -292,7 +292,7 @@ void Rest::get_currencies_ack(const Trace<core::web::Response> &event, uint32_t 
   });
 }
 
-void Rest::operator()(const Trace<json::Currencies> &event) {
+void Rest::operator()(const Trace<json::Currencies const> &event) {
   auto &[trace_info, currencies] = event;
   log::info<2>("currencies={}"sv, currencies);
 }
@@ -323,7 +323,7 @@ void Rest::get_symbols() {
   });
 }
 
-void Rest::get_symbols_ack(const Trace<core::web::Response> &event, uint32_t sequence) {
+void Rest::get_symbols_ack(const Trace<core::web::Response const> &event, uint32_t sequence) {
   profile_.symbols_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::SYMBOLS;
@@ -336,7 +336,7 @@ void Rest::get_symbols_ack(const Trace<core::web::Response> &event, uint32_t seq
       }
       response.expect(core::http::Status::OK);
       core::json::Buffer buffer(decode_buffer_);
-      auto symbols = core::json::Parser::create<json::Symbols>(body, buffer);
+      const auto symbols = core::json::Parser::create<json::Symbols>(body, buffer);
       Trace event(trace_info, symbols);
       (*this)(event);
       download_.check(state);
@@ -347,7 +347,7 @@ void Rest::get_symbols_ack(const Trace<core::web::Response> &event, uint32_t seq
   });
 }
 
-void Rest::operator()(const Trace<json::Symbols> &event) {
+void Rest::operator()(const Trace<json::Symbols const> &event) {
   auto &[trace_info, symbols] = event;
   log::info<2>("symbols={}"sv, symbols);
   std::vector<Symbol> symbols_2;
@@ -368,7 +368,7 @@ void Rest::operator()(const Trace<json::Symbols> &event) {
     ++counter;
     auto tick_size = std::pow(10.0, -item.price_precision);
     auto trade_vol_step_size = std::pow(10.0, -item.amount_precision);
-    ReferenceData reference_data{
+    const ReferenceData reference_data{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
         .symbol = symbol,
@@ -395,7 +395,7 @@ void Rest::operator()(const Trace<json::Symbols> &event) {
     };
     create_trace_and_dispatch(handler_, trace_info, reference_data, false);
     auto trading_status = json::map(item.api_trading);
-    MarketStatus market_status{
+    const MarketStatus market_status{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
         .symbol = symbol,

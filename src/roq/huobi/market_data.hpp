@@ -30,12 +30,13 @@ namespace huobi {
 class MarketData final : public core::web::ClientSocket::Handler, public json::Parser::Handler {
  public:
   struct Handler {
-    virtual void operator()(const Trace<StreamStatus> &) = 0;
-    virtual void operator()(const Trace<ExternalLatency> &) = 0;
-    virtual void operator()(const Trace<TopOfBook> &, bool is_last) = 0;
-    virtual void operator()(const Trace<MarketByPriceUpdate> &, bool is_last, bool refresh) = 0;
-    virtual void operator()(const Trace<TradeSummary> &, bool is_last) = 0;
-    virtual void operator()(const Trace<StatisticsUpdate> &, bool is_last) = 0;
+    virtual void operator()(const Trace<StreamStatus const> &) = 0;
+    virtual void operator()(const Trace<ExternalLatency const> &) = 0;
+    virtual void operator()(const Trace<TopOfBook const> &, bool is_last) = 0;
+    virtual void operator()(
+        const Trace<MarketByPriceUpdate const> &, bool is_last, bool refresh) = 0;
+    virtual void operator()(const Trace<TradeSummary const> &, bool is_last) = 0;
+    virtual void operator()(const Trace<StatisticsUpdate const> &, bool is_last) = 0;
   };
 
   MarketData(Handler &, core::io::Context &, uint32_t stream_id, Shared &, size_t index);
@@ -75,15 +76,15 @@ class MarketData final : public core::web::ClientSocket::Handler, public json::P
 
   void parse(const std::string_view &message);
 
-  void operator()(const Trace<json::Ping> &) override;
-  void operator()(const Trace<json::Error> &) override;
-  void operator()(const Trace<json::Subbed> &) override;
-  void operator()(const Trace<json::BBO> &) override;
-  void operator()(const Trace<json::Trade> &) override;
-  void operator()(const Trace<json::Detail> &) override;
-  void operator()(const Trace<json::Ticker> &) override;
-  void operator()(const Trace<json::MBP> &) override;
-  void operator()(const Trace<json::MBPSnapshot> &) override;
+  void operator()(const Trace<json::Ping const> &) override;
+  void operator()(const Trace<json::Error const> &) override;
+  void operator()(const Trace<json::Subbed const> &) override;
+  void operator()(const Trace<json::BBO const> &) override;
+  void operator()(const Trace<json::Trade const> &) override;
+  void operator()(const Trace<json::Detail const> &) override;
+  void operator()(const Trace<json::Ticker const> &) override;
+  void operator()(const Trace<json::MBP const> &) override;
+  void operator()(const Trace<json::MBPSnapshot const> &) override;
 
  private:
   Handler &handler_;
