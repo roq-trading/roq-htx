@@ -7,6 +7,9 @@
     },
     {
       "name": "online"
+    },
+    {
+      "name": "suspend"
     }
   ]
 }

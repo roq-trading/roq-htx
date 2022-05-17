@@ -121,6 +121,22 @@
     {
       "name": "funding-leverage-ratio",
       "type": "double"
+    },
+    {
+      "name": "buy-limit-must-less-than",
+      "type": "double"
+    },
+    {
+      "name": "sell-limit-must-greater-than",
+      "type": "double"
+    },
+    {
+      "name": "market-sell-order-rate-must-less-than",
+      "type": "double"
+    },
+    {
+      "name": "market-buy-order-rate-must-less-than",
+      "type": "double"
     }
   ]
 }
