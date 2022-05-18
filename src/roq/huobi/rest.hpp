@@ -37,10 +37,10 @@ class Rest final : public core::web::Client::Handler {
   };
 
   struct Handler {
-    virtual void operator()(const Trace<StreamStatus const> &) = 0;
-    virtual void operator()(const Trace<ExternalLatency const> &) = 0;
-    virtual void operator()(const Trace<ReferenceData const> &, bool is_last) = 0;
-    virtual void operator()(const Trace<MarketStatus const> &, bool is_last) = 0;
+    virtual void operator()(Trace<StreamStatus const> const &) = 0;
+    virtual void operator()(Trace<ExternalLatency const> const &) = 0;
+    virtual void operator()(Trace<ReferenceData const> const &, bool is_last) = 0;
+    virtual void operator()(Trace<MarketStatus const> const &, bool is_last) = 0;
     // cross-communication
     virtual void operator()(SymbolsUpdate &) = 0;
   };
@@ -48,36 +48,36 @@ class Rest final : public core::web::Client::Handler {
   Rest(Handler &, core::io::Context &, uint16_t stream_id, Shared &);
 
   Rest(Rest &&) = delete;
-  Rest(const Rest &) = delete;
+  Rest(Rest const &) = delete;
 
   bool ready() const { return status_ == ConnectionStatus::READY; }
 
-  void operator()(const Event<Start> &);
-  void operator()(const Event<Stop> &);
-  void operator()(const Event<Timer> &);
+  void operator()(Event<Start> const &);
+  void operator()(Event<Stop> const &);
+  void operator()(Event<Timer> const &);
 
   void operator()(metrics::Writer &);
 
  protected:
-  void operator()(const core::web::Client::Connected &);
-  void operator()(const core::web::Client::Disconnected &);
-  void operator()(const core::web::Client::Latency &);
+  void operator()(core::web::Client::Connected const &);
+  void operator()(core::web::Client::Disconnected const &);
+  void operator()(core::web::Client::Latency const &);
 
   void operator()(ConnectionStatus);
 
   uint32_t download(RestState state);
 
   void get_market_status();
-  void get_market_status_ack(const Trace<core::web::Response const> &, uint32_t sequence);
-  void operator()(const Trace<json::MarketStatus const> &);
+  void get_market_status_ack(Trace<core::web::Response const> const &, uint32_t sequence);
+  void operator()(Trace<json::MarketStatus const> const &);
 
   void get_currencies();
-  void get_currencies_ack(const Trace<core::web::Response const> &, uint32_t sequence);
-  void operator()(const Trace<json::Currencies const> &);
+  void get_currencies_ack(Trace<core::web::Response const> const &, uint32_t sequence);
+  void operator()(Trace<json::Currencies const> const &);
 
   void get_symbols();
-  void get_symbols_ack(const Trace<core::web::Response const> &, uint32_t sequence);
-  void operator()(const Trace<json::Symbols const> &);
+  void get_symbols_ack(Trace<core::web::Response const> const &, uint32_t sequence);
+  void operator()(Trace<json::Symbols const> const &);
 
  private:
   Handler &handler_;
@@ -93,8 +93,7 @@ class Rest final : public core::web::Client::Handler {
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile market_status, market_status_ack, currencies, currencies_ack, symbols,
-        symbols_ack;
+    core::metrics::Profile market_status, market_status_ack, currencies, currencies_ack, symbols, symbols_ack;
   } profile_;
   struct {
     core::metrics::Latency ping;

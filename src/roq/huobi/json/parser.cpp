@@ -22,9 +22,9 @@ namespace json {
 
 bool Parser::dispatch(
     Parser::Handler &handler,
-    const std::string_view &message,
+    std::string_view const &message,
     core::json::Buffer &buffer,
-    const TraceInfo &trace_info) {
+    TraceInfo const &trace_info) {
   auto frame = core::json::Parser::create<json::Frame>(message, buffer);
   if (!frame.ping.count()) {
     switch (frame.status) {
@@ -34,27 +34,27 @@ bool Parser::dispatch(
         switch (topic) {
           using enum Topic::type_t;
           case BBO: {
-            const auto bbo = core::json::Parser::create<json::BBO>(message, buffer);
+            auto const bbo = core::json::Parser::create<json::BBO>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, bbo);
             return true;
           }
           case TRADE: {
-            const auto trade = core::json::Parser::create<json::Trade>(message, buffer);
+            auto const trade = core::json::Parser::create<json::Trade>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, trade);
             return true;
           }
           case DETAIL: {
-            const auto detail = core::json::Parser::create<json::Detail>(message, buffer);
+            auto const detail = core::json::Parser::create<json::Detail>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, detail);
             return true;
           }
           case TICKER: {
-            const auto ticker = core::json::Parser::create<json::Ticker>(message, buffer);
+            auto const ticker = core::json::Parser::create<json::Ticker>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, ticker);
             return true;
           }
           case MBP: {
-            const auto mbp = core::json::Parser::create<json::MBP>(message, buffer);
+            auto const mbp = core::json::Parser::create<json::MBP>(message, buffer);
             create_trace_and_dispatch(handler, trace_info, mbp);
             return true;
           }
@@ -79,8 +79,7 @@ bool Parser::dispatch(
           if (!std::empty(frame.rep)) {
             Topic topic{extract_topic(frame.rep)};
             if (topic == Topic::MBP) {
-              const auto mbp_snapshot =
-                  core::json::Parser::create<json::MBPSnapshot>(message, buffer);
+              auto const mbp_snapshot = core::json::Parser::create<json::MBPSnapshot>(message, buffer);
               create_trace_and_dispatch(handler, trace_info, mbp_snapshot);
               return true;
             }

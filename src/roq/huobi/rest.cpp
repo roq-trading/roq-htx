@@ -22,14 +22,14 @@ namespace roq {
 namespace huobi {
 
 namespace {
-const auto NAME = "rest"sv;
+auto const NAME = "rest"sv;
 const Mask SUPPORTS{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
 };
 
 struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(const std::string_view &group, const std::string_view &function)
+  explicit create_metrics(std::string_view const &group, std::string_view const &function)
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
 
@@ -80,19 +80,18 @@ Rest::Rest(Handler &handler, core::io::Context &context, uint16_t stream_id, Sha
       latency_{
           .ping = create_metrics(name_, "ping"sv),
       },
-      shared_(shared),
-      download_(Flags::rest_request_timeout(), [this](auto state) { return download(state); }) {
+      shared_(shared), download_(Flags::rest_request_timeout(), [this](auto state) { return download(state); }) {
 }
 
-void Rest::operator()(const Event<Start> &) {
+void Rest::operator()(Event<Start> const &) {
   connection_.start();
 }
 
-void Rest::operator()(const Event<Stop> &) {
+void Rest::operator()(Event<Stop> const &) {
   connection_.stop();
 }
 
-void Rest::operator()(const Event<Timer> &event) {
+void Rest::operator()(Event<Timer> const &event) {
   auto now = event.value.now;
   connection_.refresh(now);
 }
@@ -112,7 +111,7 @@ void Rest::operator()(metrics::Writer &writer) {
       .write(latency_.ping, metrics::LATENCY);
 }
 
-void Rest::operator()(const core::web::Client::Connected &) {
+void Rest::operator()(core::web::Client::Connected const &) {
   if (download_.downloading()) {
     download_.bump();
   } else {
@@ -121,7 +120,7 @@ void Rest::operator()(const core::web::Client::Connected &) {
   }
 }
 
-void Rest::operator()(const core::web::Client::Disconnected &) {
+void Rest::operator()(core::web::Client::Disconnected const &) {
   ++counter_.disconnect;
   ready_ = false;
   (*this)(ConnectionStatus::DISCONNECTED);
@@ -129,7 +128,7 @@ void Rest::operator()(const core::web::Client::Disconnected &) {
     download_.reset();
 }
 
-void Rest::operator()(const core::web::Client::Latency &latency) {
+void Rest::operator()(core::web::Client::Latency const &latency) {
   auto trace_info = server::create_trace_info();
   const ExternalLatency external_latency{
       .stream_id = stream_id_,
@@ -200,18 +199,15 @@ void Rest::get_market_status() {
         .quality_of_service = {},
     };
     auto sequence = download_.sequence();
-    connection_(
-        "market_status"sv,
-        request,
-        [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
-          auto trace_info = server::create_trace_info();
-          Trace event(trace_info, response);
-          get_market_status_ack(event, sequence);
-        });
+    connection_("market_status"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
+      auto trace_info = server::create_trace_info();
+      Trace event(trace_info, response);
+      get_market_status_ack(event, sequence);
+    });
   });
 }
 
-void Rest::get_market_status_ack(const Trace<core::web::Response const> &event, uint32_t sequence) {
+void Rest::get_market_status_ack(Trace<core::web::Response const> const &event, uint32_t sequence) {
   profile_.market_status_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::MARKET_STATUS;
@@ -235,7 +231,7 @@ void Rest::get_market_status_ack(const Trace<core::web::Response const> &event, 
   });
 }
 
-void Rest::operator()(const Trace<json::MarketStatus const> &event) {
+void Rest::operator()(Trace<json::MarketStatus const> const &event) {
   auto &[trace_info, market_status] = event;
   log::info<2>("market_status={}"sv, market_status);
 }
@@ -257,18 +253,15 @@ void Rest::get_currencies() {
         .quality_of_service = {},
     };
     auto sequence = download_.sequence();
-    connection_(
-        "currencies"sv,
-        request,
-        [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
-          auto trace_info = server::create_trace_info();
-          Trace event(trace_info, response);
-          get_currencies_ack(event, sequence);
-        });
+    connection_("currencies"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
+      auto trace_info = server::create_trace_info();
+      Trace event(trace_info, response);
+      get_currencies_ack(event, sequence);
+    });
   });
 }
 
-void Rest::get_currencies_ack(const Trace<core::web::Response const> &event, uint32_t sequence) {
+void Rest::get_currencies_ack(Trace<core::web::Response const> const &event, uint32_t sequence) {
   profile_.currencies_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::CURRENCIES;
@@ -292,7 +285,7 @@ void Rest::get_currencies_ack(const Trace<core::web::Response const> &event, uin
   });
 }
 
-void Rest::operator()(const Trace<json::Currencies const> &event) {
+void Rest::operator()(Trace<json::Currencies const> const &event) {
   auto &[trace_info, currencies] = event;
   log::info<2>("currencies={}"sv, currencies);
 }
@@ -314,16 +307,15 @@ void Rest::get_symbols() {
         .quality_of_service = {},
     };
     auto sequence = download_.sequence();
-    connection_(
-        "symbols"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
-          auto trace_info = server::create_trace_info();
-          Trace event(trace_info, response);
-          get_symbols_ack(event, sequence);
-        });
+    connection_("symbols"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
+      auto trace_info = server::create_trace_info();
+      Trace event(trace_info, response);
+      get_symbols_ack(event, sequence);
+    });
   });
 }
 
-void Rest::get_symbols_ack(const Trace<core::web::Response const> &event, uint32_t sequence) {
+void Rest::get_symbols_ack(Trace<core::web::Response const> const &event, uint32_t sequence) {
   profile_.symbols_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::SYMBOLS;
@@ -347,7 +339,7 @@ void Rest::get_symbols_ack(const Trace<core::web::Response const> &event, uint32
   });
 }
 
-void Rest::operator()(const Trace<json::Symbols const> &event) {
+void Rest::operator()(Trace<json::Symbols const> const &event) {
   auto &[trace_info, symbols] = event;
   log::info<2>("symbols={}"sv, symbols);
   std::vector<Symbol> symbols_2;

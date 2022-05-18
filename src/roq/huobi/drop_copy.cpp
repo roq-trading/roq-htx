@@ -17,17 +17,17 @@ namespace roq {
 namespace huobi {
 
 namespace {
-const auto NAME = "ex"sv;
+auto const NAME = "ex"sv;
 const Mask SUPPORTS{
     SupportType::FUNDS,
 };
 
 struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(const std::string_view &group, const std::string_view &function)
+  explicit create_metrics(std::string_view const &group, std::string_view const &function)
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
 
-auto create_connection(auto &handler, auto &context, const auto &listen_key) {
+auto create_connection(auto &handler, auto &context, auto const &listen_key) {
   assert(!std::empty(listen_key));
   auto uri = Flags::ws_order_uri();
   auto query = fmt::format("?streams={}"sv, listen_key);
@@ -49,10 +49,9 @@ DropCopy::DropCopy(
     uint16_t stream_id,
     Security &security,
     Shared &shared,
-    const std::string_view &listen_key)
+    std::string_view const &listen_key)
     : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)),
-      connection_(create_connection(*this, context, listen_key)),
-      decode_buffer_(Flags::decode_buffer_size()),
+      connection_(create_connection(*this, context, listen_key)), decode_buffer_(Flags::decode_buffer_size()),
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
       },
@@ -67,23 +66,22 @@ DropCopy::DropCopy(
           .ping = create_metrics(name_, "ping"sv),
           .heartbeat = create_metrics(name_, "heartbeat"sv),
       },
-      security_(security), shared_(shared),
-      download_({}, [this](auto state) { return download(state); }) {
+      security_(security), shared_(shared), download_({}, [this](auto state) { return download(state); }) {
 }
 
 bool DropCopy::ready() const {
   return connection_.ready();
 }
 
-void DropCopy::operator()(const Event<Start> &) {
+void DropCopy::operator()(Event<Start> const &) {
   connection_.start();
 }
 
-void DropCopy::operator()(const Event<Stop> &) {
+void DropCopy::operator()(Event<Stop> const &) {
   connection_.stop();
 }
 
-void DropCopy::operator()(const Event<Timer> &event) {
+void DropCopy::operator()(Event<Timer> const &event) {
   connection_.refresh(event.value.now);
 }
 
@@ -102,25 +100,25 @@ void DropCopy::operator()(metrics::Writer &writer) {
       .write(latency_.heartbeat, metrics::LATENCY);
 }
 
-void DropCopy::operator()(const core::web::ClientSocket::Connected &) {
+void DropCopy::operator()(core::web::ClientSocket::Connected const &) {
 }
 
-void DropCopy::operator()(const core::web::ClientSocket::Disconnected &) {
+void DropCopy::operator()(core::web::ClientSocket::Disconnected const &) {
   ++counter_.disconnect;
   ready_ = false;
   (*this)(ConnectionStatus::DISCONNECTED);
   download_.reset();
 }
 
-void DropCopy::operator()(const core::web::ClientSocket::Ready &) {
+void DropCopy::operator()(core::web::ClientSocket::Ready const &) {
   (*this)(ConnectionStatus::DOWNLOADING);
   download_.begin();
 }
 
-void DropCopy::operator()(const core::web::ClientSocket::Close &) {
+void DropCopy::operator()(core::web::ClientSocket::Close const &) {
 }
 
-void DropCopy::operator()(const core::web::ClientSocket::Latency &latency) {
+void DropCopy::operator()(core::web::ClientSocket::Latency const &latency) {
   auto trace_info = server::create_trace_info();
   const ExternalLatency external_latency{
       .stream_id = stream_id_,
@@ -131,11 +129,11 @@ void DropCopy::operator()(const core::web::ClientSocket::Latency &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void DropCopy::operator()(const core::web::ClientSocket::Text &) {
+void DropCopy::operator()(core::web::ClientSocket::Text const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const core::web::ClientSocket::Binary &) {
+void DropCopy::operator()(core::web::ClientSocket::Binary const &) {
   log::fatal("Not implemented"sv);
 }
 
@@ -174,7 +172,7 @@ uint32_t DropCopy::download(DropCopyState state) {
   return {};
 }
 
-void DropCopy::parse(const std::string_view &message) {
+void DropCopy::parse(std::string_view const &message) {
   profile_.parse([&]() {
     try {
       auto trace_info = server::create_trace_info();
@@ -187,39 +185,39 @@ void DropCopy::parse(const std::string_view &message) {
   });
 }
 
-void DropCopy::operator()(const Trace<json::Ping const> &) {
+void DropCopy::operator()(Trace<json::Ping const> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::Error const> &) {
+void DropCopy::operator()(Trace<json::Error const> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::Subbed const> &) {
+void DropCopy::operator()(Trace<json::Subbed const> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::BBO const> &) {
+void DropCopy::operator()(Trace<json::BBO const> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::Trade const> &) {
+void DropCopy::operator()(Trace<json::Trade const> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::Detail const> &) {
+void DropCopy::operator()(Trace<json::Detail const> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::Ticker const> &) {
+void DropCopy::operator()(Trace<json::Ticker const> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::MBP const> &) {
+void DropCopy::operator()(Trace<json::MBP const> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(const Trace<json::MBPSnapshot const> &) {
+void DropCopy::operator()(Trace<json::MBPSnapshot const> const &) {
   log::fatal("Unexpected"sv);
 }
 

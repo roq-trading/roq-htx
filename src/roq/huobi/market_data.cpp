@@ -25,7 +25,7 @@ namespace roq {
 namespace huobi {
 
 namespace {
-const auto NAME = "md"sv;
+auto const NAME = "md"sv;
 const Mask SUPPORTS{
     SupportType::TOP_OF_BOOK,
     SupportType::TRADE_SUMMARY,
@@ -33,7 +33,7 @@ const Mask SUPPORTS{
 };
 
 struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(const std::string_view &group, const std::string_view &function)
+  explicit create_metrics(std::string_view const &group, std::string_view const &function)
       : core::metrics::Factory(server::Flags::name(), group, function) {}
 };
 
@@ -72,11 +72,9 @@ void emplace(MBPUpdate &result, const T &value) {
 }
 }  // namespace
 
-MarketData::MarketData(
-    Handler &handler, core::io::Context &context, uint32_t stream_id, Shared &shared, size_t index)
-    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)),
-      index_(index), connection_(create_connection(*this, context)),
-      decode_buffer_(Flags::decode_buffer_size()),
+MarketData::MarketData(Handler &handler, core::io::Context &context, uint32_t stream_id, Shared &shared, size_t index)
+    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)), index_(index),
+      connection_(create_connection(*this, context)), decode_buffer_(Flags::decode_buffer_size()),
       request_id_(static_cast<uint64_t>(stream_id_) * 1000000),  // scale (debugging)
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
@@ -98,15 +96,15 @@ MarketData::MarketData(
       shared_(shared), inflate_(core::zlib::Inflate::GZIP_NO_HEADER) {
 }
 
-void MarketData::operator()(const Event<Start> &) {
+void MarketData::operator()(Event<Start> const &) {
   connection_.start();
 }
 
-void MarketData::operator()(const Event<Stop> &) {
+void MarketData::operator()(Event<Stop> const &) {
   connection_.stop();
 }
 
-void MarketData::operator()(const Event<Timer> &event) {
+void MarketData::operator()(Event<Timer> const &event) {
   connection_.refresh(event.value.now);
 }
 
@@ -133,23 +131,23 @@ void MarketData::subscribe(size_t start_from) {
     subscribe(shared_.symbols.get_slice(index_, start_from));
 }
 
-void MarketData::operator()(const core::web::ClientSocket::Connected &) {
+void MarketData::operator()(core::web::ClientSocket::Connected const &) {
 }
 
-void MarketData::operator()(const core::web::ClientSocket::Disconnected &) {
+void MarketData::operator()(core::web::ClientSocket::Disconnected const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
 }
 
-void MarketData::operator()(const core::web::ClientSocket::Ready &) {
+void MarketData::operator()(core::web::ClientSocket::Ready const &) {
   (*this)(ConnectionStatus::READY);
   subscribe();
 }
 
-void MarketData::operator()(const core::web::ClientSocket::Close &) {
+void MarketData::operator()(core::web::ClientSocket::Close const &) {
 }
 
-void MarketData::operator()(const core::web::ClientSocket::Latency &latency) {
+void MarketData::operator()(core::web::ClientSocket::Latency const &latency) {
   auto trace_info = server::create_trace_info();
   const ExternalLatency external_latency{
       .stream_id = stream_id_,
@@ -160,14 +158,13 @@ void MarketData::operator()(const core::web::ClientSocket::Latency &latency) {
   latency_.ping.update(latency.sample);
 }
 
-void MarketData::operator()(const core::web::ClientSocket::Text &) {
+void MarketData::operator()(core::web::ClientSocket::Text const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MarketData::operator()(const core::web::ClientSocket::Binary &binary) {
+void MarketData::operator()(core::web::ClientSocket::Binary const &binary) {
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
-        std::string_view message{
-            reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
+        std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
         log::info<5>(R"(message="{}")"sv, message);
         parse(message);
       })) {
@@ -194,7 +191,7 @@ void MarketData::operator()(ConnectionStatus status) {
   }
 }
 
-void MarketData::subscribe(const std::span<Symbol const> &symbols) {
+void MarketData::subscribe(std::span<Symbol const> const &symbols) {
   if (std::empty(symbols))
     return;
   subscribe(symbols, "market"sv, "bbo"sv);
@@ -204,9 +201,7 @@ void MarketData::subscribe(const std::span<Symbol const> &symbols) {
 }
 
 void MarketData::subscribe(
-    const std::span<Symbol const> &symbols,
-    const std::string_view &source,
-    const std::string_view &theme) {
+    std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {
   assert(!std::empty(symbols));
   for (auto &symbol : symbols) {
     auto id = ++request_id_;
@@ -234,7 +229,7 @@ void MarketData::send_pong(std::chrono::milliseconds timestamp) {
   connection_.send_text(message);
 }
 
-void MarketData::parse(const std::string_view &message) {
+void MarketData::parse(std::string_view const &message) {
   profile_.parse([&]() {
     try {
       // log::debug(R"(message="{}")"sv, message);
@@ -248,28 +243,28 @@ void MarketData::parse(const std::string_view &message) {
   });
 }
 
-void MarketData::operator()(const Trace<json::Ping const> &event) {
+void MarketData::operator()(Trace<json::Ping const> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.timestamp);
   });
 }
 
-void MarketData::operator()(const Trace<json::Error const> &event) {
+void MarketData::operator()(Trace<json::Error const> const &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::warn("error={}"sv, error);
   });
 }
 
-void MarketData::operator()(const Trace<json::Subbed const> &event) {
+void MarketData::operator()(Trace<json::Subbed const> const &event) {
   profile_.subbed([&]() {
     auto &[trace_info, subbed] = event;
     log::info<1>("subbed={}"sv, subbed);
   });
 }
 
-void MarketData::operator()(const Trace<json::BBO const> &event) {
+void MarketData::operator()(Trace<json::BBO const> const &event) {
   profile_.bbo([&]() {
     auto &[trace_info, bbo] = event;
     auto symbol = json::extract_symbol(bbo.ch);
@@ -292,7 +287,7 @@ void MarketData::operator()(const Trace<json::BBO const> &event) {
   });
 }
 
-void MarketData::operator()(const Trace<json::Trade const> &event) {
+void MarketData::operator()(Trace<json::Trade const> const &event) {
   profile_.trade([&]() {
     auto &[trace_info, trade] = event;
     auto symbol = json::extract_symbol(trade.ch);
@@ -311,7 +306,7 @@ void MarketData::operator()(const Trace<json::Trade const> &event) {
   });
 }
 
-void MarketData::operator()(const Trace<json::Detail const> &event) {
+void MarketData::operator()(Trace<json::Detail const> const &event) {
   profile_.detail([&]() {
     auto &[trace_info, detail] = event;
     auto symbol = json::extract_symbol(detail.ch);
@@ -360,15 +355,15 @@ void MarketData::operator()(const Trace<json::Detail const> &event) {
   });
 }
 
-void MarketData::operator()(const Trace<json::Ticker const> &) {
+void MarketData::operator()(Trace<json::Ticker const> const &) {
   // profile_.ticker([&]() { auto &[trace_info, ticker] = event; });
 }
 
-void MarketData::operator()(const Trace<json::MBP const> &) {
+void MarketData::operator()(Trace<json::MBP const> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MarketData::operator()(const Trace<json::MBPSnapshot const> &) {
+void MarketData::operator()(Trace<json::MBPSnapshot const> const &) {
   log::fatal("Unexpected"sv);
 }
 
