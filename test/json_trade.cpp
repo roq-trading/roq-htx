@@ -34,5 +34,5 @@ TEST_CASE("json_trade_simple", "[json_trade]") {
                  R"(})";
   core::Buffer buffer(8192);
   core::json::Buffer buffer_(buffer);
-  auto obj = core::json::Parser::create<json::Trade>(message, buffer_);
+  [[maybe_unused]] auto obj = core::json::Parser::create<json::Trade>(message, buffer_);
 }

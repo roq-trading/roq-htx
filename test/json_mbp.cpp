@@ -28,5 +28,5 @@ TEST_CASE("json_mbp_simple", "[json_mbp]") {
                  R"(})";
   core::Buffer buffer(8192);
   core::json::Buffer buffer_(buffer);
-  auto obj = core::json::Parser::create<json::MBP>(message, buffer_);
+  [[maybe_unused]] auto obj = core::json::Parser::create<json::MBP>(message, buffer_);
 }
