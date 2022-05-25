@@ -346,18 +346,12 @@ void Rest::operator()(Trace<json::Symbols const> const &event) {
   size_t counter = {};
   for (auto &item : symbols.data) {
     log::debug("item={}"sv, item);
-    if (shared_.discard_symbol(item.symbol)) {
-      log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
-      continue;
-    }
     if (item.state != json::State::ONLINE || item.api_trading != json::Trading::ENABLED) {
       log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
       continue;
     }
     auto &symbol = item.symbol;
-    if (all_symbols_.emplace(symbol).second)  // only include new
-      symbols_2.emplace_back(symbol);
-    ++counter;
+    auto discard = shared_.discard_symbol(item.symbol);
     auto tick_size = std::pow(10.0, -item.price_precision);
     auto trade_vol_step_size = std::pow(10.0, -item.amount_precision);
     const ReferenceData reference_data{
@@ -384,8 +378,16 @@ void Rest::operator()(Trace<json::Symbols const> const &event) {
         .settlement_date = {},
         .expiry_datetime = {},
         .expiry_datetime_utc = {},
+        .discard = discard,
     };
     create_trace_and_dispatch(handler_, trace_info, reference_data, false);
+    if (discard) {
+      log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
+      continue;
+    }
+    if (all_symbols_.emplace(symbol).second)  // only include new
+      symbols_2.emplace_back(symbol);
+    ++counter;
     auto trading_status = json::map(item.api_trading);
     const MarketStatus market_status{
         .stream_id = stream_id_,
