@@ -1,6 +1,7 @@
-symbols = ".*"
-# symbols = [ ".*btc.*", ".*eth.*" ]
-#symbols = "btcusdt"
+symbols = [
+  "^btcusd[a-z]$",
+  "^ethusd[a-z]$"
+]
 
 accounts = {}
 
