@@ -32,7 +32,10 @@ auto create_connection(auto &handler, auto &context, auto const &listen_key) {
   auto uri = Flags::ws_order_uri();
   auto query = fmt::format("?streams={}"sv, listen_key);
   core::web::ClientSocket::Config config{
-      .validate_certificate = server::Flags::tls_validate_certificate(),
+      .always_reconnect = true,
+      .connection_timeout = server::Flags::net_connection_timeout(),
+      .disconnect_on_idle_timeout = {},
+      .validate_certificate = server::Flags::net_tls_validate_certificate(),
       .uris = {&uri, 1},
       .query = query,
       .ping_frequency = Flags::ws_ping_freq(),
@@ -57,6 +60,8 @@ DropCopy::DropCopy(
       },
       profile_{
           .parse = create_metrics(name_, "parse"sv),
+          .ping = create_metrics(name_, "ping"sv),
+          .error = create_metrics(name_, "error"sv),
           .outbound_account_info = create_metrics(name_, "outbound_account_info"sv),
           .outbound_account_position = create_metrics(name_, "outbound_account_position"sv),
           .balance_update = create_metrics(name_, "balance_update"sv),
@@ -185,12 +190,19 @@ void DropCopy::parse(std::string_view const &message) {
   });
 }
 
-void DropCopy::operator()(Trace<json::Ping const> const &) {
-  log::fatal("Unexpected"sv);
+void DropCopy::operator()(Trace<json::Ping const> const &event) {
+  profile_.ping([&]() {
+    auto &[trace_info, ping] = event;
+    log::debug("ping={}"sv, ping);
+    // send_pong(ping.timestamp);
+  });
 }
 
-void DropCopy::operator()(Trace<json::Error const> const &) {
-  log::fatal("Unexpected"sv);
+void DropCopy::operator()(Trace<json::Error const> const &event) {
+  profile_.error([&]() {
+    auto &[trace_info, error] = event;
+    log::warn("error={}"sv, error);
+  });
 }
 
 void DropCopy::operator()(Trace<json::Subbed const> const &) {

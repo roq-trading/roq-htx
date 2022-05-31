@@ -38,7 +38,10 @@ struct create_metrics final : public core::metrics::Factory {
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::ws_mbp_uri();
   core::web::ClientSocket::Config config{
-      .validate_certificate = server::Flags::tls_validate_certificate(),
+      .always_reconnect = true,
+      .connection_timeout = server::Flags::net_connection_timeout(),
+      .disconnect_on_idle_timeout = server::Flags::net_disconnect_on_idle_timeout(),
+      .validate_certificate = server::Flags::net_tls_validate_certificate(),
       .uris = {&uri, 1},
       .query = {},
       .ping_frequency = Flags::ws_ping_freq(),
@@ -79,7 +82,7 @@ MBPFeed::MBPFeed(Handler &handler, core::io::Context &context, uint32_t stream_i
           .ping = create_metrics(name_, "ping"sv),
           .heartbeat = create_metrics(name_, "heartbeat"sv),
       },
-      shared_(shared), inflate_(core::zlib::Inflate::GZIP_NO_HEADER) {
+      shared_(shared), inflate_(core::zlib::Inflate::GZIP_NO_HEADER), request_queue_(Flags::ws_request_delay()) {
 }
 
 void MBPFeed::operator()(Event<Start> const &) {
@@ -91,7 +94,10 @@ void MBPFeed::operator()(Event<Stop> const &) {
 }
 
 void MBPFeed::operator()(Event<Timer> const &event) {
-  connection_.refresh(event.value.now);
+  auto now = event.value.now;
+  connection_.refresh(now);
+  if (ready())
+    check_request_queue(now);
 }
 
 void MBPFeed::operator()(metrics::Writer &writer) {
@@ -121,6 +127,7 @@ void MBPFeed::operator()(core::web::ClientSocket::Connected const &) {
 void MBPFeed::operator()(core::web::ClientSocket::Disconnected const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
+  request_queue_.clear();
 }
 
 void MBPFeed::operator()(core::web::ClientSocket::Ready const &) {
@@ -176,6 +183,8 @@ void MBPFeed::operator()(ConnectionStatus status) {
 }
 
 void MBPFeed::subscribe(std::span<Symbol const> const &symbols) {
+  if (std::empty(symbols))
+    return;
   subscribe(symbols, "market"sv, "mbp.20"sv);  // note! 150 is throttled
 }
 
@@ -193,8 +202,7 @@ void MBPFeed::subscribe(
         symbol,
         theme,
         id);
-    log::debug(R"(message="{}")"sv, message);
-    connection_.send_text(message);
+    request_queue_.emplace_back(message);
   }
 }
 
@@ -209,8 +217,7 @@ void MBPFeed::request(std::string_view const &symbol, std::string_view const &so
       symbol,
       theme,
       id);
-  log::debug(R"(message="{}")"sv, message);
-  connection_.send_text(message);
+  request_queue_.emplace_back(message);
 }
 
 void MBPFeed::send_pong(std::chrono::milliseconds timestamp) {
@@ -219,14 +226,12 @@ void MBPFeed::send_pong(std::chrono::milliseconds timestamp) {
       R"("pong":{})"
       R"(}})"sv,
       timestamp.count());
-  // log::debug(R"(message="{}")"sv, message);
-  connection_.send_text(message);
+  connection_.send_text(message);  // note! special, can't delay
 }
 
 void MBPFeed::parse(std::string_view const &message) {
   profile_.parse([&]() {
     try {
-      // log::debug(R"(message="{}")"sv, message);
       auto trace_info = server::create_trace_info();
       core::json::Buffer buffer(decode_buffer_);
       json::Parser::dispatch(*this, message, buffer, trace_info);
@@ -240,6 +245,7 @@ void MBPFeed::parse(std::string_view const &message) {
 void MBPFeed::operator()(Trace<json::Ping const> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
+    log::debug("ping={}"sv, ping);
     send_pong(ping.timestamp);
   });
 }
@@ -276,9 +282,9 @@ void MBPFeed::operator()(Trace<json::Ticker const> const &) {
 
 void MBPFeed::operator()(Trace<json::MBP const> const &event) {
   profile_.mbp([&]() {
-    // auto &[trace_info, mbp] = event;
     auto &trace_info = event.trace_info;
     auto &mbp = event.value;
+    connection_.touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(mbp.ch);
     auto &tick = mbp.tick;
     auto &collector = shared_.mbp_collector[symbol];
@@ -295,7 +301,7 @@ void MBPFeed::operator()(Trace<json::MBP const> const &event) {
           tick.seq_num,
           tick.prev_seq_num,
           [&](auto &bids, auto &asks) {  // update
-                                         // log::debug(R"(PUBLISH UPDATE symbol="{}")"sv, symbol);
+            // log::debug(R"(PUBLISH UPDATE symbol="{}")"sv, symbol);
             const MarketByPriceUpdate market_by_price_update{
                 .stream_id = stream_id_,
                 .exchange = Flags::exchange(),
@@ -331,30 +337,26 @@ void MBPFeed::operator()(Trace<json::MBP const> const &event) {
           },
           [&](auto retries) {  // request
             log::debug(R"(REQUEST symbol="{}" (retries={}))"sv, symbol, retries);
-            request(symbol, "market"sv, "mbp.20"sv);
-            /*
             if (retries > Flags::ws_mbp_request_max_retries()) {
-              log::fatal("Unexpected"sv);
+              log::warn(R"(*** EXCEEDED MAX RETRIES: symbol="{}", retries={} ***)"sv, symbol, retries = {});
+            } else {
+              request(symbol, "market"sv, "mbp.20"sv);
             }
-            auto now = trace_info.source_receive_time;
-            shared_.request_queue.emplace_back(now + Flags::ws_mbp_request_delay(), symbol);
-            */
           });
     } catch (BadState &) {
       log::warn(R"(RESUBSCRIBE symbol="{}")"sv, symbol);
       // XXX HANS publish stale
       collector.clear();
-      auto now = trace_info.source_receive_time;
-      // shared_.request_queue.emplace_back(now + Flags::ws_mbp_request_delay(), symbol);
+      request(symbol, "market"sv, "mbp.20"sv);
     }
   });
 }
 
 void MBPFeed::operator()(Trace<json::MBPSnapshot const> const &event) {
   profile_.mbp_snapshot([&]() {
-    // auto &[trace_info, mbp_snapshot] = event;
     auto &trace_info = event.trace_info;
     auto &mbp_snapshot = event.value;
+    connection_.touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(mbp_snapshot.rep);
     auto &data = mbp_snapshot.data;
     auto &collector = shared_.mbp_collector[symbol];
@@ -388,23 +390,29 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot const> const &event) {
           },
           [&](auto retries) {  // request
             log::debug(R"(REQUEST symbol="{}" (retries={}))"sv, symbol, retries);
-            /*
             if (retries > Flags::ws_mbp_request_max_retries()) {
-              log::fatal("Unexpected"sv);
+              log::warn(R"(*** EXCEEDED MAX RETRIES: symbol="{}", retries={} ***)"sv, symbol, retries = {});
+            } else {
+              request(symbol, "market"sv, "mbp.20"sv);
             }
-            auto now = trace_info.source_receive_time;
-            shared_.request_queue.emplace_back(now + Flags::ws_mbp_request_delay(), symbol);
-            */
-            request(symbol, "market"sv, "mbp.20"sv);
           });
     } catch (BadState &) {
       log::warn(R"(RESUBSCRIBE symbol="{}")"sv, symbol);
       // XXX HANS publish stale
       collector.clear();
-      auto now = trace_info.source_receive_time;
-      // shared_.request_queue.emplace_back(now + Flags::ws_mbp_request_delay(), symbol);
+      request(symbol, "market"sv, "mbp.20"sv);
     }
   });
+}
+
+void MBPFeed::check_request_queue(std::chrono::nanoseconds now) {
+  request_queue_.dispatch(
+      [&](auto now) { return shared_.rate_limiter.can_request(now); },
+      [&](auto &message) {
+        log::debug(R"(Sending request: message="{}")"sv, message);
+        connection_.send_text(message);
+      },
+      now);
 }
 
 }  // namespace huobi

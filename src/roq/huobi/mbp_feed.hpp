@@ -7,6 +7,7 @@
 #include <vector>
 
 #include "roq/core/download.hpp"
+#include "roq/core/timer_queue.hpp"
 
 #include "roq/core/metrics/counter.hpp"
 #include "roq/core/metrics/latency.hpp"
@@ -81,6 +82,8 @@ class MBPFeed final : public core::web::ClientSocket::Handler, public json::Pars
   void operator()(Trace<json::MBP const> const &) override;
   void operator()(Trace<json::MBPSnapshot const> const &) override;
 
+  void check_request_queue(std::chrono::nanoseconds now);
+
  private:
   Handler &handler_;
   // config
@@ -110,6 +113,8 @@ class MBPFeed final : public core::web::ClientSocket::Handler, public json::Pars
   // zlib
   core::zlib::Inflate inflate_;
   std::vector<std::byte> inflate_buffer_;
+  // queue
+  core::TimerQueue request_queue_;
 };
 
 }  // namespace huobi

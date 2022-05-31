@@ -111,48 +111,29 @@
       "description": "max symbols per connection (count)"
     },
     {
-      "name": "ws_subscribe_depth_levels",
-      "type": "uint32_t",
-      "default": 20,
-      "description": "depth levels (count)"
-    },
-    {
-      "name": "ws_subscribe_depth_freq",
+      "name": "ws_request_delay",
       "type": "std::chrono::nanoseconds",
       "validator": "roq::core::flags::TimePeriod",
       "default": "100ms",
-      "description": "depth update frequency"
-    },
-    {
-      "name": "ws_subscribe_trade_details",
-      "type": "bool",
-      "default": false,
-      "description": "report individual matches for trade summary? (bool)"
-    },
-    {
-      "name": "ws_mbp_request_delay",
-      "type": "std::chrono::nanoseconds",
-      "validator": "roq::core::flags::TimePeriod",
-      "default": "500ms",
       "description": "request delay"
     },
     {
       "name": "ws_mbp_request_max_retries",
       "type": "uint32_t",
-      "default": 0,
+      "default": 3,
       "description": "request max retries"
     },
     {
       "name": "request_limit",
       "type": "uint32_t",
-      "default": "8",
+      "default": "10",
       "description": "request limit per interval"
     },
     {
       "name": "request_limit_interval",
       "type": "std::chrono::nanoseconds",
       "validator": "roq::core::flags::TimePeriod",
-      "default": "5s",
+      "default": "1s",
       "description": "request limit monitor interval"
     },
     {

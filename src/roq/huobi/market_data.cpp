@@ -40,7 +40,10 @@ struct create_metrics final : public core::metrics::Factory {
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::ws_market_uri();
   core::web::ClientSocket::Config config{
-      .validate_certificate = server::Flags::tls_validate_certificate(),
+      .always_reconnect = true,
+      .connection_timeout = server::Flags::net_connection_timeout(),
+      .disconnect_on_idle_timeout = server::Flags::net_disconnect_on_idle_timeout(),
+      .validate_certificate = server::Flags::net_tls_validate_certificate(),
       .uris = {&uri, 1},
       .query = {},
       .ping_frequency = Flags::ws_ping_freq(),
@@ -93,7 +96,7 @@ MarketData::MarketData(Handler &handler, core::io::Context &context, uint32_t st
           .ping = create_metrics(name_, "ping"sv),
           .heartbeat = create_metrics(name_, "heartbeat"sv),
       },
-      shared_(shared), inflate_(core::zlib::Inflate::GZIP_NO_HEADER) {
+      shared_(shared), inflate_(core::zlib::Inflate::GZIP_NO_HEADER), request_queue_(Flags::ws_request_delay()) {
 }
 
 void MarketData::operator()(Event<Start> const &) {
@@ -105,7 +108,10 @@ void MarketData::operator()(Event<Stop> const &) {
 }
 
 void MarketData::operator()(Event<Timer> const &event) {
-  connection_.refresh(event.value.now);
+  auto now = event.value.now;
+  connection_.refresh(now);
+  if (ready())
+    check_request_queue(now);
 }
 
 void MarketData::operator()(metrics::Writer &writer) {
@@ -137,6 +143,7 @@ void MarketData::operator()(core::web::ClientSocket::Connected const &) {
 void MarketData::operator()(core::web::ClientSocket::Disconnected const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
+  request_queue_.clear();
 }
 
 void MarketData::operator()(core::web::ClientSocket::Ready const &) {
@@ -214,8 +221,7 @@ void MarketData::subscribe(
         symbol,
         theme,
         id);
-    log::debug(R"(message="{}")"sv, message);
-    connection_.send_text(message);
+    request_queue_.emplace_back(message);
   }
 }
 
@@ -225,14 +231,12 @@ void MarketData::send_pong(std::chrono::milliseconds timestamp) {
       R"("pong":{})"
       R"(}})"sv,
       timestamp.count());
-  // log::debug(R"(message="{}")"sv, message);
-  connection_.send_text(message);
+  connection_.send_text(message);  // note! special, can't delay
 }
 
 void MarketData::parse(std::string_view const &message) {
   profile_.parse([&]() {
     try {
-      // log::debug(R"(message="{}")"sv, message);
       auto trace_info = server::create_trace_info();
       core::json::Buffer buffer(decode_buffer_);
       json::Parser::dispatch(*this, message, buffer, trace_info);
@@ -246,6 +250,7 @@ void MarketData::parse(std::string_view const &message) {
 void MarketData::operator()(Trace<json::Ping const> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
+    log::debug("ping={}"sv, ping);
     send_pong(ping.timestamp);
   });
 }
@@ -267,6 +272,7 @@ void MarketData::operator()(Trace<json::Subbed const> const &event) {
 void MarketData::operator()(Trace<json::BBO const> const &event) {
   profile_.bbo([&]() {
     auto &[trace_info, bbo] = event;
+    connection_.touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(bbo.ch);
     auto &tick = bbo.tick;
     const TopOfBook top_of_book{
@@ -290,6 +296,7 @@ void MarketData::operator()(Trace<json::BBO const> const &event) {
 void MarketData::operator()(Trace<json::Trade const> const &event) {
   profile_.trade([&]() {
     auto &[trace_info, trade] = event;
+    connection_.touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(trade.ch);
     auto &tick = trade.tick;
     core::back_emplacer trades(shared_.trades);
@@ -309,6 +316,7 @@ void MarketData::operator()(Trace<json::Trade const> const &event) {
 void MarketData::operator()(Trace<json::Detail const> const &event) {
   profile_.detail([&]() {
     auto &[trace_info, detail] = event;
+    connection_.touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(detail.ch);
     auto &tick = detail.tick;
     Statistics statistics[] = {
@@ -355,8 +363,11 @@ void MarketData::operator()(Trace<json::Detail const> const &event) {
   });
 }
 
-void MarketData::operator()(Trace<json::Ticker const> const &) {
-  // profile_.ticker([&]() { auto &[trace_info, ticker] = event; });
+void MarketData::operator()(Trace<json::Ticker const> const &event) {
+  profile_.ticker([&]() {
+    auto &[trace_info, ticker] = event;
+    connection_.touch(trace_info.source_receive_time);
+  });
 }
 
 void MarketData::operator()(Trace<json::MBP const> const &) {
@@ -365,6 +376,16 @@ void MarketData::operator()(Trace<json::MBP const> const &) {
 
 void MarketData::operator()(Trace<json::MBPSnapshot const> const &) {
   log::fatal("Unexpected"sv);
+}
+
+void MarketData::check_request_queue(std::chrono::nanoseconds now) {
+  request_queue_.dispatch(
+      [&](auto now) { return shared_.rate_limiter.can_request(now); },
+      [&](auto &message) {
+        log::debug(R"(Sending request: message="{}")"sv, message);
+        connection_.send_text(message);
+      },
+      now);
 }
 
 }  // namespace huobi

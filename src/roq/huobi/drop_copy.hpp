@@ -88,7 +88,8 @@ class DropCopy final : public core::web::ClientSocket::Handler, public json::Par
     core::metrics::Counter disconnect;
   } counter_;
   struct {
-    core::metrics::Profile parse, outbound_account_info, outbound_account_position, balance_update, execution_report;
+    core::metrics::Profile parse, ping, error, outbound_account_info, outbound_account_position, balance_update,
+        execution_report;
   } profile_;
   struct {
     core::metrics::Latency ping, heartbeat;

@@ -48,7 +48,6 @@ struct Shared final {
  public:
   core::limit::RateLimiter rate_limiter;
   core::Symbols symbols;
-  core::TimerQueue mbp_request_queue;
   absl::flat_hash_map<Symbol, core::market::MBP_Sequencer> mbp_collector;
 };
 
