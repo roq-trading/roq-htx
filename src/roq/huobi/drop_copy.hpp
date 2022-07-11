@@ -34,8 +34,7 @@ class DropCopy final : public core::web::ClientSocket::Handler, public json::Par
     virtual void operator()(Trace<FundsUpdate const> const &, bool is_last) = 0;
   };
 
-  DropCopy(
-      Handler &, io::Context &, uint16_t stream_id, Security &, Shared &, std::string_view const &listen_key);
+  DropCopy(Handler &, io::Context &, uint16_t stream_id, Security &, Shared &, std::string_view const &listen_key);
 
   DropCopy(DropCopy &&) = delete;
   DropCopy(DropCopy const &) = delete;

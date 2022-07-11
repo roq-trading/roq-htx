@@ -33,8 +33,7 @@ auto create_security(Config const &config) {
 }
 
 template <typename R, typename T>
-auto create_order_entry(
-    Gateway &gateway, io::Context &context, uint16_t &stream_id, T &security, Shared &shared) {
+auto create_order_entry(Gateway &gateway, io::Context &context, uint16_t &stream_id, T &security, Shared &shared) {
   R result;
   for (auto &iter : security)
     result.try_emplace(iter.first, std::make_unique<OrderEntry>(gateway, context, ++stream_id, *iter.second, shared));
@@ -52,7 +51,8 @@ auto create_drop_copy(T &security) {
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config)
     : dispatcher_(dispatcher), security_(create_security<decltype(security_)>(config)),
-      context_(io::event::ContextFactory::create()), shared_(dispatcher), rest_(*this, *context_, ++stream_id_, shared_),
+      context_(io::event::ContextFactory::create()), shared_(dispatcher),
+      rest_(*this, *context_, ++stream_id_, shared_),
       order_entry_(create_order_entry<decltype(order_entry_)>(*this, *context_, stream_id_, security_, shared_)),
       drop_copy_(create_drop_copy<decltype(drop_copy_)>(security_)) {
   if (Flags::rest_cancel_on_disconnect()) [[unlikely]]
