@@ -13,7 +13,7 @@
 #include "roq/core/metrics/latency.hpp"
 #include "roq/core/metrics/profile.hpp"
 
-#include "roq/core/io/context.hpp"
+#include "roq/io/context.hpp"
 
 #include "roq/core/web/client_socket.hpp"
 
@@ -36,7 +36,7 @@ class MBPFeed final : public core::web::ClientSocket::Handler, public json::Pars
     virtual void operator()(Trace<MarketByPriceUpdate const> const &, bool is_last, bool refresh) = 0;
   };
 
-  MBPFeed(Handler &, core::io::Context &, uint32_t stream_id, Shared &, size_t index);
+  MBPFeed(Handler &, io::Context &, uint32_t stream_id, Shared &, size_t index);
 
   MBPFeed(MBPFeed &&) = delete;
   MBPFeed(MBPFeed const &) = delete;
