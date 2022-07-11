@@ -23,14 +23,14 @@
     },
     {
       "name": "rest_uri",
-      "type": "roq::core::URI",
+      "type": "roq::io::web::URI",
       "validator": "roq::core::flags::URI<std::string>",
       "default": "https://api.huobi.pro",
       "description": "REST end-point (URI)"
     },
     {
       "name": "rest_proxy",
-      "type": "roq::core::URI",
+      "type": "roq::io::web::URI",
       "validator": "roq::core::flags::URI<std::string>",
       "description": "proxy end-point (URI)"
     },
@@ -77,21 +77,21 @@
     },
     {
       "name": "ws_market_uri",
-      "type": "roq::core::URI",
+      "type": "roq::io::web::URI",
       "validator": "roq::core::flags::URI<std::string>",
       "default": "wss://api.huobi.pro/ws",
       "description": "WebSocket end-point (URI) for market data (excl. incremental MBP)"
     },
     {
       "name": "ws_mbp_uri",
-      "type": "roq::core::URI",
+      "type": "roq::io::web::URI",
       "validator": "roq::core::flags::URI<std::string>",
       "default": "wss://api.huobi.pro/feed",
       "description": "WebSocket end-point (URI) for MBP"
     },
     {
       "name": "ws_order_uri",
-      "type": "roq::core::URI",
+      "type": "roq::io::web::URI",
       "validator": "roq::core::flags::URI<std::string>",
       "default": "wss://api.huobi.pro/ws/v2",
       "description": "WebSocket end-point (URI) for account and order"
