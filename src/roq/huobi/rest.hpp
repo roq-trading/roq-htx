@@ -16,7 +16,7 @@
 
 #include "roq/io/context.hpp"
 
-#include "roq/core/web/client.hpp"
+#include "roq/web/rest/client.hpp"
 
 #include "roq/server.hpp"
 
@@ -30,7 +30,7 @@
 namespace roq {
 namespace huobi {
 
-class Rest final : public core::web::Client::Handler {
+class Rest final : public web::rest::Client::Handler {
  public:
   struct SymbolsUpdate final {
     std::vector<Symbol> &symbols;
@@ -59,24 +59,24 @@ class Rest final : public core::web::Client::Handler {
   void operator()(metrics::Writer &);
 
  protected:
-  void operator()(core::web::Client::Connected const &);
-  void operator()(core::web::Client::Disconnected const &);
-  void operator()(core::web::Client::Latency const &);
+  void operator()(web::rest::Client::Connected const &);
+  void operator()(web::rest::Client::Disconnected const &);
+  void operator()(web::rest::Client::Latency const &);
 
   void operator()(ConnectionStatus);
 
   uint32_t download(RestState state);
 
   void get_market_status();
-  void get_market_status_ack(Trace<core::web::Response const> const &, uint32_t sequence);
+  void get_market_status_ack(Trace<web::rest::Response const> const &, uint32_t sequence);
   void operator()(Trace<json::MarketStatus const> const &);
 
   void get_currencies();
-  void get_currencies_ack(Trace<core::web::Response const> const &, uint32_t sequence);
+  void get_currencies_ack(Trace<web::rest::Response const> const &, uint32_t sequence);
   void operator()(Trace<json::Currencies const> const &);
 
   void get_symbols();
-  void get_symbols_ack(Trace<core::web::Response const> const &, uint32_t sequence);
+  void get_symbols_ack(Trace<web::rest::Response const> const &, uint32_t sequence);
   void operator()(Trace<json::Symbols const> const &);
 
  private:
@@ -85,7 +85,7 @@ class Rest final : public core::web::Client::Handler {
   const uint16_t stream_id_;
   const std::string name_;
   // connection
-  core::web::Client connection_;
+  std::unique_ptr<web::rest::Client> connection_;
   // buffers
   core::Buffer decode_buffer_;
   // metrics

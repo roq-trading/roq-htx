@@ -12,6 +12,8 @@
 
 #include "roq/core/metrics/factory.hpp"
 
+#include "roq/web/rest/client_factory.hpp"
+
 #include "roq/huobi/flags.hpp"
 
 #include "roq/huobi/json/utils.hpp"
@@ -35,20 +37,20 @@ struct create_metrics final : public core::metrics::Factory {
 
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::rest_uri();
-  core::web::Client::Config config{
+  web::rest::Client::Config config{
       .decode_buffer_size = Flags::decode_buffer_size(),
       .encode_buffer_size = Flags::encode_buffer_size(),
       .validate_certificate = server::Flags::net_tls_validate_certificate(),
       .uris = {&uri, 1},
       .proxy = Flags::rest_proxy(),
       .user_agent = ROQ_PACKAGE_NAME,
-      .connection = core::http::Connection::KEEP_ALIVE,
+      .connection = web::http::Connection::KEEP_ALIVE,
       .allow_pipelining = true,
       .request_timeout = Flags::rest_request_timeout(),
       .ping_frequency = Flags::rest_ping_freq(),
       .ping_path = Flags::rest_ping_path(),
   };
-  return core::web::Client{handler, context, config};
+  return web::rest::ClientFactory::create(handler, context, config);
 }
 
 template <typename T>
@@ -85,16 +87,16 @@ Rest::Rest(Handler &handler, io::Context &context, uint16_t stream_id, Shared &s
 }
 
 void Rest::operator()(Event<Start> const &) {
-  connection_.start();
+  (*connection_).start();
 }
 
 void Rest::operator()(Event<Stop> const &) {
-  connection_.stop();
+  (*connection_).stop();
 }
 
 void Rest::operator()(Event<Timer> const &event) {
   auto now = event.value.now;
-  connection_.refresh(now);
+  (*connection_).refresh(now);
 }
 
 void Rest::operator()(metrics::Writer &writer) {
@@ -112,7 +114,7 @@ void Rest::operator()(metrics::Writer &writer) {
       .write(latency_.ping, metrics::LATENCY);
 }
 
-void Rest::operator()(core::web::Client::Connected const &) {
+void Rest::operator()(web::rest::Client::Connected const &) {
   if (download_.downloading()) {
     download_.bump();
   } else {
@@ -121,7 +123,7 @@ void Rest::operator()(core::web::Client::Connected const &) {
   }
 }
 
-void Rest::operator()(core::web::Client::Disconnected const &) {
+void Rest::operator()(web::rest::Client::Disconnected const &) {
   ++counter_.disconnect;
   ready_ = false;
   (*this)(ConnectionStatus::DISCONNECTED);
@@ -129,7 +131,7 @@ void Rest::operator()(core::web::Client::Disconnected const &) {
     download_.reset();
 }
 
-void Rest::operator()(core::web::Client::Latency const &latency) {
+void Rest::operator()(web::rest::Client::Latency const &latency) {
   auto trace_info = server::create_trace_info();
   const ExternalLatency external_latency{
       .stream_id = stream_id_,
@@ -187,20 +189,20 @@ uint32_t Rest::download(RestState state) {
 
 void Rest::get_market_status() {
   profile_.market_status([&]() {
-    auto method = core::http::Method::GET;
+    auto method = web::http::Method::GET;
     auto path = "/v2/market-status"sv;
-    core::web::Request request{
+    web::rest::Request request{
         .method = method,
         .path = path,
         .query = {},
-        .accept = core::http::Accept::JSON,
+        .accept = web::http::Accept::JSON,
         .content_type = {},
         .headers = {},
         .body = {},
         .quality_of_service = {},
     };
     auto sequence = download_.sequence();
-    connection_("market_status"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
+    (*connection_)("market_status"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
       auto trace_info = server::create_trace_info();
       Trace event(trace_info, response);
       get_market_status_ack(event, sequence);
@@ -208,7 +210,7 @@ void Rest::get_market_status() {
   });
 }
 
-void Rest::get_market_status_ack(Trace<core::web::Response const> const &event, uint32_t sequence) {
+void Rest::get_market_status_ack(Trace<web::rest::Response const> const &event, uint32_t sequence) {
   profile_.market_status_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::MARKET_STATUS;
@@ -219,7 +221,7 @@ void Rest::get_market_status_ack(Trace<core::web::Response const> const &event, 
         log::info("Download state={} has already been processed"sv, state);
         return;
       }
-      response.expect(core::http::Status::OK);
+      response.expect(web::http::Status::OK);
       core::json::Buffer buffer(decode_buffer_);
       const auto market_status = core::json::Parser::create<json::MarketStatus>(body, buffer);
       Trace event(trace_info, market_status);
@@ -241,20 +243,20 @@ void Rest::operator()(Trace<json::MarketStatus const> const &event) {
 
 void Rest::get_currencies() {
   profile_.currencies([&]() {
-    auto method = core::http::Method::GET;
+    auto method = web::http::Method::GET;
     auto path = "/v1/common/currencys"sv;
-    core::web::Request request{
+    web::rest::Request request{
         .method = method,
         .path = path,
         .query = {},
-        .accept = core::http::Accept::JSON,
+        .accept = web::http::Accept::JSON,
         .content_type = {},
         .headers = {},
         .body = {},
         .quality_of_service = {},
     };
     auto sequence = download_.sequence();
-    connection_("currencies"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
+    (*connection_)("currencies"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
       auto trace_info = server::create_trace_info();
       Trace event(trace_info, response);
       get_currencies_ack(event, sequence);
@@ -262,7 +264,7 @@ void Rest::get_currencies() {
   });
 }
 
-void Rest::get_currencies_ack(Trace<core::web::Response const> const &event, uint32_t sequence) {
+void Rest::get_currencies_ack(Trace<web::rest::Response const> const &event, uint32_t sequence) {
   profile_.currencies_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::CURRENCIES;
@@ -273,7 +275,7 @@ void Rest::get_currencies_ack(Trace<core::web::Response const> const &event, uin
         log::info("Download state={} has already been processed"sv, state);
         return;
       }
-      response.expect(core::http::Status::OK);
+      response.expect(web::http::Status::OK);
       core::json::Buffer buffer(decode_buffer_);
       const auto currencies = core::json::Parser::create<json::Currencies>(body, buffer);
       Trace event(trace_info, currencies);
@@ -295,20 +297,20 @@ void Rest::operator()(Trace<json::Currencies const> const &event) {
 
 void Rest::get_symbols() {
   profile_.symbols([&]() {
-    auto method = core::http::Method::GET;
+    auto method = web::http::Method::GET;
     auto path = "/v1/common/symbols"sv;
-    core::web::Request request{
+    web::rest::Request request{
         .method = method,
         .path = path,
         .query = {},
-        .accept = core::http::Accept::JSON,
+        .accept = web::http::Accept::JSON,
         .content_type = {},
         .headers = {},
         .body = {},
         .quality_of_service = {},
     };
     auto sequence = download_.sequence();
-    connection_("symbols"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
+    (*connection_)("symbols"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
       auto trace_info = server::create_trace_info();
       Trace event(trace_info, response);
       get_symbols_ack(event, sequence);
@@ -316,7 +318,7 @@ void Rest::get_symbols() {
   });
 }
 
-void Rest::get_symbols_ack(Trace<core::web::Response const> const &event, uint32_t sequence) {
+void Rest::get_symbols_ack(Trace<web::rest::Response const> const &event, uint32_t sequence) {
   profile_.symbols_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::SYMBOLS;
@@ -327,7 +329,7 @@ void Rest::get_symbols_ack(Trace<core::web::Response const> const &event, uint32
         log::info("Download state={} has already been processed"sv, state);
         return;
       }
-      response.expect(core::http::Status::OK);
+      response.expect(web::http::Status::OK);
       core::json::Buffer buffer(decode_buffer_);
       const auto symbols = core::json::Parser::create<json::Symbols>(body, buffer);
       Trace event(trace_info, symbols);
