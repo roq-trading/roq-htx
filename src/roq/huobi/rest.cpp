@@ -227,7 +227,7 @@ void Rest::get_market_status_ack(Trace<web::rest::Response const> const &event, 
       Trace event(trace_info, market_status);
       (*this)(event);
       download_.check(state);
-    } catch (core::NetworkError &e) {
+    } catch (NetworkError &e) {
       log::warn(R"(Exception type={}, what="{}")"sv, typeid(e).name(), e.what());
       download_.retry(state);
     }
@@ -281,7 +281,7 @@ void Rest::get_currencies_ack(Trace<web::rest::Response const> const &event, uin
       Trace event(trace_info, currencies);
       (*this)(event);
       download_.check(state);
-    } catch (core::NetworkError &e) {
+    } catch (NetworkError &e) {
       log::warn(R"(Exception type={}, what="{}")"sv, typeid(e).name(), e.what());
       download_.retry(state);
     }
@@ -335,7 +335,7 @@ void Rest::get_symbols_ack(Trace<web::rest::Response const> const &event, uint32
       Trace event(trace_info, symbols);
       (*this)(event);
       download_.check(state);
-    } catch (core::NetworkError &e) {
+    } catch (NetworkError &e) {
       log::warn(R"(Exception type={}, what="{}")"sv, typeid(e).name(), e.what());
       download_.retry(state);
     }
