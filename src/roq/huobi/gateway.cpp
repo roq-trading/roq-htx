@@ -12,7 +12,7 @@
 #include "roq/core/clock.hpp"
 #include "roq/core/utils.hpp"
 
-#include "roq/io/engine/libevent/context_factory.hpp"
+#include "roq/io/engine/context_factory.hpp"
 
 #include "roq/huobi/flags.hpp"
 
@@ -51,7 +51,7 @@ auto create_drop_copy(T &security) {
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config)
     : dispatcher_(dispatcher), security_(create_security<decltype(security_)>(config)),
-      context_(io::engine::libevent::ContextFactory::create()), shared_(dispatcher),
+      context_(io::engine::ContextFactory::create_libevent()), shared_(dispatcher),
       rest_(*this, *context_, ++stream_id_, shared_),
       order_entry_(create_order_entry<decltype(order_entry_)>(*this, *context_, stream_id_, security_, shared_)),
       drop_copy_(create_drop_copy<decltype(drop_copy_)>(security_)) {
