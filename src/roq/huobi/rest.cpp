@@ -369,6 +369,7 @@ void Rest::operator()(Trace<json::Symbols const> const &event) {
         .commission_currency = {},
         .tick_size = tick_size,
         .multiplier = NaN,
+        .min_notional = NaN,
         .min_trade_vol = item.min_order_amt,
         .max_trade_vol = item.max_order_amt,
         .trade_vol_step_size = trade_vol_step_size,
