@@ -72,6 +72,7 @@ MBPFeed::MBPFeed(Handler &handler, io::Context &context, uint32_t stream_id, Sha
       request_id_(static_cast<uint64_t>(stream_id_) * 1000000),  // scale (debugging)
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
+          .total_bytes_received = create_metrics(name_, "total_bytes_received"sv),
       },
       profile_{
           .parse = create_metrics(name_, "parse"sv),
@@ -107,6 +108,7 @@ void MBPFeed::operator()(metrics::Writer &writer) {
   writer
       // counter
       .write(counter_.disconnect, metrics::COUNTER)
+      .write(counter_.total_bytes_received, metrics::COUNTER)
       // profile
       .write(profile_.parse, metrics::PROFILE)
       .write(profile_.ping, metrics::PROFILE)
@@ -165,6 +167,7 @@ void MBPFeed::operator()(web::socket::Client::Binary const &binary) {
   } else {
     log::fatal("Failed to decode message"sv);
   }
+  counter_.total_bytes_received.update((*connection_).total_bytes_received());
 }
 
 void MBPFeed::operator()(ConnectionStatus status) {
