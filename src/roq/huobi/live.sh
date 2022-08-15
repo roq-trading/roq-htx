@@ -22,8 +22,10 @@ WS_ORDER_URI="wss://$URI/ws/v2"
 $PREFIX ./roq-huobi \
 	--name "$NAME" \
 	--config_file "$CONFIG_FILE" \
-	--client_listen_address $CWD/$NAME.sock \
-	--metrics_listen_address $CWD/${NAME}_metrics.sock \
+  --event_log_dir "$HOME/var/lib/roq/data" \                                                                            
+  --event_log_symlink \                                                                                                 
+  --client_listen_address "$HOME/run/$NAME.sock" \                                                                      
+  --metrics_listen_address "$HOME/run/${NAME}_metrics.sock" \
 	--rest_uri "$REST_URI" \
 	--ws_market_uri "$WS_MARKET_URI" \
 	--ws_mbp_uri "$WS_MBP_URI" \
