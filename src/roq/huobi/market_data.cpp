@@ -253,7 +253,7 @@ void MarketData::parse(std::string_view const &message) {
   });
 }
 
-void MarketData::operator()(Trace<json::Ping const> const &event) {
+void MarketData::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     log::debug("ping={}"sv, ping);
@@ -261,21 +261,21 @@ void MarketData::operator()(Trace<json::Ping const> const &event) {
   });
 }
 
-void MarketData::operator()(Trace<json::Error const> const &event) {
+void MarketData::operator()(Trace<json::Error> const &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::warn("error={}"sv, error);
   });
 }
 
-void MarketData::operator()(Trace<json::Subbed const> const &event) {
+void MarketData::operator()(Trace<json::Subbed> const &event) {
   profile_.subbed([&]() {
     auto &[trace_info, subbed] = event;
     log::info<1>("subbed={}"sv, subbed);
   });
 }
 
-void MarketData::operator()(Trace<json::BBO const> const &event) {
+void MarketData::operator()(Trace<json::BBO> const &event) {
   profile_.bbo([&]() {
     auto &[trace_info, bbo] = event;
     (*connection_).touch(trace_info.source_receive_time);
@@ -299,7 +299,7 @@ void MarketData::operator()(Trace<json::BBO const> const &event) {
   });
 }
 
-void MarketData::operator()(Trace<json::Trade const> const &event) {
+void MarketData::operator()(Trace<json::Trade> const &event) {
   profile_.trade([&]() {
     auto &[trace_info, trade] = event;
     (*connection_).touch(trace_info.source_receive_time);
@@ -319,7 +319,7 @@ void MarketData::operator()(Trace<json::Trade const> const &event) {
   });
 }
 
-void MarketData::operator()(Trace<json::Detail const> const &event) {
+void MarketData::operator()(Trace<json::Detail> const &event) {
   profile_.detail([&]() {
     auto &[trace_info, detail] = event;
     (*connection_).touch(trace_info.source_receive_time);
@@ -369,18 +369,18 @@ void MarketData::operator()(Trace<json::Detail const> const &event) {
   });
 }
 
-void MarketData::operator()(Trace<json::Ticker const> const &event) {
+void MarketData::operator()(Trace<json::Ticker> const &event) {
   profile_.ticker([&]() {
     auto &[trace_info, ticker] = event;
     (*connection_).touch(trace_info.source_receive_time);
   });
 }
 
-void MarketData::operator()(Trace<json::MBP const> const &) {
+void MarketData::operator()(Trace<json::MBP> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MarketData::operator()(Trace<json::MBPSnapshot const> const &) {
+void MarketData::operator()(Trace<json::MBPSnapshot> const &) {
   log::fatal("Unexpected"sv);
 }
 

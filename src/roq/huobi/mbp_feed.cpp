@@ -248,7 +248,7 @@ void MBPFeed::parse(std::string_view const &message) {
   });
 }
 
-void MBPFeed::operator()(Trace<json::Ping const> const &event) {
+void MBPFeed::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     log::debug("ping={}"sv, ping);
@@ -256,37 +256,37 @@ void MBPFeed::operator()(Trace<json::Ping const> const &event) {
   });
 }
 
-void MBPFeed::operator()(Trace<json::Error const> const &event) {
+void MBPFeed::operator()(Trace<json::Error> const &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::warn("error={}"sv, error);
   });
 }
 
-void MBPFeed::operator()(Trace<json::Subbed const> const &event) {
+void MBPFeed::operator()(Trace<json::Subbed> const &event) {
   profile_.subbed([&]() {
     auto &[trace_info, subbed] = event;
     log::info<1>("subbed={}"sv, subbed);
   });
 }
 
-void MBPFeed::operator()(Trace<json::BBO const> const &) {
+void MBPFeed::operator()(Trace<json::BBO> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(Trace<json::Trade const> const &) {
+void MBPFeed::operator()(Trace<json::Trade> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(Trace<json::Detail const> const &) {
+void MBPFeed::operator()(Trace<json::Detail> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(Trace<json::Ticker const> const &) {
+void MBPFeed::operator()(Trace<json::Ticker> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(Trace<json::MBP const> const &event) {
+void MBPFeed::operator()(Trace<json::MBP> const &event) {
   profile_.mbp([&]() {
     auto &trace_info = event.trace_info;
     auto &mbp = event.value;
@@ -358,7 +358,7 @@ void MBPFeed::operator()(Trace<json::MBP const> const &event) {
   });
 }
 
-void MBPFeed::operator()(Trace<json::MBPSnapshot const> const &event) {
+void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
   profile_.mbp_snapshot([&]() {
     auto &trace_info = event.trace_info;
     auto &mbp_snapshot = event.value;

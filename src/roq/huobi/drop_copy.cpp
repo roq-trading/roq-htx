@@ -192,7 +192,7 @@ void DropCopy::parse(std::string_view const &message) {
   });
 }
 
-void DropCopy::operator()(Trace<json::Ping const> const &event) {
+void DropCopy::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     log::debug("ping={}"sv, ping);
@@ -200,38 +200,38 @@ void DropCopy::operator()(Trace<json::Ping const> const &event) {
   });
 }
 
-void DropCopy::operator()(Trace<json::Error const> const &event) {
+void DropCopy::operator()(Trace<json::Error> const &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::warn("error={}"sv, error);
   });
 }
 
-void DropCopy::operator()(Trace<json::Subbed const> const &) {
+void DropCopy::operator()(Trace<json::Subbed> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(Trace<json::BBO const> const &) {
+void DropCopy::operator()(Trace<json::BBO> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(Trace<json::Trade const> const &) {
+void DropCopy::operator()(Trace<json::Trade> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(Trace<json::Detail const> const &) {
+void DropCopy::operator()(Trace<json::Detail> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(Trace<json::Ticker const> const &) {
+void DropCopy::operator()(Trace<json::Ticker> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(Trace<json::MBP const> const &) {
+void DropCopy::operator()(Trace<json::MBP> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void DropCopy::operator()(Trace<json::MBPSnapshot const> const &) {
+void DropCopy::operator()(Trace<json::MBPSnapshot> const &) {
   log::fatal("Unexpected"sv);
 }
 

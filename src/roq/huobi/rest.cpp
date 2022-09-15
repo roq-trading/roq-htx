@@ -210,7 +210,7 @@ void Rest::get_market_status() {
   });
 }
 
-void Rest::get_market_status_ack(Trace<web::rest::Response const> const &event, uint32_t sequence) {
+void Rest::get_market_status_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
   profile_.market_status_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::MARKET_STATUS;
@@ -234,7 +234,7 @@ void Rest::get_market_status_ack(Trace<web::rest::Response const> const &event, 
   });
 }
 
-void Rest::operator()(Trace<json::MarketStatus const> const &event) {
+void Rest::operator()(Trace<json::MarketStatus> const &event) {
   auto &[trace_info, market_status] = event;
   log::info<2>("market_status={}"sv, market_status);
 }
@@ -264,7 +264,7 @@ void Rest::get_currencies() {
   });
 }
 
-void Rest::get_currencies_ack(Trace<web::rest::Response const> const &event, uint32_t sequence) {
+void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
   profile_.currencies_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::CURRENCIES;
@@ -288,7 +288,7 @@ void Rest::get_currencies_ack(Trace<web::rest::Response const> const &event, uin
   });
 }
 
-void Rest::operator()(Trace<json::Currencies const> const &event) {
+void Rest::operator()(Trace<json::Currencies> const &event) {
   auto &[trace_info, currencies] = event;
   log::info<2>("currencies={}"sv, currencies);
 }
@@ -318,7 +318,7 @@ void Rest::get_symbols() {
   });
 }
 
-void Rest::get_symbols_ack(Trace<web::rest::Response const> const &event, uint32_t sequence) {
+void Rest::get_symbols_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
   profile_.symbols_ack([&]() {
     auto &[trace_info, response] = event;
     auto state = RestState::SYMBOLS;
@@ -342,7 +342,7 @@ void Rest::get_symbols_ack(Trace<web::rest::Response const> const &event, uint32
   });
 }
 
-void Rest::operator()(Trace<json::Symbols const> const &event) {
+void Rest::operator()(Trace<json::Symbols> const &event) {
   auto &[trace_info, symbols] = event;
   log::info<2>("symbols={}"sv, symbols);
   std::vector<Symbol> symbols_2;
