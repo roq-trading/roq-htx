@@ -12,8 +12,6 @@
 #include "roq/core/clock.hpp"
 #include "roq/core/utils.hpp"
 
-#include "roq/io/engine/context_factory.hpp"
-
 #include "roq/huobi/flags.hpp"
 
 #include "roq/huobi/json/utils.hpp"
@@ -49,11 +47,10 @@ auto create_drop_copy(T &security) {
 }
 }  // namespace
 
-Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config)
-    : dispatcher_(dispatcher), security_(create_security<decltype(security_)>(config)),
-      context_(io::engine::ContextFactory::create_libevent()), shared_(dispatcher),
-      rest_(*this, *context_, ++stream_id_, shared_),
-      order_entry_(create_order_entry<decltype(order_entry_)>(*this, *context_, stream_id_, security_, shared_)),
+Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config, io::Context &context)
+    : dispatcher_(dispatcher), security_(create_security<decltype(security_)>(config)), context_(context),
+      shared_(dispatcher), rest_(*this, context_, ++stream_id_, shared_),
+      order_entry_(create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, security_, shared_)),
       drop_copy_(create_drop_copy<decltype(drop_copy_)>(security_)) {
   if (Flags::rest_cancel_on_disconnect()) [[unlikely]]
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
@@ -96,7 +93,6 @@ void Gateway::operator()(Event<Timer> const &event) {
     (*iter)(event);
   for (auto &iter : mbp_feed_)
     (*iter)(event);
-  (*context_).drain();
 }
 
 void Gateway::operator()(Event<Connected> const &) {
@@ -161,7 +157,7 @@ void Gateway::ensure_symbol_slices(size_t size) {
     auto stream_id = ++stream_id_;
     auto index = std::size(market_data_);
     log::debug("Create MarketData (stream_id={}, index={})"sv, stream_id, index);
-    auto market_data = std::make_unique<MarketData>(*this, *context_, stream_id, shared_, index);
+    auto market_data = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index);
     MessageInfo message_info;
     Start start;
     create_event_and_dispatch(*market_data, message_info, start);
@@ -172,7 +168,7 @@ void Gateway::ensure_symbol_slices(size_t size) {
     auto stream_id = ++stream_id_;
     auto index = std::size(mbp_feed_);
     log::debug("Create MBPFeed (stream_id={}, index={})"sv, stream_id, index);
-    auto mbp_feed = std::make_unique<MBPFeed>(*this, *context_, stream_id, shared_, index);
+    auto mbp_feed = std::make_unique<MBPFeed>(*this, context_, stream_id, shared_, index);
     MessageInfo message_info;
     Start start;
     create_event_and_dispatch(*mbp_feed, message_info, start);
