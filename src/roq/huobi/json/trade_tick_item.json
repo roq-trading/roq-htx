@@ -4,7 +4,8 @@
   "values": [
     {
       "name": "id",
-      "type": "int64_t"
+      "type": "int64_t",
+      "comment": "OBSOLETE"
     },
     {
       "name": "ts",
