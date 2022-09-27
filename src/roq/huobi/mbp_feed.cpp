@@ -26,16 +26,22 @@ using namespace std::literals;
 namespace roq {
 namespace huobi {
 
+// === CONSTANTS ===
+
 namespace {
 auto const NAME = "mbp"sv;
+
 const Mask SUPPORTS{
     SupportType::MARKET_BY_PRICE,
 };
+}  // namespace
 
-struct create_metrics final : public core::metrics::Factory {
-  explicit create_metrics(std::string_view const &group, std::string_view const &function)
-      : core::metrics::Factory(server::Flags::name(), group, function) {}
-};
+// === HELPERS ===
+
+namespace {
+auto create_name(auto stream_id) {
+  return fmt::format("{}:{}"sv, stream_id, NAME);
+}
 
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::ws_mbp_uri();
@@ -52,10 +58,16 @@ auto create_connection(auto &handler, auto &context) {
   };
   return web::socket::ClientFactory::create(handler, context, config, []() { return std::string(); });
 }
+struct create_metrics final : public core::metrics::Factory {
+  explicit create_metrics(auto const &group, auto const &function)
+      : core::metrics::Factory(server::Flags::name(), group, function) {}
+};
 
-template <typename T>
-void emplace(MBPUpdate &result, const T &value) {
-  new (&result) MBPUpdate{
+// following are used from several places
+
+template <typename T, typename std::enable_if<std::is_same<T, MBPUpdate>::value, int>::type = 0>
+void create_mbp_update(T &result, auto const &value) {
+  new (&result) T{
       .price = value.price,
       .quantity = value.vol,
       .implied_quantity = NaN,
@@ -63,11 +75,13 @@ void emplace(MBPUpdate &result, const T &value) {
       .update_action = {},
       .price_level = {},
   };
-}
+};
 }  // namespace
 
+// === IMPLEMENTATION ===
+
 MBPFeed::MBPFeed(Handler &handler, io::Context &context, uint32_t stream_id, Shared &shared, size_t index)
-    : handler_(handler), stream_id_(stream_id), name_(fmt::format("{}:{}"sv, stream_id_, NAME)), index_(index),
+    : handler_(handler), stream_id_(stream_id), name_(create_name(stream_id_)), index_(index),
       connection_(create_connection(*this, context)), decode_buffer_(Flags::decode_buffer_size()),
       request_id_(static_cast<uint64_t>(stream_id_) * 1000000),  // scale (debugging)
       counter_{
@@ -296,9 +310,9 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
     auto &collector = shared_.mbp_collector[symbol];
     core::back_emplacer bids(shared_.bids), asks(shared_.asks);
     for (auto &item : tick.bids)
-      bids.emplace_back([&item](auto &result) { emplace(result, item); });
+      bids.emplace_back([&](auto &result) { create_mbp_update(result, item); });
     for (auto &item : tick.asks)
-      asks.emplace_back([&item](auto &result) { emplace(result, item); });
+      asks.emplace_back([&](auto &result) { create_mbp_update(result, item); });
     try {
       collector(
           bids,
@@ -368,9 +382,9 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
     auto &collector = shared_.mbp_collector[symbol];
     core::back_emplacer bids(shared_.bids), asks(shared_.asks);
     for (auto &item : data.bids)
-      bids.emplace_back([&item](auto &result) { emplace(result, item); });
+      bids.emplace_back([&](auto &result) { create_mbp_update(result, item); });
     for (auto &item : data.asks)
-      asks.emplace_back([&item](auto &result) { emplace(result, item); });
+      asks.emplace_back([&](auto &result) { create_mbp_update(result, item); });
     try {
       collector(
           bids,
