@@ -314,55 +314,49 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
     for (auto &item : tick.asks)
       asks.emplace_back([&](auto &result) { create_mbp_update(result, item); });
     try {
+      auto create_update = [&](auto &bids, auto &asks, auto update_type, auto exchange_sequence) {
+        return MarketByPriceUpdate{
+            .stream_id = stream_id_,
+            .exchange = Flags::exchange(),
+            .symbol = symbol,
+            .bids = bids,
+            .asks = asks,
+            .update_type = update_type,
+            .exchange_time_utc = utils::safe_cast(mbp.ts),
+            .exchange_sequence = exchange_sequence,
+            .price_decimals = {},
+            .quantity_decimals = {},
+            .checksum = {},
+        };
+      };
+      auto publish_update = [&](auto &bids, auto &asks) {
+        // log::debug(R"(PUBLISH UPDATE symbol="{}")"sv, symbol);
+        auto market_by_price_update = create_update(bids, asks, UpdateType::INCREMENTAL, tick.seq_num);
+        create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
+      };
+      auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence) {
+        log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
+        auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT, collector.last_sequence());
+        Trace event(trace_info, market_by_price_update);
+        shared_(event, true, [&](auto &market_by_price) { collector.apply(market_by_price, sequence, false); });
+      };
+      auto request_snapshot = [&](auto retries) {
+        log::debug(R"(REQUEST symbol="{}" (retries={}))"sv, symbol, retries);
+        if (retries > Flags::ws_mbp_request_max_retries()) {
+          log::warn(R"(*** EXCEEDED MAX RETRIES: symbol="{}", retries={} ***)"sv, symbol, retries = {});
+        } else {
+          request(symbol, "market"sv, "mbp.20"sv);
+        }
+      };
       collector(
           bids,
           asks,
           tick.seq_num,
           tick.seq_num,
           tick.prev_seq_num,
-          [&](auto &bids, auto &asks) {  // update
-            // log::debug(R"(PUBLISH UPDATE symbol="{}")"sv, symbol);
-            const MarketByPriceUpdate market_by_price_update{
-                .stream_id = stream_id_,
-                .exchange = Flags::exchange(),
-                .symbol = symbol,
-                .bids = bids,
-                .asks = asks,
-                .update_type = UpdateType::INCREMENTAL,
-                .exchange_time_utc = utils::safe_cast(mbp.ts),
-                .exchange_sequence = tick.seq_num,
-                .price_decimals = {},
-                .quantity_decimals = {},
-                .checksum = {},
-            };
-            create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true, false);
-          },
-          [&](auto &bids, auto &asks, auto sequence) {  // snapshot
-            log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
-            const MarketByPriceUpdate market_by_price_update{
-                .stream_id = stream_id_,
-                .exchange = Flags::exchange(),
-                .symbol = symbol,
-                .bids = bids,
-                .asks = asks,
-                .update_type = UpdateType::SNAPSHOT,
-                .exchange_time_utc = utils::safe_cast(mbp.ts),
-                .exchange_sequence = collector.last_sequence(),
-                .price_decimals = {},
-                .quantity_decimals = {},
-                .checksum = {},
-            };
-            Trace event(trace_info, market_by_price_update);
-            shared_(event, true, [&](auto &market_by_price) { collector.apply(market_by_price, sequence, false); });
-          },
-          [&](auto retries) {  // request
-            log::debug(R"(REQUEST symbol="{}" (retries={}))"sv, symbol, retries);
-            if (retries > Flags::ws_mbp_request_max_retries()) {
-              log::warn(R"(*** EXCEEDED MAX RETRIES: symbol="{}", retries={} ***)"sv, symbol, retries = {});
-            } else {
-              request(symbol, "market"sv, "mbp.20"sv);
-            }
-          });
+          publish_update,
+          publish_snapshot,
+          request_snapshot);
     } catch (BadState &) {
       log::warn(R"(RESUBSCRIBE symbol="{}")"sv, symbol);
       // XXX HANS publish stale
@@ -386,36 +380,33 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
     for (auto &item : data.asks)
       asks.emplace_back([&](auto &result) { create_mbp_update(result, item); });
     try {
-      collector(
-          bids,
-          asks,
-          data.seq_num,
-          [&](auto &bids, auto &asks, auto sequence) {  // snapshot
-            log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
-            const MarketByPriceUpdate market_by_price_update{
-                .stream_id = stream_id_,
-                .exchange = Flags::exchange(),
-                .symbol = symbol,
-                .bids = bids,
-                .asks = asks,
-                .update_type = UpdateType::SNAPSHOT,
-                .exchange_time_utc = {},
-                .exchange_sequence = collector.last_sequence(),
-                .price_decimals = {},
-                .quantity_decimals = {},
-                .checksum = {},
-            };
-            Trace event(trace_info, market_by_price_update);
-            shared_(event, true, [&](auto &market_by_price) { collector.apply(market_by_price, sequence, false); });
-          },
-          [&](auto retries) {  // request
-            log::debug(R"(REQUEST symbol="{}" (retries={}))"sv, symbol, retries);
-            if (retries > Flags::ws_mbp_request_max_retries()) {
-              log::warn(R"(*** EXCEEDED MAX RETRIES: symbol="{}", retries={} ***)"sv, symbol, retries = {});
-            } else {
-              request(symbol, "market"sv, "mbp.20"sv);
-            }
-          });
+      auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence) {
+        log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
+        const MarketByPriceUpdate market_by_price_update{
+            .stream_id = stream_id_,
+            .exchange = Flags::exchange(),
+            .symbol = symbol,
+            .bids = bids,
+            .asks = asks,
+            .update_type = UpdateType::SNAPSHOT,
+            .exchange_time_utc = {},
+            .exchange_sequence = collector.last_sequence(),
+            .price_decimals = {},
+            .quantity_decimals = {},
+            .checksum = {},
+        };
+        Trace event(trace_info, market_by_price_update);
+        shared_(event, true, [&](auto &market_by_price) { collector.apply(market_by_price, sequence, false); });
+      };
+      auto request_snapshot = [&](auto retries) {
+        log::debug(R"(REQUEST symbol="{}" (retries={}))"sv, symbol, retries);
+        if (retries > Flags::ws_mbp_request_max_retries()) {
+          log::warn(R"(*** EXCEEDED MAX RETRIES: symbol="{}", retries={} ***)"sv, symbol, retries = {});
+        } else {
+          request(symbol, "market"sv, "mbp.20"sv);
+        }
+      };
+      collector(bids, asks, data.seq_num, publish_snapshot, request_snapshot);
     } catch (BadState &) {
       log::warn(R"(RESUBSCRIBE symbol="{}")"sv, symbol);
       // XXX HANS publish stale
