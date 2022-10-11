@@ -21,38 +21,42 @@ using namespace std::literals;
 namespace roq {
 namespace huobi {
 
+// === HELPERS ===
+
 namespace {
 template <typename R>
-auto create_security(Config const &config) {
+auto create_security(auto const &config) {
   R result;
-  for (auto &[_, iter] : config.accounts)
-    result.try_emplace(iter.name, std::make_unique<Security>(config, iter.name));
+  for (auto &[_, account] : config.accounts)
+    result.try_emplace(account.name, std::make_unique<Security>(config, account.name));
   return result;
 }
 
-template <typename R, typename T>
-auto create_order_entry(Gateway &gateway, io::Context &context, uint16_t &stream_id, T &security, Shared &shared) {
+template <typename R>
+auto create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &security_by_account, auto &shared) {
   R result;
-  for (auto &iter : security)
-    result.try_emplace(iter.first, std::make_unique<OrderEntry>(gateway, context, ++stream_id, *iter.second, shared));
+  for (auto &[account, security] : security_by_account)
+    result.try_emplace(account, std::make_unique<OrderEntry>(gateway, context, ++stream_id, *security, shared));
   return result;
 }
 
-template <typename R, typename T>
-auto create_drop_copy(T &security) {
+template <typename R>
+auto create_drop_copy(auto &security_by_account) {
   R result;
-  for (auto &iter : security)
-    result.try_emplace(iter.first, nullptr);
+  for (auto &[account, security] : security_by_account)
+    result.try_emplace(account, nullptr);
   return result;
 }
 }  // namespace
+
+// === IMPLEMENTATION ===
 
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config, io::Context &context)
     : dispatcher_(dispatcher), security_(create_security<decltype(security_)>(config)), context_(context),
       shared_(dispatcher), rest_(*this, context_, ++stream_id_, shared_),
       order_entry_(create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, security_, shared_)),
       drop_copy_(create_drop_copy<decltype(drop_copy_)>(security_)) {
-  if (Flags::rest_cancel_on_disconnect()) [[unlikely]]
+  if (Flags::rest_cancel_on_disconnect())
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
 }
 
@@ -100,9 +104,8 @@ void Gateway::operator()(Event<Connected> const &) {
 
 void Gateway::operator()(Event<Disconnected> const &event) {
   auto const &[message_info, disconnected] = event;
-  if (disconnected.order_cancel_policy != OrderCancelPolicy{}) {
+  if (disconnected.order_cancel_policy != OrderCancelPolicy{})
     log::warn("** CANCEL-ON-DISCONNECT *NOT* SUPPORTED ***"sv);
-  }
 }
 
 void Gateway::operator()(Trace<StreamStatus> const &event) {
@@ -221,7 +224,7 @@ OrderEntry &Gateway::get_order_entry(std::string_view const &account) {
   auto iter = order_entry_.find(account);
   if (iter != std::end(order_entry_))
     return *(*iter).second;
-  throw RuntimeError(R"(Unknown account="{}")"sv, account);
+  throw RuntimeError{R"(Unknown account="{}")"sv, account};
 }
 
 }  // namespace huobi

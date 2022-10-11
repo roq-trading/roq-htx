@@ -28,7 +28,7 @@ namespace huobi {
 namespace {
 auto const NAME = "rest"sv;
 
-const Mask SUPPORTS{
+Mask const SUPPORTS{
     SupportType::REFERENCE_DATA,
     SupportType::MARKET_STATUS,
 };
@@ -190,11 +190,9 @@ uint32_t Rest::download(RestState state) {
 
 void Rest::get_market_status() {
   profile_.market_status([&]() {
-    auto method = web::http::Method::GET;
-    auto path = "/v2/market-status"sv;
     web::rest::Request request{
-        .method = method,
-        .path = path,
+        .method = web::http::Method::GET,
+        .path = "/v2/market-status"sv,
         .query = {},
         .accept = web::http::Accept::APPLICATION_JSON,
         .content_type = {},
@@ -205,7 +203,7 @@ void Rest::get_market_status() {
     auto sequence = download_.sequence();
     (*connection_)("market_status"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
       auto trace_info = server::create_trace_info();
-      Trace event(trace_info, response);
+      Trace event{trace_info, response};
       get_market_status_ack(event, sequence);
     });
   });
@@ -223,9 +221,9 @@ void Rest::get_market_status_ack(Trace<web::rest::Response> const &event, uint32
         return;
       }
       response.expect(web::http::Status::OK);
-      core::json::Buffer buffer(decode_buffer_);
+      core::json::Buffer buffer{decode_buffer_};
       const auto market_status = core::json::Parser::create<json::MarketStatus>(body, buffer);
-      Trace event(trace_info, market_status);
+      Trace event{trace_info, market_status};
       (*this)(event);
       download_.check(state);
     } catch (NetworkError &e) {
@@ -244,11 +242,9 @@ void Rest::operator()(Trace<json::MarketStatus> const &event) {
 
 void Rest::get_currencies() {
   profile_.currencies([&]() {
-    auto method = web::http::Method::GET;
-    auto path = "/v1/common/currencys"sv;
     web::rest::Request request{
-        .method = method,
-        .path = path,
+        .method = web::http::Method::GET,
+        .path = "/v1/common/currencys"sv,
         .query = {},
         .accept = web::http::Accept::APPLICATION_JSON,
         .content_type = {},
@@ -259,7 +255,7 @@ void Rest::get_currencies() {
     auto sequence = download_.sequence();
     (*connection_)("currencies"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
       auto trace_info = server::create_trace_info();
-      Trace event(trace_info, response);
+      Trace event{trace_info, response};
       get_currencies_ack(event, sequence);
     });
   });
@@ -277,9 +273,9 @@ void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t 
         return;
       }
       response.expect(web::http::Status::OK);
-      core::json::Buffer buffer(decode_buffer_);
+      core::json::Buffer buffer{decode_buffer_};
       const auto currencies = core::json::Parser::create<json::Currencies>(body, buffer);
-      Trace event(trace_info, currencies);
+      Trace event{trace_info, currencies};
       (*this)(event);
       download_.check(state);
     } catch (NetworkError &e) {
@@ -298,11 +294,9 @@ void Rest::operator()(Trace<json::Currencies> const &event) {
 
 void Rest::get_symbols() {
   profile_.symbols([&]() {
-    auto method = web::http::Method::GET;
-    auto path = "/v1/common/symbols"sv;
     web::rest::Request request{
-        .method = method,
-        .path = path,
+        .method = web::http::Method::GET,
+        .path = "/v1/common/symbols"sv,
         .query = {},
         .accept = web::http::Accept::APPLICATION_JSON,
         .content_type = {},
@@ -313,7 +307,7 @@ void Rest::get_symbols() {
     auto sequence = download_.sequence();
     (*connection_)("symbols"sv, request, [this, sequence]([[maybe_unused]] auto &request_id, auto &response) {
       auto trace_info = server::create_trace_info();
-      Trace event(trace_info, response);
+      Trace event{trace_info, response};
       get_symbols_ack(event, sequence);
     });
   });
@@ -331,9 +325,9 @@ void Rest::get_symbols_ack(Trace<web::rest::Response> const &event, uint32_t seq
         return;
       }
       response.expect(web::http::Status::OK);
-      core::json::Buffer buffer(decode_buffer_);
+      core::json::Buffer buffer{decode_buffer_};
       const auto symbols = core::json::Parser::create<json::Symbols>(body, buffer);
-      Trace event(trace_info, symbols);
+      Trace event{trace_info, symbols};
       (*this)(event);
       download_.check(state);
     } catch (NetworkError &e) {

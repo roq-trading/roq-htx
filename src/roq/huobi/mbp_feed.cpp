@@ -31,7 +31,7 @@ namespace huobi {
 namespace {
 auto const NAME = "mbp"sv;
 
-const Mask SUPPORTS{
+Mask const SUPPORTS{
     SupportType::MARKET_BY_PRICE,
 };
 }  // namespace
@@ -58,6 +58,7 @@ auto create_connection(auto &handler, auto &context) {
   };
   return web::socket::ClientFactory::create(handler, context, config, []() { return std::string(); });
 }
+
 struct create_metrics final : public core::metrics::Factory {
   explicit create_metrics(auto const &group, auto const &function)
       : core::metrics::Factory(server::Flags::name(), group, function) {}
@@ -253,7 +254,7 @@ void MBPFeed::parse(std::string_view const &message) {
   profile_.parse([&]() {
     try {
       auto trace_info = server::create_trace_info();
-      core::json::Buffer buffer(decode_buffer_);
+      core::json::Buffer buffer{decode_buffer_};
       json::Parser::dispatch(*this, message, buffer, trace_info);
     } catch (...) {
       log::warn(R"(message="{}")"sv, message);
@@ -308,7 +309,7 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
     auto symbol = json::extract_symbol(mbp.ch);
     auto &tick = mbp.tick;
     auto &collector = shared_.mbp_collector[symbol];
-    core::back_emplacer bids(shared_.bids), asks(shared_.asks);
+    core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
     for (auto &item : tick.bids)
       bids.emplace_back([&](auto &result) { create_mbp_update(result, item); });
     for (auto &item : tick.asks)
@@ -337,7 +338,7 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
       auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence) {
         log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
         auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT, collector.last_sequence());
-        Trace event(trace_info, market_by_price_update);
+        Trace event{trace_info, market_by_price_update};
         shared_(event, true, [&](auto &market_by_price) { collector.apply(market_by_price, sequence, false); });
       };
       auto request_snapshot = [&](auto retries) {
@@ -374,7 +375,7 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
     auto symbol = json::extract_symbol(mbp_snapshot.rep);
     auto &data = mbp_snapshot.data;
     auto &collector = shared_.mbp_collector[symbol];
-    core::back_emplacer bids(shared_.bids), asks(shared_.asks);
+    core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
     for (auto &item : data.bids)
       bids.emplace_back([&](auto &result) { create_mbp_update(result, item); });
     for (auto &item : data.asks)
@@ -395,7 +396,7 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
             .quantity_decimals = {},
             .checksum = {},
         };
-        Trace event(trace_info, market_by_price_update);
+        Trace event{trace_info, market_by_price_update};
         shared_(event, true, [&](auto &market_by_price) { collector.apply(market_by_price, sequence, false); });
       };
       auto request_snapshot = [&](auto retries) {

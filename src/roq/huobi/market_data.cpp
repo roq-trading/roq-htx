@@ -31,7 +31,7 @@ namespace huobi {
 namespace {
 auto const NAME = "md"sv;
 
-const Mask SUPPORTS{
+Mask const SUPPORTS{
     SupportType::TOP_OF_BOOK,
     SupportType::TRADE_SUMMARY,
     SupportType::STATISTICS,
@@ -235,7 +235,7 @@ void MarketData::parse(std::string_view const &message) {
   profile_.parse([&]() {
     try {
       auto trace_info = server::create_trace_info();
-      core::json::Buffer buffer(decode_buffer_);
+      core::json::Buffer buffer{decode_buffer_};
       json::Parser::dispatch(*this, message, buffer, trace_info);
     } catch (...) {
       log::warn(R"(message="{}")"sv, message);
@@ -307,7 +307,7 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
       };
       core::charconv::to_string(std::back_inserter(result.trade_id), value.trade_id);
     };
-    core::back_emplacer trades(shared_.trades);
+    core::back_emplacer trades{shared_.trades};
     for (auto &item : tick.data)
       trades.emplace_back([&](auto &result) { create_trade(result, item); });
     const TradeSummary trade_summary{
