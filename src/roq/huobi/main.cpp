@@ -21,5 +21,5 @@ roq::Service::Info const INFO{
 // === IMPLEMENTATION ===
 
 int main(int argc, char **argv) {
-  return roq::huobi::Application(argc, argv, INFO).run();
+  return roq::huobi::Application{argc, argv, INFO}.run();
 }
