@@ -216,8 +216,7 @@ void Rest::get_market_status_ack(Trace<web::rest::Response> const &event, uint32
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        core::json::Buffer buffer{decode_buffer_};
-        auto market_status = core::json::Parser::create<json::MarketStatus>(body, buffer);
+        json::MarketStatus market_status{body, decode_buffer_};
         Trace event_2{event, market_status};
         (*this)(event_2);
         download_.check(STATE);
@@ -266,8 +265,7 @@ void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t 
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        core::json::Buffer buffer{decode_buffer_};
-        auto currencies = core::json::Parser::create<json::Currencies>(body, buffer);
+        json::Currencies currencies{body, decode_buffer_};
         Trace event_2{event, currencies};
         (*this)(event_2);
         download_.check(STATE);
@@ -316,8 +314,7 @@ void Rest::get_symbols_ack(Trace<web::rest::Response> const &event, uint32_t seq
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        core::json::Buffer buffer{decode_buffer_};
-        auto symbols = core::json::Parser::create<json::Symbols>(body, buffer);
+        json::Symbols symbols{body, decode_buffer_};
         Trace event_2{event, symbols};
         (*this)(event_2);
         download_.check(STATE);
