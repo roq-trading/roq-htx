@@ -31,7 +31,7 @@ namespace huobi {
 namespace {
 auto const NAME = "md"sv;
 
-Mask const SUPPORTS{
+auto const SUPPORTS = Mask{
     SupportType::TOP_OF_BOOK,
     SupportType::TRADE_SUMMARY,
     SupportType::STATISTICS,
@@ -69,10 +69,10 @@ struct create_metrics final : public core::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-MarketData::MarketData(Handler &handler, io::Context &context, uint32_t stream_id, Shared &shared, size_t index)
-    : handler_(handler), stream_id_(stream_id), name_(create_name(stream_id_)), index_(index),
-      connection_(create_connection(*this, context)), decode_buffer_(Flags::decode_buffer_size()),
-      request_id_(static_cast<uint64_t>(stream_id_) * 1000000),  // scale (debugging)
+MarketData::MarketData(Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
+    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, index_{index},
+      connection_{create_connection(*this, context)}, decode_buffer_{Flags::decode_buffer_size()},
+      request_id_{static_cast<uint64_t>(stream_id_) * 1000000},  // scale (debugging)
       counter_{
           .disconnect = create_metrics(name_, "disconnect"sv),
           .total_bytes_received = create_metrics(name_, "disconnect"sv),
@@ -91,7 +91,7 @@ MarketData::MarketData(Handler &handler, io::Context &context, uint32_t stream_i
           .ping = create_metrics(name_, "ping"sv),
           .heartbeat = create_metrics(name_, "heartbeat"sv),
       },
-      shared_(shared), inflate_(core::zlib::Inflate::GZIP_NO_HEADER), request_queue_(Flags::ws_request_delay()) {
+      shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER}, request_queue_{Flags::ws_request_delay()} {
 }
 
 void MarketData::operator()(Event<Start> const &) {

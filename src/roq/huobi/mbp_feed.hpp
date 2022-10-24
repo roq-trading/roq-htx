@@ -36,7 +36,7 @@ class MBPFeed final : public web::socket::Client::Handler, public json::Parser::
     virtual void operator()(Trace<MarketByPriceUpdate> const &, bool is_last, bool refresh) = 0;
   };
 
-  MBPFeed(Handler &, io::Context &, uint32_t stream_id, Shared &, size_t index);
+  MBPFeed(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
 
   MBPFeed(MBPFeed &&) = delete;
   MBPFeed(MBPFeed const &) = delete;
