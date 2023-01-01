@@ -33,10 +33,10 @@ auto create_security(auto const &config) {
 }
 
 template <typename R>
-auto create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &security_by_account, auto &shared) {
+auto create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &security_by_account) {
   R result;
   for (auto &[account, security] : security_by_account)
-    result.try_emplace(account, std::make_unique<OrderEntry>(gateway, context, ++stream_id, *security, shared));
+    result.try_emplace(account, std::make_unique<OrderEntry>(gateway, context, ++stream_id, *security));
   return result;
 }
 
@@ -54,7 +54,7 @@ auto create_drop_copy(auto &security_by_account) {
 Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, security_{create_security<decltype(security_)>(config)}, context_{context},
       shared_{dispatcher}, rest_{*this, context_, ++stream_id_, shared_},
-      order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, security_, shared_)},
+      order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, security_)},
       drop_copy_{create_drop_copy<decltype(drop_copy_)>(security_)} {
   if (Flags::rest_cancel_on_disconnect())
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);

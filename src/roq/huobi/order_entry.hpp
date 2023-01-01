@@ -23,7 +23,6 @@
 
 #include "roq/huobi/order_entry_state.hpp"
 #include "roq/huobi/security.hpp"
-#include "roq/huobi/shared.hpp"
 
 namespace roq {
 namespace huobi {
@@ -43,7 +42,7 @@ class OrderEntry final : public web::rest::Client::Handler {
     virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
   };
 
-  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Security &, Shared &);
+  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Security &);
 
   OrderEntry(OrderEntry &&) = delete;
   OrderEntry(OrderEntry const &) = delete;
@@ -103,8 +102,6 @@ class OrderEntry final : public web::rest::Client::Handler {
   } latency_;
   // security
   Security &security_;
-  // cache
-  Shared &shared_;
   // state
   ConnectionStatus status_ = {};
   core::Download<OrderEntryState> download_;

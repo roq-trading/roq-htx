@@ -62,12 +62,7 @@ struct create_metrics final : public core::metrics::Factory {
 // === IMPLEMENTATION ===
 
 DropCopy::DropCopy(
-    Handler &handler,
-    io::Context &context,
-    uint16_t stream_id,
-    Security &security,
-    Shared &shared,
-    std::string_view const &listen_key)
+    Handler &handler, io::Context &context, uint16_t stream_id, Security &security, std::string_view const &listen_key)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)},
       connection_{create_connection(*this, context, listen_key)}, decode_buffer_{Flags::decode_buffer_size()},
       counter_{
@@ -86,7 +81,7 @@ DropCopy::DropCopy(
           .ping = create_metrics(name_, "ping"sv),
           .heartbeat = create_metrics(name_, "heartbeat"sv),
       },
-      security_{security}, shared_{shared}, download_{{}, [this](auto state) { return download(state); }} {
+      security_{security}, download_{{}, [this](auto state) { return download(state); }} {
 }
 
 bool DropCopy::ready() const {

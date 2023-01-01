@@ -19,7 +19,6 @@
 
 #include "roq/huobi/drop_copy_state.hpp"
 #include "roq/huobi/security.hpp"
-#include "roq/huobi/shared.hpp"
 
 #include "roq/huobi/json/parser.hpp"
 
@@ -34,7 +33,7 @@ class DropCopy final : public web::socket::Client::Handler, public json::Parser:
     virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
   };
 
-  DropCopy(Handler &, io::Context &, uint16_t stream_id, Security &, Shared &, std::string_view const &listen_key);
+  DropCopy(Handler &, io::Context &, uint16_t stream_id, Security &, std::string_view const &listen_key);
 
   DropCopy(DropCopy &&) = delete;
   DropCopy(DropCopy const &) = delete;
@@ -95,9 +94,6 @@ class DropCopy final : public web::socket::Client::Handler, public json::Parser:
   } latency_;
   // security
   Security &security_;
-  // cache
-  Shared &shared_;
-  // state
   // state
   bool ready_ = false;
   ConnectionStatus status_ = {};
