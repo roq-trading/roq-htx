@@ -15,7 +15,7 @@
 
 #include "roq/core/limit/rate_limiter.hpp"
 
-#include "roq/core/market/mbp_sequencer.hpp"
+#include "roq/core/mbp/sequencer.hpp"
 
 namespace roq {
 namespace huobi {
@@ -48,7 +48,7 @@ struct Shared final {
  public:
   core::limit::RateLimiter rate_limiter;
   core::Symbols symbols;
-  absl::flat_hash_map<Symbol, core::market::MBP_Sequencer> mbp_collector;
+  absl::flat_hash_map<Symbol, core::mbp::Sequencer> mbp_collector;
 };
 
 }  // namespace huobi
