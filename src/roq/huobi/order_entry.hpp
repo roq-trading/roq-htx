@@ -27,8 +27,7 @@
 namespace roq {
 namespace huobi {
 
-class OrderEntry final : public web::rest::Client::Handler {
- public:
+struct OrderEntry final : public web::rest::Client::Handler {
   struct ListenKeyUpdate final {
     std::string_view account;
     std::string_view listen_key;
