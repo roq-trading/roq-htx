@@ -32,7 +32,7 @@ struct MBPFeed final : public web::socket::Client::Handler, public json::Parser:
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
-    virtual void operator()(Trace<MarketByPriceUpdate> const &, bool is_last, bool refresh) = 0;
+    virtual void operator()(Trace<MarketByPriceUpdate> const &, bool is_last) = 0;
   };
 
   MBPFeed(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
