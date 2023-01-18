@@ -7,7 +7,6 @@
 #include "roq/mask.hpp"
 #include "roq/utils/update.hpp"
 
-#include "roq/core/back_emplacer.hpp"
 #include "roq/core/charconv.hpp"
 
 #include "roq/core/metrics/factory.hpp"
@@ -43,7 +42,7 @@ auto create_name(auto stream_id) {
 
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::rest_uri();
-  web::rest::Client::Config config{
+  auto config = web::rest::Client::Config{
       .decode_buffer_size = Flags::decode_buffer_size(),
       .encode_buffer_size = Flags::encode_buffer_size(),
       .validate_certificate = server::Flags::net_tls_validate_certificate(),
@@ -134,7 +133,7 @@ void Rest::operator()(web::rest::Client::Disconnected const &) {
 
 void Rest::operator()(web::rest::Client::Latency const &latency) {
   TraceInfo trace_info;
-  ExternalLatency external_latency{
+  auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
       .account = {},
       .latency = latency.sample,
@@ -146,7 +145,7 @@ void Rest::operator()(web::rest::Client::Latency const &latency) {
 void Rest::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     TraceInfo trace_info;
-    StreamStatus stream_status{
+    auto stream_status = StreamStatus{
         .stream_id = stream_id_,
         .account = {},
         .supports = SUPPORTS,
@@ -190,7 +189,7 @@ uint32_t Rest::download(RestState state) {
 
 void Rest::get_market_status() {
   profile_.market_status([&]() {
-    web::rest::Request request{
+    auto request = web::rest::Request{
         .method = web::http::Method::GET,
         .path = "/v2/market-status"sv,
         .query = {},
@@ -239,7 +238,7 @@ void Rest::operator()(Trace<json::MarketStatus> const &event) {
 
 void Rest::get_currencies() {
   profile_.currencies([&]() {
-    web::rest::Request request{
+    auto request = web::rest::Request{
         .method = web::http::Method::GET,
         .path = "/v1/common/currencys"sv,
         .query = {},
@@ -288,7 +287,7 @@ void Rest::operator()(Trace<json::Currencies> const &event) {
 
 void Rest::get_symbols() {
   profile_.symbols([&]() {
-    web::rest::Request request{
+    auto request = web::rest::Request{
         .method = web::http::Method::GET,
         .path = "/v1/common/symbols"sv,
         .query = {},
@@ -343,7 +342,7 @@ void Rest::operator()(Trace<json::Symbols> const &event) {
     auto discard = shared_.discard_symbol(item.symbol);
     auto tick_size = std::pow(10.0, -item.price_precision);
     auto trade_vol_step_size = std::pow(10.0, -item.amount_precision);
-    ReferenceData reference_data{
+    auto reference_data = ReferenceData{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
         .symbol = symbol,
@@ -379,7 +378,7 @@ void Rest::operator()(Trace<json::Symbols> const &event) {
       symbols_2.emplace_back(symbol);
     ++counter;
     auto trading_status = json::map(item.api_trading);
-    MarketStatus market_status{
+    auto market_status = MarketStatus{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
         .symbol = symbol,
@@ -389,7 +388,7 @@ void Rest::operator()(Trace<json::Symbols> const &event) {
   }
   log::info("Exchange info: including symbols {}/{}"sv, counter, std::size(symbols.data));
   if (!std::empty(symbols_2)) {
-    SymbolsUpdate symbols_update{
+    auto symbols_update = SymbolsUpdate{
         .symbols = symbols_2,
     };
     handler_(symbols_update);

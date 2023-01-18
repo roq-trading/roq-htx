@@ -3,12 +3,12 @@
 #include "roq/huobi/market_data.hpp"
 
 #include <algorithm>
+#include <utility>
 
 #include "roq/mask.hpp"
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
-#include "roq/core/back_emplacer.hpp"
 #include "roq/core/charconv.hpp"
 
 #include "roq/core/tools/exception.hpp"
@@ -47,7 +47,7 @@ auto create_name(auto stream_id) {
 
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::ws_market_uri();
-  web::socket::Client::Config config{
+  auto config = web::socket::Client::Config{
       .always_reconnect = true,
       .connection_timeout = server::Flags::net_connection_timeout(),
       .disconnect_on_idle_timeout = server::Flags::net_disconnect_on_idle_timeout(),
@@ -152,7 +152,7 @@ void MarketData::operator()(web::socket::Client::Close const &) {
 
 void MarketData::operator()(web::socket::Client::Latency const &latency) {
   TraceInfo trace_info;
-  const ExternalLatency external_latency{
+  auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
       .account = {},
       .latency = latency.sample,
@@ -180,7 +180,7 @@ void MarketData::operator()(web::socket::Client::Binary const &binary) {
 void MarketData::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     TraceInfo trace_info;
-    const StreamStatus stream_status{
+    auto stream_status = StreamStatus{
         .stream_id = stream_id_,
         .account = {},
         .supports = SUPPORTS,
@@ -272,7 +272,7 @@ void MarketData::operator()(Trace<json::BBO> const &event) {
     (*connection_).touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(bbo.ch);
     auto &tick = bbo.tick;
-    const TopOfBook top_of_book{
+    auto top_of_book = TopOfBook{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
         .symbol = symbol,
@@ -296,8 +296,9 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
     (*connection_).touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(trade.ch);
     auto &tick = trade.tick;
-    auto create_trade = []<typename T>(T &result, auto const &value) {
-      new (&result) T{
+    shared_.trades.clear();
+    auto emplace_back = [](auto &result, auto &value) {
+      auto trade = Trade{
           .side = json::map(value.direction),
           .price = value.price,
           .quantity = value.amount,
@@ -305,16 +306,16 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
           .taker_order_id = {},
           .maker_order_id = {},
       };
-      core::charconv::to_string(std::back_inserter(result.trade_id), value.trade_id);
+      core::charconv::to_string(std::back_inserter(trade.trade_id), value.trade_id);
+      result.emplace_back(std::move(trade));
     };
-    core::back_emplacer trades{shared_.trades};
     for (auto &item : tick.data)
-      trades.emplace_back([&](auto &result) { create_trade(result, item); });
-    const TradeSummary trade_summary{
+      emplace_back(shared_.trades, item);
+    auto trade_summary = TradeSummary{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
         .symbol = symbol,
-        .trades = trades,
+        .trades = shared_.trades,
         .exchange_time_utc = utils::safe_cast(trade.ts),
         .exchange_sequence = trade.tick.id,
     };
@@ -328,7 +329,7 @@ void MarketData::operator()(Trace<json::Detail> const &event) {
     (*connection_).touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(detail.ch);
     auto &tick = detail.tick;
-    Statistics statistics[] = {
+    auto statistics = std::array<Statistics, 5>{{
         {
             .type = StatisticsType::OPEN_PRICE,
             .value = tick.open,
@@ -359,8 +360,8 @@ void MarketData::operator()(Trace<json::Detail> const &event) {
             .begin_time_utc = {},
             .end_time_utc = {},
         },
-    };
-    const StatisticsUpdate statistics_update{
+    }};
+    auto statistics_update = StatisticsUpdate{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
         .symbol = symbol,

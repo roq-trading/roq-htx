@@ -3,12 +3,12 @@
 #include "roq/huobi/mbp_feed.hpp"
 
 #include <algorithm>
+#include <utility>
 
 #include "roq/mask.hpp"
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
-#include "roq/core/back_emplacer.hpp"
 #include "roq/core/charconv.hpp"
 
 #include "roq/core/tools/exception.hpp"
@@ -45,7 +45,7 @@ auto create_name(auto stream_id) {
 
 auto create_connection(auto &handler, auto &context) {
   auto uri = Flags::ws_mbp_uri();
-  web::socket::Client::Config config{
+  auto config = web::socket::Client::Config{
       .always_reconnect = true,
       .connection_timeout = server::Flags::net_connection_timeout(),
       .disconnect_on_idle_timeout = server::Flags::net_disconnect_on_idle_timeout(),
@@ -62,20 +62,6 @@ auto create_connection(auto &handler, auto &context) {
 struct create_metrics final : public core::metrics::Factory {
   explicit create_metrics(auto const &group, auto const &function)
       : core::metrics::Factory(server::Flags::name(), group, function) {}
-};
-
-// following are used from several places
-
-template <typename T, typename std::enable_if<std::is_same<T, MBPUpdate>::value, int>::type = 0>
-void create_mbp_update(T &result, auto const &value) {
-  new (&result) T{
-      .price = value.price,
-      .quantity = value.vol,
-      .implied_quantity = NaN,
-      .number_of_orders = {},
-      .update_action = {},
-      .price_level = {},
-  };
 };
 }  // namespace
 
@@ -160,7 +146,7 @@ void MBPFeed::operator()(web::socket::Client::Close const &) {
 
 void MBPFeed::operator()(web::socket::Client::Latency const &latency) {
   TraceInfo trace_info;
-  const ExternalLatency external_latency{
+  auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
       .account = {},
       .latency = latency.sample,
@@ -188,7 +174,7 @@ void MBPFeed::operator()(web::socket::Client::Binary const &binary) {
 void MBPFeed::operator()(ConnectionStatus status) {
   if (utils::update(status_, status)) {
     TraceInfo trace_info;
-    const StreamStatus stream_status{
+    auto stream_status = StreamStatus{
         .stream_id = stream_id_,
         .account = {},
         .supports = SUPPORTS,
@@ -309,14 +295,27 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
     auto symbol = json::extract_symbol(mbp.ch);
     auto &tick = mbp.tick;
     auto &collector = shared_.mbp_collector[symbol];
-    core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
+    shared_.bids.clear();
+    shared_.asks.clear();
+    auto emplace_back = [](auto &result, auto &value) {
+      auto mbp_update = MBPUpdate{
+          .price = value.price,
+          .quantity = value.vol,
+          .implied_quantity = NaN,
+          .number_of_orders = {},
+          .update_action = {},
+          .price_level = {},
+      };
+      result.emplace_back(std::move(mbp_update));
+    };
     for (auto &item : tick.bids)
-      bids.emplace_back([&](auto &result) { create_mbp_update(result, item); });
+      emplace_back(shared_.bids, item);
     for (auto &item : tick.asks)
-      asks.emplace_back([&](auto &result) { create_mbp_update(result, item); });
+      emplace_back(shared_.asks, item);
     try {
-      auto create_update = [&](auto &bids, auto &asks, auto update_type, auto exchange_sequence) {
-        return MarketByPriceUpdate{
+      auto create_update =
+          [&](auto &bids, auto &asks, auto update_type, auto exchange_sequence) -> MarketByPriceUpdate {
+        return {
             .stream_id = stream_id_,
             .exchange = Flags::exchange(),
             .symbol = symbol,
@@ -350,8 +349,8 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
         }
       };
       collector(
-          bids,
-          asks,
+          shared_.bids,
+          shared_.asks,
           tick.seq_num,
           tick.seq_num,
           tick.prev_seq_num,
@@ -375,15 +374,27 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
     auto symbol = json::extract_symbol(mbp_snapshot.rep);
     auto &data = mbp_snapshot.data;
     auto &collector = shared_.mbp_collector[symbol];
-    core::back_emplacer bids{shared_.bids}, asks{shared_.asks};
+    shared_.bids.clear();
+    shared_.asks.clear();
+    auto emplace_back = [](auto &result, auto &value) {
+      auto mbp_update = MBPUpdate{
+          .price = value.price,
+          .quantity = value.vol,
+          .implied_quantity = NaN,
+          .number_of_orders = {},
+          .update_action = {},
+          .price_level = {},
+      };
+      result.emplace_back(std::move(mbp_update));
+    };
     for (auto &item : data.bids)
-      bids.emplace_back([&](auto &result) { create_mbp_update(result, item); });
+      emplace_back(shared_.bids, item);
     for (auto &item : data.asks)
-      asks.emplace_back([&](auto &result) { create_mbp_update(result, item); });
+      emplace_back(shared_.asks, item);
     try {
       auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence) {
         log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
-        const MarketByPriceUpdate market_by_price_update{
+        auto market_by_price_update = MarketByPriceUpdate{
             .stream_id = stream_id_,
             .exchange = Flags::exchange(),
             .symbol = symbol,
@@ -407,7 +418,7 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
           request(symbol, "market"sv, "mbp.20"sv);
         }
       };
-      collector(bids, asks, data.seq_num, publish_snapshot, request_snapshot);
+      collector(shared_.bids, shared_.asks, data.seq_num, publish_snapshot, request_snapshot);
     } catch (BadState &) {
       log::warn(R"(RESUBSCRIBE symbol="{}")"sv, symbol);
       // XXX HANS publish stale
