@@ -420,7 +420,7 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
           request(symbol, "market"sv, "mbp.20"sv);
         }
       };
-      collector(shared_.bids, shared_.asks, data.seq_num, publish_snapshot, request_snapshot);
+      collector(shared_.bids, shared_.asks, data.seq_num, false, publish_snapshot, request_snapshot);
     } catch (BadState &) {
       log::warn(R"(RESUBSCRIBE symbol="{}")"sv, symbol);
       // XXX HANS publish stale
