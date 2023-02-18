@@ -296,7 +296,7 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
     (*connection_).touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(trade.ch);
     auto &tick = trade.tick;
-    shared_.trades.clear();
+    auto &trades = shared_.get_trades();
     auto emplace_back = [](auto &result, auto &value) {
       auto trade = Trade{
           .side = json::map(value.direction),
@@ -310,12 +310,12 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
       result.emplace_back(std::move(trade));
     };
     for (auto &item : tick.data)
-      emplace_back(shared_.trades, item);
+      emplace_back(trades, item);
     auto trade_summary = TradeSummary{
         .stream_id = stream_id_,
         .exchange = Flags::exchange(),
         .symbol = symbol,
-        .trades = shared_.trades,
+        .trades = trades,
         .exchange_time_utc = utils::safe_cast(trade.ts),
         .exchange_sequence = trade.tick.id,
     };

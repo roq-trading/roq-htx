@@ -294,9 +294,8 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
     (*connection_).touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(mbp.ch);
     auto &tick = mbp.tick;
-    auto &collector = shared_.mbp_collector[symbol];
-    shared_.bids.clear();
-    shared_.asks.clear();
+    auto &sequencer = shared_.mbp_sequencer[symbol];
+    auto &mbp_2 = shared_.get_mbp();
     auto emplace_back = [](auto &result, auto &value) {
       auto mbp_update = MBPUpdate{
           .price = value.price,
@@ -309,9 +308,9 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
       result.emplace_back(std::move(mbp_update));
     };
     for (auto &item : tick.bids)
-      emplace_back(shared_.bids, item);
+      emplace_back(mbp_2.bids, item);
     for (auto &item : tick.asks)
-      emplace_back(shared_.asks, item);
+      emplace_back(mbp_2.asks, item);
     try {
       auto create_update =
           [&](auto &bids, auto &asks, auto update_type, auto exchange_sequence) -> MarketByPriceUpdate {
@@ -336,8 +335,8 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
       };
       auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence) {
         log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
-        auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT, collector.last_sequence());
-        auto apply_updates = [&](auto &market_by_price) { collector.apply(market_by_price, sequence, false); };
+        auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT, sequencer.last_sequence());
+        auto apply_updates = [&](auto &market_by_price) { sequencer.apply(market_by_price, sequence, false); };
         Trace event{trace_info, market_by_price_update};
         shared_(event, true, apply_updates);
       };
@@ -349,9 +348,9 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
           request(symbol, "market"sv, "mbp.20"sv);
         }
       };
-      collector(
-          shared_.bids,
-          shared_.asks,
+      sequencer(
+          mbp_2.bids,
+          mbp_2.asks,
           tick.seq_num,
           tick.seq_num,
           tick.prev_seq_num,
@@ -361,7 +360,7 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
     } catch (BadState &) {
       log::warn(R"(RESUBSCRIBE symbol="{}")"sv, symbol);
       // XXX HANS publish stale
-      collector.clear();
+      sequencer.clear();
       request(symbol, "market"sv, "mbp.20"sv);
     }
   });
@@ -374,9 +373,8 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
     (*connection_).touch(trace_info.source_receive_time);
     auto symbol = json::extract_symbol(mbp_snapshot.rep);
     auto &data = mbp_snapshot.data;
-    auto &collector = shared_.mbp_collector[symbol];
-    shared_.bids.clear();
-    shared_.asks.clear();
+    auto &sequencer = shared_.mbp_sequencer[symbol];
+    auto &mbp = shared_.get_mbp();
     auto emplace_back = [](auto &result, auto &value) {
       auto mbp_update = MBPUpdate{
           .price = value.price,
@@ -389,9 +387,9 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
       result.emplace_back(std::move(mbp_update));
     };
     for (auto &item : data.bids)
-      emplace_back(shared_.bids, item);
+      emplace_back(mbp.bids, item);
     for (auto &item : data.asks)
-      emplace_back(shared_.asks, item);
+      emplace_back(mbp.asks, item);
     try {
       auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence) {
         log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
@@ -403,12 +401,12 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
             .asks = asks,
             .update_type = UpdateType::SNAPSHOT,
             .exchange_time_utc = {},
-            .exchange_sequence = collector.last_sequence(),
+            .exchange_sequence = sequencer.last_sequence(),
             .price_decimals = {},
             .quantity_decimals = {},
             .checksum = {},
         };
-        auto apply_updates = [&](auto &market_by_price) { collector.apply(market_by_price, sequence, false); };
+        auto apply_updates = [&](auto &market_by_price) { sequencer.apply(market_by_price, sequence, false); };
         Trace event{trace_info, market_by_price_update};
         shared_(event, true, apply_updates);
       };
@@ -420,11 +418,11 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
           request(symbol, "market"sv, "mbp.20"sv);
         }
       };
-      collector(shared_.bids, shared_.asks, data.seq_num, false, publish_snapshot, request_snapshot);
+      sequencer(mbp.bids, mbp.asks, data.seq_num, false, publish_snapshot, request_snapshot);
     } catch (BadState &) {
       log::warn(R"(RESUBSCRIBE symbol="{}")"sv, symbol);
       // XXX HANS publish stale
-      collector.clear();
+      sequencer.clear();
       request(symbol, "market"sv, "mbp.20"sv);
     }
   });

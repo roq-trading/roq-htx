@@ -38,9 +38,25 @@ struct Shared final {
     return dispatcher_(std::forward<Args>(args)...);
   }
 
- public:
-  std::vector<MBPUpdate> bids, asks;
+ private:
+  struct {
+    std::vector<MBPUpdate> bids, asks;
+    auto &clear() {
+      bids.clear();
+      asks.clear();
+      return *this;
+    }
+    bool empty() const { return std::empty(bids) && std::empty(asks); }
+  } mbp;
   std::vector<Trade> trades;
+
+ public:
+  auto &get_mbp() { return mbp.clear(); }
+
+  auto &get_trades() {
+    trades.clear();
+    return trades;
+  }
 
  private:
   server::Dispatcher &dispatcher_;
@@ -48,7 +64,7 @@ struct Shared final {
  public:
   core::limit::RateLimiter rate_limiter;
   core::Symbols symbols;
-  absl::flat_hash_map<Symbol, core::mbp::Sequencer> mbp_collector;
+  absl::flat_hash_map<Symbol, core::mbp::Sequencer> mbp_sequencer;
 };
 
 }  // namespace huobi
