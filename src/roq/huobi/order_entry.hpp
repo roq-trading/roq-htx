@@ -21,8 +21,8 @@
 
 #include "roq/server.hpp"
 
+#include "roq/huobi/authenticator.hpp"
 #include "roq/huobi/order_entry_state.hpp"
-#include "roq/huobi/security.hpp"
 
 namespace roq {
 namespace huobi {
@@ -41,7 +41,7 @@ struct OrderEntry final : public web::rest::Client::Handler {
     virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
   };
 
-  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Security &);
+  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Authenticator &);
 
   OrderEntry(OrderEntry &&) = delete;
   OrderEntry(OrderEntry const &) = delete;
@@ -100,8 +100,8 @@ struct OrderEntry final : public web::rest::Client::Handler {
   struct {
     core::metrics::Latency ping;
   } latency_;
-  // security
-  Security &security_;
+  // authenticator
+  Authenticator &authenticator_;
   // state
   ConnectionStatus status_ = {};
   core::Download<OrderEntryState> download_;

@@ -13,13 +13,13 @@
 
 #include "roq/io/context.hpp"
 
+#include "roq/huobi/authenticator.hpp"
 #include "roq/huobi/config.hpp"
 #include "roq/huobi/drop_copy.hpp"
 #include "roq/huobi/market_data.hpp"
 #include "roq/huobi/mbp_feed.hpp"
 #include "roq/huobi/order_entry.hpp"
 #include "roq/huobi/rest.hpp"
-#include "roq/huobi/security.hpp"
 #include "roq/huobi/shared.hpp"
 
 namespace roq {
@@ -77,8 +77,8 @@ struct Gateway final : public server::Handler,
 
  private:
   server::Dispatcher &dispatcher_;
-  // security
-  absl::flat_hash_map<Account, std::unique_ptr<Security>> security_;
+  // authenticator
+  absl::flat_hash_map<Account, std::unique_ptr<Authenticator>> authenticator_;
   // io
   io::Context &context_;
   // shared

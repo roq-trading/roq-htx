@@ -4,6 +4,7 @@ add_subdirectory(flags)
 
 set(SOURCES
     application.cpp
+    authenticator.cpp
     config.cpp
     drop_copy.cpp
     flags.cpp
@@ -12,7 +13,6 @@ set(SOURCES
     mbp_feed.cpp
     order_entry.cpp
     rest.cpp
-    security.cpp
     shared.cpp
     main.cpp)
 
