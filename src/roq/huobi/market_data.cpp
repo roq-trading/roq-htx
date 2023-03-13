@@ -283,8 +283,9 @@ void MarketData::operator()(Trace<json::BBO> const &event) {
             .ask_quantity = tick.ask_size,
         },
         .update_type = UpdateType::INCREMENTAL,
-        .exchange_time_utc = utils::safe_cast(bbo.ts),
+        .exchange_time_utc = bbo.ts,
         .exchange_sequence = {},
+        .sending_time_utc = {},
     };
     create_trace_and_dispatch(handler_, trace_info, top_of_book, true);
   });
@@ -316,8 +317,9 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
         .exchange = Flags::exchange(),
         .symbol = symbol,
         .trades = trades,
-        .exchange_time_utc = utils::safe_cast(trade.ts),
+        .exchange_time_utc = trade.ts,
         .exchange_sequence = trade.tick.id,
+        .sending_time_utc = {},
     };
     create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
   });
@@ -367,7 +369,9 @@ void MarketData::operator()(Trace<json::Detail> const &event) {
         .symbol = symbol,
         .statistics = statistics,
         .update_type = UpdateType::INCREMENTAL,
-        .exchange_time_utc = utils::safe_cast(detail.ts),
+        .exchange_time_utc = detail.ts,
+        .exchange_sequence = {},
+        .sending_time_utc = {},
     };
     create_trace_and_dispatch(handler_, trace_info, statistics_update, true);
   });
