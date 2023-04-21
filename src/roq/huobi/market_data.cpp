@@ -295,7 +295,7 @@ void MarketData::operator()(Trace<json::BBO> const &event) {
             .ask_price = tick.ask,
             .ask_quantity = tick.ask_size,
         },
-        .update_type = UpdateType::INCREMENTAL,
+        .update_type = UpdateType::SNAPSHOT,
         .exchange_time_utc = bbo.ts,
         .exchange_sequence = {},
         .sending_time_utc = {},
