@@ -66,16 +66,15 @@ inline std::string_view extract_topic(std::string_view const &channel) {
 inline roq::Side map(json::Side side) {
   switch (side) {
     using enum json::Side::type_t;
-    case UNDEFINED:
-      break;
-    case UNKNOWN:
+    case UNDEFINED__:
+    case UNKNOWN__:
       break;
     case BUY:
       return roq::Side::BUY;
     case SELL:
       return roq::Side::SELL;
   }
-  return roq::Side::UNDEFINED;
+  return {};
 }
 
 inline json::Side map(roq::Side side) {
@@ -88,22 +87,21 @@ inline json::Side map(roq::Side side) {
     case SELL:
       return json::Side::SELL;
   }
-  return json::Side::UNDEFINED;
+  return {};
 }
 
 inline roq::TradingStatus map(json::Trading trading) {
   switch (trading) {
     using enum json::Trading::type_t;
-    case UNDEFINED:
-      break;
-    case UNKNOWN:
+    case UNDEFINED__:
+    case UNKNOWN__:
       break;
     case ENABLED:
       return roq::TradingStatus::OPEN;
     case DISABLED:
       return roq::TradingStatus::HALT;
   }
-  return roq::TradingStatus::UNDEFINED;
+  return {};
 }
 
 }  // namespace json
