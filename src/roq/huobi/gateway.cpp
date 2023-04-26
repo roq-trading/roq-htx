@@ -62,41 +62,18 @@ Gateway::Gateway(server::Dispatcher &dispatcher, Config const &config, io::Conte
 
 void Gateway::operator()(Event<Start> const &event) {
   log::info("Starting..."sv);
-  rest_(event);
-  for (auto &[_, order_entry] : order_entry_)
-    (*order_entry)(event);
-  for (auto &[_, drop_copy] : drop_copy_)
-    if (static_cast<bool>(drop_copy))
-      (*drop_copy)(event);
   assert(std::empty(market_data_));
   assert(std::empty(mbp_feed_));
+  dispatch(event);
 }
 
 void Gateway::operator()(Event<Stop> const &event) {
   log::info("Stopping..."sv);
-  for (auto &iter : mbp_feed_)
-    (*iter)(event);
-  for (auto &iter : market_data_)
-    (*iter)(event);
-  for (auto &[_, drop_copy] : drop_copy_)
-    if (static_cast<bool>(drop_copy))
-      (*drop_copy)(event);
-  for (auto &[_, order_entry] : order_entry_)
-    (*order_entry)(event);
-  rest_(event);
+  dispatch(event);
 }
 
 void Gateway::operator()(Event<Timer> const &event) {
-  rest_(event);
-  for (auto &[_, order_entry] : order_entry_)
-    (*order_entry)(event);
-  for (auto &[_, drop_copy] : drop_copy_)
-    if (static_cast<bool>(drop_copy))
-      (*drop_copy)(event);
-  for (auto &iter : market_data_)
-    (*iter)(event);
-  for (auto &iter : mbp_feed_)
-    (*iter)(event);
+  dispatch(event);
 }
 
 void Gateway::operator()(Event<Connected> const &) {
@@ -211,13 +188,21 @@ uint16_t Gateway::operator()(Event<CancelAllOrders> const &event, std::string_vi
 }
 
 void Gateway::operator()(metrics::Writer &writer) {
-  for (auto &[_, order_entry] : order_entry_)
-    (*order_entry)(writer);
-  for (auto &[_, drop_copy] : drop_copy_)
-    if (static_cast<bool>(drop_copy))
-      (*drop_copy)(writer);
-  for (auto &iter : market_data_)
-    (*iter)(writer);
+  dispatch(writer);
+}
+
+template <typename... Args>
+void Gateway::dispatch(Args &&...args) {
+  rest_(std::forward<Args>(args)...);
+  for (auto &[_, item] : order_entry_)
+    (*item)(std::forward<Args>(args)...);
+  for (auto &[_, item] : drop_copy_)
+    if (static_cast<bool>(item))
+      (*item)(std::forward<Args>(args)...);
+  for (auto &item : market_data_)
+    (*item)(std::forward<Args>(args)...);
+  for (auto &item : mbp_feed_)
+    (*item)(std::forward<Args>(args)...);
 }
 
 OrderEntry &Gateway::get_order_entry(std::string_view const &account) {
