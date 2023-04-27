@@ -113,7 +113,7 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
   core::zlib::Inflate inflate_;
   std::vector<std::byte> inflate_buffer_;
   // queue
-  core::TimerQueue request_queue_;
+  core::TimerQueue<std::string> request_queue_;
 };
 
 }  // namespace huobi
