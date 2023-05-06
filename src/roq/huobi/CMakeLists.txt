@@ -13,6 +13,7 @@ set(SOURCES
     mbp_feed.cpp
     order_entry.cpp
     rest.cpp
+    settings.cpp
     shared.cpp
     main.cpp)
 

@@ -20,6 +20,7 @@
 #include "roq/huobi/mbp_feed.hpp"
 #include "roq/huobi/order_entry.hpp"
 #include "roq/huobi/rest.hpp"
+#include "roq/huobi/settings.hpp"
 #include "roq/huobi/shared.hpp"
 
 namespace roq {
@@ -31,7 +32,7 @@ struct Gateway final : public server::Handler,
                        public DropCopy::Handler,
                        public MarketData::Handler,
                        public MBPFeed::Handler {
-  Gateway(server::Dispatcher &, Config const &, io::Context &);
+  Gateway(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
  protected:
   void operator()(Event<Start> const &) override;
