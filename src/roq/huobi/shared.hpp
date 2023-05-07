@@ -17,11 +17,13 @@
 
 #include "roq/core/mbp/sequencer.hpp"
 
+#include "roq/huobi/settings.hpp"
+
 namespace roq {
 namespace huobi {
 
 struct Shared final {
-  explicit Shared(server::Dispatcher &);
+  Shared(server::Dispatcher &, Settings const &);
 
   Shared(Shared &&) = default;
   Shared(Shared const &) = delete;
@@ -62,6 +64,7 @@ struct Shared final {
   server::Dispatcher &dispatcher_;
 
  public:
+  Settings const &settings;
   core::limit::RateLimiter rate_limiter;
   core::Symbols symbols;
   absl::flat_hash_map<Symbol, core::mbp::Sequencer> mbp_sequencer;

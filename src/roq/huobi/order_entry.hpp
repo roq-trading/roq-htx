@@ -23,6 +23,7 @@
 
 #include "roq/huobi/account.hpp"
 #include "roq/huobi/order_entry_state.hpp"
+#include "roq/huobi/shared.hpp"
 
 namespace roq {
 namespace huobi {
@@ -41,7 +42,7 @@ struct OrderEntry final : public web::rest::Client::Handler {
     virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
   };
 
-  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Account &);
+  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
   OrderEntry(OrderEntry &&) = delete;
   OrderEntry(OrderEntry const &) = delete;

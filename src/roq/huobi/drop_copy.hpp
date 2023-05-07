@@ -19,6 +19,7 @@
 
 #include "roq/huobi/account.hpp"
 #include "roq/huobi/drop_copy_state.hpp"
+#include "roq/huobi/shared.hpp"
 
 #include "roq/huobi/json/parser.hpp"
 
@@ -32,7 +33,7 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
     virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
   };
 
-  DropCopy(Handler &, io::Context &, uint16_t stream_id, Account &, std::string_view const &listen_key);
+  DropCopy(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &, std::string_view const &listen_key);
 
   DropCopy(DropCopy &&) = delete;
   DropCopy(DropCopy const &) = delete;
