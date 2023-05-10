@@ -17,8 +17,6 @@
 
 #include "roq/web/socket/client_factory.hpp"
 
-#include "roq/huobi/flags.hpp"
-
 #include "roq/huobi/json/utils.hpp"
 
 using namespace std::literals;
@@ -46,7 +44,7 @@ auto create_name(auto stream_id) {
 }
 
 auto create_connection(auto &handler, auto &settings, auto &context) {
-  auto uri = Flags::ws_market_uri();
+  auto uri = settings.ws.market_uri;
   auto config = web::socket::Client::Config{
       // connection
       .interface = {},
@@ -62,10 +60,10 @@ auto create_connection(auto &handler, auto &settings, auto &context) {
       .query = {},
       .user_agent = ROQ_PACKAGE_NAME,
       .request_timeout = {},
-      .ping_frequency = Flags::ws_ping_freq(),
+      .ping_frequency = settings.ws.ping_freq,
       // implementation
-      .decode_buffer_size = Flags::decode_buffer_size(),
-      .encode_buffer_size = Flags::encode_buffer_size(),
+      .decode_buffer_size = settings.common.decode_buffer_size,
+      .encode_buffer_size = settings.common.encode_buffer_size,
   };
   return web::socket::ClientFactory::create(handler, context, config, []() { return std::string(); });
 }
@@ -80,7 +78,8 @@ struct create_metrics final : public core::metrics::Factory {
 
 MarketData::MarketData(Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, index_{index},
-      connection_{create_connection(*this, shared.settings, context)}, decode_buffer_{Flags::decode_buffer_size()},
+      connection_{create_connection(*this, shared.settings, context)},
+      decode_buffer_{shared.settings.common.decode_buffer_size},
       request_id_{static_cast<uint64_t>(stream_id_) * 1000000},  // scale (debugging)
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
@@ -100,7 +99,7 @@ MarketData::MarketData(Handler &handler, io::Context &context, uint16_t stream_i
           .ping = create_metrics(shared.settings, name_, "ping"sv),
           .heartbeat = create_metrics(shared.settings, name_, "heartbeat"sv),
       },
-      shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER}, request_queue_{Flags::ws_request_delay()} {
+      shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER}, request_queue_{shared.settings.ws.request_delay} {
 }
 
 void MarketData::operator()(Event<Start> const &) {
@@ -287,7 +286,7 @@ void MarketData::operator()(Trace<json::BBO> const &event) {
     auto &tick = bbo.tick;
     auto top_of_book = TopOfBook{
         .stream_id = stream_id_,
-        .exchange = Flags::exchange(),
+        .exchange = shared_.settings.exchange,
         .symbol = symbol,
         .layer{
             .bid_price = tick.bid,
@@ -327,7 +326,7 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
       emplace_back(trades, item);
     auto trade_summary = TradeSummary{
         .stream_id = stream_id_,
-        .exchange = Flags::exchange(),
+        .exchange = shared_.settings.exchange,
         .symbol = symbol,
         .trades = trades,
         .exchange_time_utc = trade.ts,
@@ -378,7 +377,7 @@ void MarketData::operator()(Trace<json::Detail> const &event) {
     }};
     auto statistics_update = StatisticsUpdate{
         .stream_id = stream_id_,
-        .exchange = Flags::exchange(),
+        .exchange = shared_.settings.exchange,
         .symbol = symbol,
         .statistics = statistics,
         .update_type = UpdateType::INCREMENTAL,
