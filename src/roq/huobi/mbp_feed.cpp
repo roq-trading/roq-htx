@@ -330,8 +330,8 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
             .stream_id = stream_id_,
             .exchange = shared_.settings.exchange,
             .symbol = symbol,
-            .bids = bids,
-            .asks = asks,
+            .bids = {const_cast<MBPUpdate *>(std::data(bids)), std::size(bids)},  // FIXME
+            .asks = {const_cast<MBPUpdate *>(std::data(asks)), std::size(asks)},  // FIXME
             .update_type = update_type,
             .exchange_time_utc = mbp.ts,
             .exchange_sequence = exchange_sequence,
@@ -410,8 +410,8 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
             .stream_id = stream_id_,
             .exchange = shared_.settings.exchange,
             .symbol = symbol,
-            .bids = bids,
-            .asks = asks,
+            .bids = {const_cast<MBPUpdate *>(std::data(bids)), std::size(bids)},  // FIXME
+            .asks = {const_cast<MBPUpdate *>(std::data(asks)), std::size(asks)},  // FIXME
             .update_type = UpdateType::SNAPSHOT,
             .exchange_time_utc = {},
             .exchange_sequence = sequencer.last_sequence(),
