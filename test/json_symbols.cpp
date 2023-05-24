@@ -2,8 +2,6 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/parser.hpp"
-
 #include "roq/huobi/json/symbols.hpp"
 
 using namespace roq;
@@ -63,9 +61,8 @@ TEST_CASE("json_symbols_simple", "[json_symbols]") {
                  R"(})"
                  R"(])"
                  R"(})";
-  core::Buffer buffer_(65536);
-  core::json::Buffer buffer(buffer_);
-  auto obj = core::json::Parser::create<json::Symbols>(message, buffer);
+  std::vector<std::byte> buffer(8192);
+  auto obj = json::Symbols::create(message, buffer);
   CHECK(obj.status == "ok"sv);
   auto &data = obj.data;
   REQUIRE(std::size(data) == 2);

@@ -22,9 +22,8 @@ TEST_CASE("json_market_status_simple", "[json_market_status]") {
                  R"("marketStatus":1)"
                  R"(})"
                  R"(})";
-  core::Buffer buffer_(65536);
-  core::json::Buffer buffer(buffer_);
-  auto obj = core::json::Parser::create<json::MarketStatus>(message, buffer);
+  std::vector<std::byte> buffer(8192);
+  auto obj = json::MarketStatus::create(message, buffer);
   CHECK(obj.message == "success"sv);
   auto &data = obj.data;
   CHECK(data.market_status == 1);

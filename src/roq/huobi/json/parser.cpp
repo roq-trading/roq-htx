@@ -23,9 +23,9 @@ namespace json {
 bool Parser::dispatch(
     Parser::Handler &handler,
     std::string_view const &message,
-    core::json::Buffer &buffer,
+    std::span<std::byte> const &buffer,
     TraceInfo const &trace_info) {
-  Frame frame{message, buffer};
+  auto frame = Frame::create(message, buffer);
   if (!frame.ping.count()) {
     switch (frame.status) {
       using enum Status::type_t;
@@ -34,27 +34,27 @@ bool Parser::dispatch(
         switch (topic) {
           using enum Topic::type_t;
           case BBO: {
-            json::BBO bbo{message, buffer};
+            auto bbo = json::BBO::create(message, buffer);
             create_trace_and_dispatch(handler, trace_info, bbo);
             return true;
           }
           case TRADE: {
-            Trade trade{message, buffer};
+            auto trade = Trade::create(message, buffer);
             create_trace_and_dispatch(handler, trace_info, trade);
             return true;
           }
           case DETAIL: {
-            Detail detail{message, buffer};
+            auto detail = Detail::create(message, buffer);
             create_trace_and_dispatch(handler, trace_info, detail);
             return true;
           }
           case TICKER: {
-            Ticker ticker{message, buffer};
+            auto ticker = Ticker::create(message, buffer);
             create_trace_and_dispatch(handler, trace_info, ticker);
             return true;
           }
           case MBP: {
-            json::MBP mbp{message, buffer};
+            auto mbp = MBP::create(message, buffer);
             create_trace_and_dispatch(handler, trace_info, mbp);
             return true;
           }
@@ -79,7 +79,7 @@ bool Parser::dispatch(
           if (!std::empty(frame.rep)) {
             Topic topic{extract_topic(frame.rep)};
             if (topic == Topic::MBP) {
-              MBPSnapshot mbp_snapshot{message, buffer};
+              auto mbp_snapshot = MBPSnapshot::create(message, buffer);
               create_trace_and_dispatch(handler, trace_info, mbp_snapshot);
               return true;
             }

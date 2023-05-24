@@ -2,8 +2,6 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/parser.hpp"
-
 #include "roq/huobi/json/currencies.hpp"
 
 using namespace roq;
@@ -456,9 +454,8 @@ TEST_CASE("json_currencies_simple", "[json_currencies]") {
                  R"("gal")"
                  R"(])"
                  R"(})";
-  core::Buffer buffer_(65536);
-  core::json::Buffer buffer(buffer_);
-  auto obj = core::json::Parser::create<json::Currencies>(message, buffer);
+  std::vector<std::byte> buffer(8192);
+  auto obj = json::Currencies::create(message, buffer);
   CHECK(obj.status == "ok"sv);
   auto &data = obj.data;
   REQUIRE(std::size(data) == 436);
