@@ -15,7 +15,7 @@
 
 #include "roq/core/limit/rate_limiter.hpp"
 
-#include "roq/core/mbp/sequencer.hpp"
+#include "roq/utils/mbp/sequencer.hpp"
 
 #include "roq/huobi/settings.hpp"
 
@@ -67,7 +67,7 @@ struct Shared final {
   Settings const &settings;
   core::limit::RateLimiter rate_limiter;
   core::Symbols symbols;
-  absl::flat_hash_map<Symbol, core::mbp::Sequencer> mbp_sequencer;
+  absl::flat_hash_map<Symbol, utils::mbp::Sequencer> mbp_sequencer;
 };
 
 }  // namespace huobi
