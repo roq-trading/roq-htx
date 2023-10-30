@@ -4,7 +4,7 @@
   "values": [
     {
       "name": "seqNum",
-      "type": "int64_t"
+      "type": "uint64_t"
     },
     {
       "name": "bids",
