@@ -383,6 +383,9 @@ void Rest::operator()(Trace<json::Symbols> const &event) {
         .settlement_date = {},
         .expiry_datetime = {},
         .expiry_datetime_utc = {},
+        .exchange_time_utc = {},
+        .exchange_sequence = {},
+        .sending_time_utc = {},
         .discard = discard,
     };
     create_trace_and_dispatch(handler_, trace_info, reference_data, false);
@@ -399,6 +402,9 @@ void Rest::operator()(Trace<json::Symbols> const &event) {
         .exchange = shared_.settings.exchange,
         .symbol = symbol,
         .trading_status = trading_status,
+        .exchange_time_utc = {},
+        .exchange_sequence = {},
+        .sending_time_utc = {},
     };
     create_trace_and_dispatch(handler_, trace_info, market_status, true);
   }
