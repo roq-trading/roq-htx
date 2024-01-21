@@ -5,7 +5,10 @@
 #include <utility>
 
 #include "roq/mask.hpp"
+
 #include "roq/utils/update.hpp"
+
+#include "roq/utils/metrics/const.hpp"
 
 #include "roq/core/charconv.hpp"
 
@@ -110,16 +113,16 @@ void Rest::operator()(Event<Timer> const &event) {
 void Rest::operator()(metrics::Writer &writer) {
   writer
       // counter
-      .write(counter_.disconnect, metrics::COUNTER)
+      .write(counter_.disconnect, utils::metrics::COUNTER)
       // profile
-      .write(profile_.market_status, metrics::PROFILE)
-      .write(profile_.market_status_ack, metrics::PROFILE)
-      .write(profile_.currencies, metrics::PROFILE)
-      .write(profile_.currencies_ack, metrics::PROFILE)
-      .write(profile_.symbols, metrics::PROFILE)
-      .write(profile_.symbols_ack, metrics::PROFILE)
+      .write(profile_.market_status, utils::metrics::PROFILE)
+      .write(profile_.market_status_ack, utils::metrics::PROFILE)
+      .write(profile_.currencies, utils::metrics::PROFILE)
+      .write(profile_.currencies_ack, utils::metrics::PROFILE)
+      .write(profile_.symbols, utils::metrics::PROFILE)
+      .write(profile_.symbols_ack, utils::metrics::PROFILE)
       // latency
-      .write(latency_.ping, metrics::LATENCY);
+      .write(latency_.ping, utils::metrics::LATENCY);
 }
 
 void Rest::operator()(Trace<web::rest::Client::Connected> const &) {
