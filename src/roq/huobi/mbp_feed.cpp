@@ -346,7 +346,7 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
         auto market_by_price_update = create_update(bids, asks, UpdateType::INCREMENTAL, tick.seq_num);
         create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
       };
-      auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence) {
+      auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence, auto retries, auto delay) {
         log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
         auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT, sequencer.last_sequence());
         auto apply_updates = [&](auto &market_by_price) { sequencer.apply(market_by_price, sequence, false); };
@@ -404,7 +404,7 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
     for (auto &item : data.asks)
       emplace_back(mbp.asks, item);
     try {
-      auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence) {
+      auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence, auto retries, auto delay) {
         log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
         auto market_by_price_update = MarketByPriceUpdate{
             .stream_id = stream_id_,
