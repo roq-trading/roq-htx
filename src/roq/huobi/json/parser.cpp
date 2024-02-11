@@ -25,7 +25,7 @@ bool Parser::dispatch(
     std::string_view const &message,
     std::span<std::byte> const &buffer,
     TraceInfo const &trace_info) {
-  auto frame = Frame::create(message, buffer);
+  Frame frame{message, buffer};
   if (!frame.ping.count()) {
     switch (frame.status) {
       using enum Status::type_t;
@@ -34,27 +34,27 @@ bool Parser::dispatch(
         switch (topic) {
           using enum Topic::type_t;
           case BBO: {
-            auto bbo = json::BBO::create(message, buffer);
+            json::BBO bbo{message, buffer};
             create_trace_and_dispatch(handler, trace_info, bbo);
             return true;
           }
           case TRADE: {
-            auto trade = Trade::create(message, buffer);
+            Trade trade{message, buffer};
             create_trace_and_dispatch(handler, trace_info, trade);
             return true;
           }
           case DETAIL: {
-            auto detail = Detail::create(message, buffer);
+            Detail detail{message, buffer};
             create_trace_and_dispatch(handler, trace_info, detail);
             return true;
           }
           case TICKER: {
-            auto ticker = Ticker::create(message, buffer);
+            Ticker ticker{message, buffer};
             create_trace_and_dispatch(handler, trace_info, ticker);
             return true;
           }
           case MBP: {
-            auto mbp = MBP::create(message, buffer);
+            json::MBP mbp{message, buffer};
             create_trace_and_dispatch(handler, trace_info, mbp);
             return true;
           }
@@ -79,7 +79,7 @@ bool Parser::dispatch(
           if (!std::empty(frame.rep)) {
             Topic topic{extract_topic(frame.rep)};
             if (topic == Topic::MBP) {
-              auto mbp_snapshot = MBPSnapshot::create(message, buffer);
+              MBPSnapshot mbp_snapshot{message, buffer};
               create_trace_and_dispatch(handler, trace_info, mbp_snapshot);
               return true;
             }

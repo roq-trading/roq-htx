@@ -23,7 +23,7 @@ TEST_CASE("json_market_status_simple", "[json_market_status]") {
                  R"(})"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  auto obj = json::MarketStatus::create(message, buffer);
+  json::MarketStatus obj{message, buffer};
   CHECK(obj.message == "success"sv);
   auto &data = obj.data;
   CHECK(data.market_status == 1);

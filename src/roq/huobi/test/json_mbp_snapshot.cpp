@@ -32,5 +32,5 @@ TEST_CASE("json_mbp_snapshot_simple", "[json_mbp_snapshot]") {
                  R"(})"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  [[maybe_unused]] auto obj = json::MBPSnapshot::create(message, buffer);
+  [[maybe_unused]] json::MBPSnapshot obj{message, buffer};
 }

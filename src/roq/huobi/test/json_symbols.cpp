@@ -62,7 +62,7 @@ TEST_CASE("json_symbols_simple", "[json_symbols]") {
                  R"(])"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  auto obj = json::Symbols::create(message, buffer);
+  json::Symbols obj{message, buffer};
   CHECK(obj.status == "ok"sv);
   auto &data = obj.data;
   REQUIRE(std::size(data) == 2);

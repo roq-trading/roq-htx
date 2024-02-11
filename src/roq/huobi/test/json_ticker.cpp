@@ -33,5 +33,5 @@ TEST_CASE("json_ticker_simple", "[json_ticker]") {
                  R"(})"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  [[maybe_unused]] auto obj = json::Ticker::create(message, buffer);
+  [[maybe_unused]] json::Ticker obj{message, buffer};
 }

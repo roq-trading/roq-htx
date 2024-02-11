@@ -31,5 +31,5 @@ TEST_CASE("json_trade_simple", "[json_trade]") {
                  R"(})"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  [[maybe_unused]] auto obj = json::Trade::create(message, buffer);
+  [[maybe_unused]] json::Trade obj{message, buffer};
 }

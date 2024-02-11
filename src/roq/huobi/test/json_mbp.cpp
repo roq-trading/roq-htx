@@ -25,5 +25,5 @@ TEST_CASE("json_mbp_simple", "[json_mbp]") {
                  R"(})"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  [[maybe_unused]] auto obj = json::MBP::create(message, buffer);
+  [[maybe_unused]] json::MBP mbp{message, buffer};
 }

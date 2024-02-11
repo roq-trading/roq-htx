@@ -27,5 +27,5 @@ TEST_CASE("json_bbo_simple", "[json_bbo]") {
                  R"(})"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  [[maybe_unused]] auto obj = json::BBO::create(message, buffer);
+  [[maybe_unused]] json::BBO bbo{message, buffer};
 }

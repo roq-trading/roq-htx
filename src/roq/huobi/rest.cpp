@@ -228,7 +228,7 @@ void Rest::get_market_status_ack(Trace<web::rest::Response> const &event, uint32
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        auto market_status = json::MarketStatus::create(body, decode_buffer_);
+        json::MarketStatus market_status{body, decode_buffer_};
         Trace event_2{event, market_status};
         (*this)(event_2);
         download_.check(STATE);
@@ -277,7 +277,7 @@ void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t 
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        auto currencies = json::Currencies::create(body, decode_buffer_);
+        json::Currencies currencies{body, decode_buffer_};
         Trace event_2{event, currencies};
         (*this)(event_2);
         download_.check(STATE);
@@ -326,7 +326,7 @@ void Rest::get_symbols_ack(Trace<web::rest::Response> const &event, uint32_t seq
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        auto symbols = json::Symbols::create(body, decode_buffer_);
+        json::Symbols symbols{body, decode_buffer_};
         Trace event_2{event, symbols};
         (*this)(event_2);
         download_.check(STATE);

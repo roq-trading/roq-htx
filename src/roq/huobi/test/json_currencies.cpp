@@ -455,7 +455,7 @@ TEST_CASE("json_currencies_simple", "[json_currencies]") {
                  R"(])"
                  R"(})";
   std::vector<std::byte> buffer(8192);
-  auto obj = json::Currencies::create(message, buffer);
+  json::Currencies obj{message, buffer};
   CHECK(obj.status == "ok"sv);
   auto &data = obj.data;
   REQUIRE(std::size(data) == 436);
