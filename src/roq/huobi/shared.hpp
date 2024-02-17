@@ -10,6 +10,8 @@
 #include "roq/api.hpp"
 #include "roq/server.hpp"
 
+#include "roq/utils/container.hpp"
+
 #include "roq/core/symbols.hpp"
 #include "roq/core/timer_queue.hpp"
 
@@ -67,7 +69,7 @@ struct Shared final {
   Settings const &settings;
   core::limit::RateLimiter rate_limiter;
   core::Symbols symbols;
-  absl::flat_hash_map<Symbol, market::mbp::Sequencer> mbp_sequencer;
+  utils::unordered_map<std::string, market::mbp::Sequencer> mbp_sequencer;
 };
 
 }  // namespace huobi
