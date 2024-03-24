@@ -6,8 +6,8 @@
 
 #include "roq/server/flags/settings.hpp"
 
-#include "roq/huobi/flags/common.hpp"
 #include "roq/huobi/flags/flags.hpp"
+#include "roq/huobi/flags/misc.hpp"
 #include "roq/huobi/flags/rest.hpp"
 #include "roq/huobi/flags/ws.hpp"
 
@@ -17,7 +17,7 @@ namespace huobi {
 struct Settings final : public server::flags::Settings, public flags::Flags {
   explicit Settings(args::Parser const &);
 
-  flags::Common common;
+  flags::Misc misc;
   flags::REST rest;
   flags::WS ws;
 };
@@ -33,12 +33,12 @@ struct fmt::formatter<roq::huobi::Settings> {
     return fmt::format_to(
         context.out(),
         R"({{)"
-        R"(common={}, )"
+        R"(misc={}, )"
         R"(rest={}, )"
         R"(ws={}, )"
         R"(server={})"
         R"(}})"sv,
-        value.common,
+        value.misc,
         value.rest,
         value.ws,
         static_cast<roq::server::Settings const &>(value));
