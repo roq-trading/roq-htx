@@ -4,15 +4,17 @@
   "values": [
     {
       "name": "seqNum",
-      "type": "uint64_t"
+      "type": "std/uint64"
     },
     {
       "name": "bids",
-      "type": "std::span<Quotation const>"
+      "type": "Quotation",
+      "array": "std/span"
     },
     {
       "name": "asks",
-      "type": "std::span<Quotation const>"
+      "type": "Quotation",
+      "array": "std/span"
     }
   ]
 }

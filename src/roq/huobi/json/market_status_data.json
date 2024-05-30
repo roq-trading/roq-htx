@@ -4,7 +4,7 @@
   "values": [
     {
       "name": "marketStatus",
-      "type": "int32_t"
+      "type": "std/int32"
     }
   ]
 }

@@ -4,31 +4,31 @@
   "values": [
     {
       "name": "seqId",
-      "type": "uint64_t"
+      "type": "std/uint64"
     },
     {
       "name": "ask",
-      "type": "double"
+      "type": "std/double"
     },
     {
       "name": "askSize",
-      "type": "double"
+      "type": "std/double"
     },
     {
       "name": "bid",
-      "type": "double"
+      "type": "std/double"
     },
     {
       "name": "bidSize",
-      "type": "double"
+      "type": "std/double"
     },
     {
       "name": "quoteTime",
-      "type": "std::chrono::milliseconds"
+      "type": "std/milliseconds"
     },
     {
       "name": "symbol",
-      "type": "std::string_view"
+      "type": "std/string_view"
     }
   ]
 }
