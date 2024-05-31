@@ -1,5 +1,5 @@
 {
-  "name": "SymbolsItem",
+  "name": "roq/huobi/json/SymbolsItem",
   "type": "item",
   "values": [
     {
@@ -20,7 +20,7 @@
     },
     {
       "name": "symbol-partition",
-      "type": "Partition"
+      "type": "roq/huobi/json/Partition"
     },
     {
       "name": "symbol",
@@ -28,7 +28,7 @@
     },
     {
       "name": "state",
-      "type": "State"
+      "type": "roq/huobi/json/State"
     },
     {
       "name": "value-precision",
@@ -80,7 +80,7 @@
     },
     {
       "name": "api-trading",
-      "type": "Trading"
+      "type": "roq/huobi/json/Trading"
     },
     {
       "name": "tags",

@@ -1,5 +1,5 @@
 {
-  "name": "MBPSnapshot",
+  "name": "roq/huobi/json/MBPSnapshot",
   "type": "comp",
   "values": [
     {
@@ -8,7 +8,7 @@
     },
     {
       "name": "status",
-      "type": "Status"
+      "type": "roq/huobi/json/Status"
     },
     {
       "name": "ts",
@@ -20,7 +20,7 @@
     },
     {
       "name": "data",
-      "type": "MBPSnapshotData"
+      "type": "roq/huobi/json/MBPSnapshotData"
     }
   ]
 }

@@ -1,5 +1,5 @@
 {
-  "name": "MBPSnapshotData",
+  "name": "roq/huobi/json/MBPSnapshotData",
   "type": "comp",
   "values": [
     {
@@ -8,12 +8,12 @@
     },
     {
       "name": "bids",
-      "type": "Quotation",
+      "type": "roq/huobi/json/Quotation",
       "array": "std/span"
     },
     {
       "name": "asks",
-      "type": "Quotation",
+      "type": "roq/huobi/json/Quotation",
       "array": "std/span"
     }
   ]

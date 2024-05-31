@@ -1,5 +1,5 @@
 {
-  "name": "Symbols",
+  "name": "roq/huobi/json/Symbols",
   "type": "comp",
   "values": [
     {
@@ -8,7 +8,7 @@
     },
     {
       "name": "data",
-      "type": "SymbolsItem",
+      "type": "roq/huobi/json/SymbolsItem",
       "array": "std/span"
     }
   ]

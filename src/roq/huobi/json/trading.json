@@ -1,5 +1,5 @@
 {
-  "name": "Trading",
+  "name": "roq/huobi/json/Trading",
   "type": "enum",
   "values": [
     {

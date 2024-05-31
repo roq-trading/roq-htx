@@ -1,5 +1,5 @@
 {
-  "name": "Error",
+  "name": "roq/huobi/json/Error",
   "type": "struct",
   "values": [
     {

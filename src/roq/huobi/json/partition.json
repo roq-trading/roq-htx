@@ -1,5 +1,5 @@
 {
-  "name": "Partition",
+  "name": "roq/huobi/json/Partition",
   "type": "enum",
   "values": [
     {

@@ -1,5 +1,5 @@
 {
-  "name": "Ping",
+  "name": "roq/huobi/json/Ping",
   "type": "struct",
   "values": [
     {

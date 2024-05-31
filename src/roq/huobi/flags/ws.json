@@ -1,25 +1,25 @@
 {
-  "name": "WS",
+  "name": "roq/huobi/flags/WS",
   "type": "flags",
   "prefix": "ws_",
   "values": [
     {
       "name": "market_uri",
-      "type": "roq::io::web::URI",
+      "type": "roq/io/web/URI",
       "validator": "roq::core::flags::URI",
       "default": "wss://api.huobi.pro/ws",
       "description": "Exchange end-point"
     },
     {
       "name": "mbp_uri",
-      "type": "roq::io::web::URI",
+      "type": "roq/io/web/URI",
       "validator": "roq::core::flags::URI",
       "default": "wss://api.huobi.pro/feed",
       "description": "Exchange end-point"
     },
     {
       "name": "order_uri",
-      "type": "roq::io::web::URI",
+      "type": "roq/io/web/URI",
       "validator": "roq::core::flags::URI",
       "default": "wss://api.huobi.pro/ws/v2",
       "description": "Exchange end-point"

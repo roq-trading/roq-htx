@@ -1,5 +1,5 @@
 {
-  "name": "MBP",
+  "name": "roq/huobi/json/MBP",
   "type": "comp",
   "values": [
     {
@@ -12,7 +12,7 @@
     },
     {
       "name": "tick",
-      "type": "MBPTick"
+      "type": "roq/huobi/json/MBPTick"
     }
   ]
 }

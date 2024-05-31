@@ -1,5 +1,5 @@
 {
-  "name": "TradeTickItem",
+  "name": "roq/huobi/json/TradeTickItem",
   "type": "item",
   "values": [
     {
@@ -25,7 +25,7 @@
     },
     {
       "name": "direction",
-      "type": "Side"
+      "type": "roq/huobi/json/Side"
     }
   ]
 }

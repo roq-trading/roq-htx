@@ -1,5 +1,5 @@
 {
-  "name": "MarketStatus",
+  "name": "roq/huobi/json/MarketStatus",
   "type": "comp",
   "values": [
     {
@@ -12,7 +12,7 @@
     },
     {
       "name": "data",
-      "type": "MarketStatusData"
+      "type": "roq/huobi/json/MarketStatusData"
     }
   ]
 }
