@@ -86,8 +86,7 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
     utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    utils::metrics::Profile parse, ping, error, outbound_account_info, outbound_account_position, balance_update,
-        execution_report;
+    utils::metrics::Profile parse, ping, error, outbound_account_info, outbound_account_position, balance_update, execution_report;
   } profile_;
   struct {
     utils::metrics::Latency ping, heartbeat;
