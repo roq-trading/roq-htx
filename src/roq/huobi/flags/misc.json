@@ -11,7 +11,7 @@
     {
       "name": "request_limit_interval",
       "type": "std/nanoseconds",
-      "validator": "roq::flags::validators::TimePeriod",
+      "validator": "roq/flags/validators/TimePeriod",
       "default": "1s",
       "description": "Request limit monitor interval"
     },
