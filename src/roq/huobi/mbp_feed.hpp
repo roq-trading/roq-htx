@@ -37,7 +37,6 @@ struct MBPFeed final : public web::socket::Client::Handler, public json::Parser:
 
   MBPFeed(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
 
-  MBPFeed(MBPFeed &&) = default;
   MBPFeed(MBPFeed const &) = delete;
 
   bool ready() const { return status_ == ConnectionStatus::READY; }
