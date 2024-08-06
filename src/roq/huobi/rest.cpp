@@ -14,6 +14,7 @@
 
 #include "roq/web/rest/client.hpp"
 
+#include "roq/huobi/json/map.hpp"
 #include "roq/huobi/json/utils.hpp"
 
 using namespace std::literals;
@@ -394,12 +395,11 @@ void Rest::operator()(Trace<json::Symbols> const &event) {
     if (all_symbols_.emplace(symbol).second)  // only include new
       symbols_2.emplace_back(symbol);
     ++counter;
-    auto trading_status = json::map(item.api_trading);
     auto market_status = MarketStatus{
         .stream_id = stream_id_,
         .exchange = shared_.settings.exchange,
         .symbol = symbol,
-        .trading_status = trading_status,
+        .trading_status = json::Map{item.api_trading},
         .exchange_time_utc = {},
         .exchange_sequence = {},
         .sending_time_utc = {},

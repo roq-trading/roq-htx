@@ -10,9 +10,6 @@
 
 #include "roq/core/charconv/datetime.hpp"
 
-#include "roq/huobi/json/side.hpp"
-#include "roq/huobi/json/trading.hpp"
-
 namespace roq {
 namespace huobi {
 namespace json {
@@ -61,47 +58,6 @@ inline std::string_view extract_topic(std::string_view const &channel) {
     return channel.substr(sep1 + 1);
   }
   return channel;
-}
-
-inline roq::Side map(json::Side side) {
-  switch (side) {
-    using enum json::Side::type_t;
-    case UNDEFINED__:
-    case UNKNOWN__:
-      break;
-    case BUY:
-      return roq::Side::BUY;
-    case SELL:
-      return roq::Side::SELL;
-  }
-  return {};
-}
-
-inline json::Side map(roq::Side side) {
-  switch (side) {
-    using enum roq::Side;
-    case UNDEFINED:
-      break;
-    case BUY:
-      return json::Side::BUY;
-    case SELL:
-      return json::Side::SELL;
-  }
-  return {};
-}
-
-inline roq::TradingStatus map(json::Trading trading) {
-  switch (trading) {
-    using enum json::Trading::type_t;
-    case UNDEFINED__:
-    case UNKNOWN__:
-      break;
-    case ENABLED:
-      return roq::TradingStatus::OPEN;
-    case DISABLED:
-      return roq::TradingStatus::HALT;
-  }
-  return {};
 }
 
 }  // namespace json
