@@ -9,8 +9,6 @@
 #include "roq/logging.hpp"
 
 #include "roq/clock.hpp"
-#include "roq/core/charconv.hpp"
-#include "roq/core/utils.hpp"
 
 #include "roq/huobi/json/utils.hpp"
 
