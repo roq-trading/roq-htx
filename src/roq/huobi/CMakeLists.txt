@@ -46,16 +46,16 @@ target_link_libraries(
   PRIVATE ${PROJECT_NAME}-json
           ${PROJECT_NAME}-flags
           ${PROJECT_NAME}-tools
+          roq-api::roq-api
+          roq-core::roq-core
+          roq-flags::roq-flags
+          roq-io::roq-io
+          roq-logging::roq-logging
+          roq-logging::roq-logging-flags
+          roq-market::roq-market
           roq-server::roq-server
           roq-server::roq-server-flags
           roq-web::roq-web
-          roq-core::roq-core
-          roq-io::roq-io
-          roq-market::roq-market
-          roq-logging::roq-logging
-          roq-logging::roq-logging-flags
-          roq-flags::roq-flags
-          roq-api::roq-api
           fmt::fmt
           unordered_dense::unordered_dense
           ${ZLIB_NG_LIBRARIES})
