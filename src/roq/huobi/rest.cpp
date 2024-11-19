@@ -368,6 +368,7 @@ void Rest::operator()(Trace<json::Symbols> const &event) {
         .margin_currency = {},
         .commission_currency = {},
         .tick_size = tick_size,
+        .tick_size_steps = {},
         .multiplier = NaN,
         .min_notional = NaN,
         .min_trade_vol = item.min_order_amt,
