@@ -10,11 +10,11 @@
 #include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
+#include "roq/utils/exceptions/unhandled.hpp"
+
 #include "roq/utils/metrics/factory.hpp"
 
 #include "roq/web/socket/client.hpp"
-
-#include "roq/core/tools/exception.hpp"
 
 #include "roq/huobi/json/utils.hpp"
 
@@ -251,7 +251,7 @@ void MBPFeed::parse(std::string_view const &message) {
       json::Parser::dispatch(*this, message, decode_buffer_, trace_info);
     } catch (...) {
       log::warn(R"(message="{}")"sv, message);
-      core::tools::UnhandledException::terminate();
+      utils::exceptions::Unhandled::terminate();
     }
   });
 }

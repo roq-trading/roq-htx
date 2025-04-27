@@ -12,9 +12,9 @@
 
 #include "roq/utils/charconv/to_string.hpp"
 
-#include "roq/utils/metrics/factory.hpp"
+#include "roq/utils/exceptions/unhandled.hpp"
 
-#include "roq/core/tools/exception.hpp"
+#include "roq/utils/metrics/factory.hpp"
 
 #include "roq/web/socket/client.hpp"
 
@@ -249,7 +249,7 @@ void MarketData::parse(std::string_view const &message) {
       json::Parser::dispatch(*this, message, decode_buffer_, trace_info);
     } catch (...) {
       log::warn(R"(message="{}")"sv, message);
-      core::tools::UnhandledException::terminate();
+      utils::exceptions::Unhandled::terminate();
     }
   });
 }
