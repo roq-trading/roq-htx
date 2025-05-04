@@ -2,7 +2,7 @@
 
 #include "roq/huobi/tools/crypto.hpp"
 
-#include <fmt/core.h>
+#include <fmt/format.h>
 
 #include "roq/utils/codec/hex.hpp"
 
