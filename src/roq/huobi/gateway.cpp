@@ -24,28 +24,31 @@ namespace huobi {
 namespace {
 template <typename R>
 R create_accounts(auto &config) {
-  using result_type = std::remove_cvref<R>::type;
+  using result_type = std::remove_cvref_t<R>;
   result_type result;
-  for (auto &[_, account] : config.accounts)
+  for (auto &[_, account] : config.accounts) {
     result.try_emplace(static_cast<std::string_view>(account.name), std::make_unique<Account>(config, account.name));
+  }
   return result;
 }
 
 template <typename R>
 R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared) {
-  using result_type = std::remove_cvref<R>::type;
+  using result_type = std::remove_cvref_t<R>;
   result_type result;
-  for (auto &[name, account] : accounts)
+  for (auto &[name, account] : accounts) {
     result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntry>(gateway, context, ++stream_id, *account, shared));
+  }
   return result;
 }
 
 template <typename R>
 R create_drop_copy(auto &accounts) {
-  using result_type = std::remove_cvref<R>::type;
+  using result_type = std::remove_cvref_t<R>;
   result_type result;
-  for (auto &[name, account] : accounts)
+  for (auto &[name, account] : accounts) {
     result.try_emplace(static_cast<std::string_view>(name), nullptr);
+  }
   return result;
 }
 }  // namespace
@@ -56,8 +59,9 @@ Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Confi
     : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config)}, context_{context}, shared_{dispatcher, settings},
       rest_{*this, context_, ++stream_id_, shared_}, order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, accounts_, shared_)},
       drop_copy_{create_drop_copy<decltype(drop_copy_)>(accounts_)} {
-  if (settings.rest.cancel_on_disconnect)
+  if (settings.rest.cancel_on_disconnect) {
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
+  }
 }
 
 void Gateway::operator()(Event<Start> const &event) {
@@ -138,10 +142,12 @@ void Gateway::operator()(Trace<FundsUpdate> const &event, bool is_last) {
 void Gateway::operator()(Rest::SymbolsUpdate &symbols_update) {
   auto [size, start_from] = shared_.symbols(symbols_update.symbols);
   ensure_symbol_slices(size);
-  for (auto &iter : market_data_)
+  for (auto &iter : market_data_) {
     (*iter).subscribe(start_from);
-  for (auto &iter : mbp_feed_)
+  }
+  for (auto &iter : mbp_feed_) {
     (*iter).subscribe(start_from);
+  }
 }
 
 void Gateway::ensure_symbol_slices(size_t size) {
@@ -209,21 +215,27 @@ template <typename... Args>
 void Gateway::dispatch(Args &&...args) {
   auto helper = [&](auto &target) { target(std::forward<Args>(args)...); };
   helper(rest_);
-  for (auto &[_, item] : order_entry_)
+  for (auto &[_, item] : order_entry_) {
     helper(*item);
-  for (auto &[_, item] : drop_copy_)
-    if (static_cast<bool>(item))
+  }
+  for (auto &[_, item] : drop_copy_) {
+    if (static_cast<bool>(item)) {
       helper(*item);
-  for (auto &item : market_data_)
+    }
+  }
+  for (auto &item : market_data_) {
     helper(*item);
-  for (auto &item : mbp_feed_)
+  }
+  for (auto &item : mbp_feed_) {
     helper(*item);
+  }
 }
 
 OrderEntry &Gateway::get_order_entry(std::string_view const &account) {
   auto iter = order_entry_.find(account);
-  if (iter != std::end(order_entry_))
+  if (iter != std::end(order_entry_)) {
     return *(*iter).second;
+  }
   throw RuntimeError{R"(Unknown account="{}")"sv, account};
 }
 
