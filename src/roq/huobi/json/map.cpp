@@ -35,9 +35,9 @@ template <>
 constexpr Helper<Side>::operator roq::Side() {
   switch (std::get<0>(args_)) {
     using enum Side::type_t;
-    case _UNDEFINED:
+    case UNDEFINED_INTERNAL:
       return {};
-    case _UNKNOWN:
+    case UNKNOWN_INTERNAL:
       break;
     case BUY:
       return roq::Side::BUY;
@@ -47,7 +47,7 @@ constexpr Helper<Side>::operator roq::Side() {
   roq::log::fatal("Unexpected"sv);
 }
 
-static_assert(static_cast<roq::Side>(Helper{Side{Side::_UNDEFINED}}) == roq::Side::UNDEFINED);
+static_assert(static_cast<roq::Side>(Helper{Side{Side::UNDEFINED_INTERNAL}}) == roq::Side::UNDEFINED);
 static_assert(static_cast<roq::Side>(Helper{Side{Side::BUY}}) == roq::Side::BUY);
 static_assert(static_cast<roq::Side>(Helper{Side{Side::SELL}}) == roq::Side::SELL);
 
@@ -58,9 +58,9 @@ template <>
 constexpr Helper<Trading>::operator roq::TradingStatus() {
   switch (std::get<0>(args_)) {
     using enum json::Trading::type_t;
-    case _UNDEFINED:
+    case UNDEFINED_INTERNAL:
       return {};
-    case _UNKNOWN:
+    case UNKNOWN_INTERNAL:
       break;
     case ENABLED:
       return roq::TradingStatus::OPEN;
@@ -70,7 +70,7 @@ constexpr Helper<Trading>::operator roq::TradingStatus() {
   roq::log::fatal("Unexpected"sv);
 }
 
-static_assert(static_cast<roq::TradingStatus>(Helper{Trading{Trading::_UNDEFINED}}) == roq::TradingStatus::UNDEFINED);
+static_assert(static_cast<roq::TradingStatus>(Helper{Trading{Trading::UNDEFINED_INTERNAL}}) == roq::TradingStatus::UNDEFINED);
 static_assert(static_cast<roq::TradingStatus>(Helper{Trading{Trading::ENABLED}}) == roq::TradingStatus::OPEN);
 static_assert(static_cast<roq::TradingStatus>(Helper{Trading{Trading::DISABLED}}) == roq::TradingStatus::HALT);
 
@@ -93,7 +93,7 @@ constexpr Helper<roq::Side>::operator Side() {
   roq::log::fatal("Unexpected"sv);
 }
 
-static_assert(static_cast<Side>(Helper{roq::Side::UNDEFINED}) == Side{Side::_UNDEFINED});
+static_assert(static_cast<Side>(Helper{roq::Side::UNDEFINED}) == Side{Side::UNDEFINED_INTERNAL});
 static_assert(static_cast<Side>(Helper{roq::Side::BUY}) == Side{Side::BUY});
 static_assert(static_cast<Side>(Helper{roq::Side::SELL}) == Side{Side::SELL});
 }  // namespace
