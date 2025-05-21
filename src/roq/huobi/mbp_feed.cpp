@@ -106,11 +106,12 @@ void MBPFeed::operator()(Event<Stop> const &) {
 void MBPFeed::operator()(Event<Timer> const &event) {
   auto now = event.value.now;
   (*connection_).refresh(now);
-  if (ready())
+  if (ready()) {
     check_request_queue(now);
+  }
 }
 
-void MBPFeed::operator()(metrics::Writer &writer) {
+void MBPFeed::operator()(metrics::Writer &writer) const {
   writer
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
@@ -128,8 +129,9 @@ void MBPFeed::operator()(metrics::Writer &writer) {
 }
 
 void MBPFeed::subscribe(size_t start_from) {
-  if (ready())
+  if (ready()) {
     subscribe(shared_.symbols.get_slice(index_, start_from));
+  }
 }
 
 void MBPFeed::operator()(web::socket::Client::Connected const &) {
@@ -199,8 +201,9 @@ void MBPFeed::operator()(ConnectionStatus status) {
 }
 
 void MBPFeed::subscribe(std::span<Symbol const> const &symbols) {
-  if (std::empty(symbols))
+  if (std::empty(symbols)) {
     return;
+  }
   subscribe(symbols, "market"sv, "mbp.20"sv);  // note! 150 is throttled
 }
 
@@ -314,10 +317,12 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
       };
       result.emplace_back(std::move(mbp_update));
     };
-    for (auto &item : tick.bids)
+    for (auto &item : tick.bids) {
       emplace_back(mbp_2.bids, item);
-    for (auto &item : tick.asks)
+    }
+    for (auto &item : tick.asks) {
       emplace_back(mbp_2.asks, item);
+    }
     try {
       auto create_update = [&](auto &bids, auto &asks, auto update_type, auto exchange_sequence) -> MarketByPriceUpdate {
         return {
@@ -385,10 +390,12 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
       };
       result.emplace_back(std::move(mbp_update));
     };
-    for (auto &item : data.bids)
+    for (auto &item : data.bids) {
       emplace_back(mbp.bids, item);
-    for (auto &item : data.asks)
+    }
+    for (auto &item : data.asks) {
       emplace_back(mbp.asks, item);
+    }
     try {
       auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence, [[maybe_unused]] auto retries, [[maybe_unused]] auto delay) {
         log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);

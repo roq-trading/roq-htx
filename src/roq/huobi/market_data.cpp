@@ -113,11 +113,12 @@ void MarketData::operator()(Event<Stop> const &) {
 void MarketData::operator()(Event<Timer> const &event) {
   auto now = event.value.now;
   (*connection_).refresh(now);
-  if (ready())
+  if (ready()) {
     check_request_queue(now);
+  }
 }
 
-void MarketData::operator()(metrics::Writer &writer) {
+void MarketData::operator()(metrics::Writer &writer) const {
   writer
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
@@ -137,8 +138,9 @@ void MarketData::operator()(metrics::Writer &writer) {
 }
 
 void MarketData::subscribe(size_t start_from) {
-  if (ready())
+  if (ready()) {
     subscribe(shared_.symbols.get_slice(index_, start_from));
+  }
 }
 
 void MarketData::operator()(web::socket::Client::Connected const &) {
@@ -208,8 +210,9 @@ void MarketData::operator()(ConnectionStatus status) {
 }
 
 void MarketData::subscribe(std::span<Symbol const> const &symbols) {
-  if (std::empty(symbols))
+  if (std::empty(symbols)) {
     return;
+  }
   subscribe(symbols, "market"sv, "bbo"sv);
   subscribe(symbols, "market"sv, "ticker"sv);
   subscribe(symbols, "market"sv, "trade.detail"sv);
@@ -320,8 +323,9 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
       utils::charconv::to_string(std::back_inserter(trade.trade_id), value.trade_id);
       result.emplace_back(std::move(trade));
     };
-    for (auto &item : tick.data)
+    for (auto &item : tick.data) {
       emplace_back(trades, item);
+    }
     auto trade_summary = TradeSummary{
         .stream_id = stream_id_,
         .exchange = shared_.settings.exchange,

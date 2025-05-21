@@ -114,7 +114,7 @@ void OrderEntry::operator()(Event<Timer> const &event) {
   (*connection_).refresh(event.value.now);
 }
 
-void OrderEntry::operator()(metrics::Writer &writer) {
+void OrderEntry::operator()(metrics::Writer &writer) const {
   writer
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
@@ -168,8 +168,9 @@ void OrderEntry::operator()(Trace<web::rest::Client::Connected> const &) {
 void OrderEntry::operator()(Trace<web::rest::Client::Disconnected> const &) {
   ++counter_.disconnect;
   (*this)(ConnectionStatus::DISCONNECTED);
-  if (!download_.downloading())
+  if (!download_.downloading()) {
     download_.reset();
+  }
 }
 
 void OrderEntry::operator()(Trace<web::rest::Client::Latency> const &event) {

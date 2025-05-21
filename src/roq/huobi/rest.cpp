@@ -108,7 +108,7 @@ void Rest::operator()(Event<Timer> const &event) {
   (*connection_).refresh(now);
 }
 
-void Rest::operator()(metrics::Writer &writer) {
+void Rest::operator()(metrics::Writer &writer) const {
   writer
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
@@ -136,8 +136,9 @@ void Rest::operator()(Trace<web::rest::Client::Disconnected> const &) {
   ++counter_.disconnect;
   ready_ = false;
   (*this)(ConnectionStatus::DISCONNECTED);
-  if (!download_.downloading())
+  if (!download_.downloading()) {
     download_.reset();
+  }
 }
 
 void Rest::operator()(Trace<web::rest::Client::Latency> const &event) {
@@ -393,8 +394,9 @@ void Rest::operator()(Trace<json::Symbols> const &event) {
       log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
       continue;
     }
-    if (all_symbols_.emplace(symbol).second)  // only include new
+    if (all_symbols_.emplace(symbol).second) {  // only include new
       symbols_2.emplace_back(symbol);
+    }
     ++counter;
     auto market_status = MarketStatus{
         .stream_id = stream_id_,
