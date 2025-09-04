@@ -2,6 +2,8 @@
 
 #include <catch2/catch_all.hpp>
 
+#include "roq/core/json/buffer_stack.hpp"
+
 #include "roq/huobi/json/trade.hpp"
 
 using namespace roq;
@@ -30,6 +32,6 @@ TEST_CASE("json_trade_simple", "[json_trade]") {
                  R"(])"
                  R"(})"
                  R"(})";
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   [[maybe_unused]] json::Trade obj{message, buffer};
 }

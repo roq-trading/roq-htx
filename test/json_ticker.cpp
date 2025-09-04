@@ -2,6 +2,8 @@
 
 #include <catch2/catch_all.hpp>
 
+#include "roq/core/json/buffer_stack.hpp"
+
 #include "roq/huobi/json/ticker.hpp"
 
 using namespace roq;
@@ -32,6 +34,6 @@ TEST_CASE("json_ticker_simple", "[json_ticker]") {
                  R"("lastSize":1.08E-4)"
                  R"(})"
                  R"(})";
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   [[maybe_unused]] json::Ticker obj{message, buffer};
 }

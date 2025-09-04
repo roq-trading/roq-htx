@@ -20,8 +20,8 @@ namespace roq {
 namespace huobi {
 namespace json {
 
-bool Parser::dispatch(Parser::Handler &handler, std::string_view const &message, std::span<std::byte> const &buffer, TraceInfo const &trace_info) {
-  Frame frame{message, buffer};
+bool Parser::dispatch(Parser::Handler &handler, std::string_view const &message, core::json::BufferStack &buffer_stack, TraceInfo const &trace_info) {
+  Frame frame{message, buffer_stack};
   if (!frame.ping.count()) {
     switch (frame.status) {
       using enum Status::type_t;
@@ -30,27 +30,27 @@ bool Parser::dispatch(Parser::Handler &handler, std::string_view const &message,
         switch (topic) {
           using enum Topic::type_t;
           case BBO: {
-            json::BBO bbo{message, buffer};
+            json::BBO bbo{message, buffer_stack};
             create_trace_and_dispatch(handler, trace_info, bbo);
             return true;
           }
           case TRADE: {
-            Trade trade{message, buffer};
+            Trade trade{message, buffer_stack};
             create_trace_and_dispatch(handler, trace_info, trade);
             return true;
           }
           case DETAIL: {
-            Detail detail{message, buffer};
+            Detail detail{message, buffer_stack};
             create_trace_and_dispatch(handler, trace_info, detail);
             return true;
           }
           case TICKER: {
-            Ticker ticker{message, buffer};
+            Ticker ticker{message, buffer_stack};
             create_trace_and_dispatch(handler, trace_info, ticker);
             return true;
           }
           case MBP: {
-            json::MBP mbp{message, buffer};
+            json::MBP mbp{message, buffer_stack};
             create_trace_and_dispatch(handler, trace_info, mbp);
             return true;
           }
@@ -75,7 +75,7 @@ bool Parser::dispatch(Parser::Handler &handler, std::string_view const &message,
           if (!std::empty(frame.rep)) {
             Topic topic{extract_topic(frame.rep)};
             if (topic == Topic::MBP) {
-              MBPSnapshot mbp_snapshot{message, buffer};
+              MBPSnapshot mbp_snapshot{message, buffer_stack};
               create_trace_and_dispatch(handler, trace_info, mbp_snapshot);
               return true;
             }

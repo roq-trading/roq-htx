@@ -2,6 +2,8 @@
 
 #include <catch2/catch_all.hpp>
 
+#include "roq/core/json/buffer_stack.hpp"
+
 #include "roq/huobi/json/bbo.hpp"
 
 using namespace roq;
@@ -26,6 +28,6 @@ TEST_CASE("json_bbo_simple", "[json_bbo]") {
                  R"("symbol":"btcusdt")"
                  R"(})"
                  R"(})";
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   [[maybe_unused]] json::BBO bbo{message, buffer};
 }

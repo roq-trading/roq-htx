@@ -2,6 +2,8 @@
 
 #include <catch2/catch_all.hpp>
 
+#include "roq/core/json/buffer_stack.hpp"
+
 #include "roq/huobi/json/detail.hpp"
 
 using namespace roq;
@@ -28,6 +30,6 @@ TEST_CASE("json_detail_simple", "[json_detail]") {
                  R"("count":795572)"
                  R"(})"
                  R"(})";
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   [[maybe_unused]] json::Detail obj{message, buffer};
 }

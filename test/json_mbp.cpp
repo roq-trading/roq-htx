@@ -2,6 +2,8 @@
 
 #include <catch2/catch_all.hpp>
 
+#include "roq/core/json/buffer_stack.hpp"
+
 #include "roq/huobi/json/mbp.hpp"
 
 using namespace roq;
@@ -24,6 +26,6 @@ TEST_CASE("json_mbp_simple", "[json_mbp]") {
                  R"(])"
                  R"(})"
                  R"(})";
-  std::vector<std::byte> buffer(8192);
+  core::json::BufferStack buffer{8192, 1};
   [[maybe_unused]] json::MBP mbp{message, buffer};
 }
