@@ -1,6 +1,6 @@
 {
   "name": "roq/huobi/json/SymbolsItem",
-  "type": "item",
+  "type": "dictionary",
   "values": [
     {
       "name": "base-currency",

@@ -1,6 +1,6 @@
 {
   "name": "roq/huobi/json/Ticker",
-  "type": "comp",
+  "type": "dictionary",
   "values": [
     {
       "name": "ch",

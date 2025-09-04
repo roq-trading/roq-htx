@@ -1,6 +1,6 @@
 {
   "name": "roq/huobi/json/Symbols",
-  "type": "comp",
+  "type": "dictionary",
   "values": [
     {
       "name": "status",

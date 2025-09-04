@@ -88,20 +88,20 @@ Installing
 
 * :ref:`Using Conda <tutorial-conda>`
 
-.. tab:: Stable
-
-  .. code-block:: shell
-
-     $ conda install \
-           --channel https://roq-trading.com/conda/stable \
-           roq-huobi
-
 .. tab:: Unstable
 
   .. code-block:: shell
 
      $ conda install \
            --channel https://roq-trading.com/conda/unstable \
+           roq-huobi
+
+.. tab:: Stable
+
+  .. code-block:: shell
+
+     $ conda install \
+           --channel https://roq-trading.com/conda/stable \
            roq-huobi
 
 

@@ -1,6 +1,6 @@
 {
   "name": "roq/huobi/json/Frame",
-  "type": "comp",
+  "type": "dictionary",
   "values": [
     {
       "name": "id",

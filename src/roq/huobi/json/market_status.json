@@ -1,6 +1,6 @@
 {
   "name": "roq/huobi/json/MarketStatus",
-  "type": "comp",
+  "type": "dictionary",
   "values": [
     {
       "name": "code",
