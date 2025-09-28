@@ -5,10 +5,10 @@
 #include "roq/core/json/buffer_stack.hpp"
 #include "roq/core/json/parser.hpp"
 
-#include "roq/huobi/json/market_status.hpp"
+#include "roq/htx/json/market_status.hpp"
 
 using namespace roq;
-using namespace roq::huobi;
+using namespace roq::htx;
 
 using namespace std::literals;
 using namespace std::chrono_literals;

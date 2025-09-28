@@ -1,0 +1,55 @@
+{
+  "name": "roq/htx/flags/WS",
+  "type": "flags",
+  "prefix": "ws_",
+  "values": [
+    {
+      "name": "market_uri",
+      "type": "roq/io/web/URI",
+      "validator": "roq/core/flags/URI",
+      "default": "wss://api.htx.pro/ws",
+      "description": "Exchange end-point"
+    },
+    {
+      "name": "mbp_uri",
+      "type": "roq/io/web/URI",
+      "validator": "roq/core/flags/URI",
+      "default": "wss://api.htx.pro/feed",
+      "description": "Exchange end-point"
+    },
+    {
+      "name": "order_uri",
+      "type": "roq/io/web/URI",
+      "validator": "roq/core/flags/URI",
+      "default": "wss://api.htx.pro/ws/v2",
+      "description": "Exchange end-point"
+    },
+    {
+      "name": "ping_freq",
+      "type": "std/nanoseconds",
+      "validator": "roq/flags/validators/TimePeriod",
+      "default": "5s",
+      "description": "Ping frequency"
+    },
+    {
+      "name": "max_subscriptions_per_stream",
+      "type": "std/uint32",
+      "required": true,
+      "default": 128,
+      "description": "Maximum number of symbols per connection"
+    },
+    {
+      "name": "request_delay",
+      "type": "std/nanoseconds",
+      "validator": "roq/flags/validators/TimePeriod",
+      "default": "100ms",
+      "description": "Request delay"
+    },
+    {
+      "name": "mbp_request_max_retries",
+      "type": "std/uint32",
+      "default": 3,
+      "description": "Request max retries"
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+{
+  "name": "roq/htx/DropCopyState",
+  "type": "enum",
+  "values": [
+    {
+      "name": "done"
+    }
+  ]
+}

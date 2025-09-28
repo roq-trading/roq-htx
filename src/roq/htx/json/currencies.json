@@ -1,0 +1,15 @@
+{
+  "name": "roq/htx/json/Currencies",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "status",
+      "type": "std/string_view"
+    },
+    {
+      "name": "data",
+      "type": "std/string_view",
+      "array": "std/span"
+    }
+  ]
+}

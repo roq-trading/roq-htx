@@ -1,0 +1,34 @@
+{
+  "name": "roq/htx/json/BBOTick",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "seqId",
+      "type": "std/uint64"
+    },
+    {
+      "name": "ask",
+      "type": "std/double"
+    },
+    {
+      "name": "askSize",
+      "type": "std/double"
+    },
+    {
+      "name": "bid",
+      "type": "std/double"
+    },
+    {
+      "name": "bidSize",
+      "type": "std/double"
+    },
+    {
+      "name": "quoteTime",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    }
+  ]
+}

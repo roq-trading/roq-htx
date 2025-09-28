@@ -4,10 +4,10 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/huobi/json/mbp_snapshot.hpp"
+#include "roq/htx/json/mbp_snapshot.hpp"
 
 using namespace roq;
-using namespace roq::huobi;
+using namespace roq::htx;
 
 using namespace std::literals;
 using namespace std::chrono_literals;

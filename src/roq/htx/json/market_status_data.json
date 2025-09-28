@@ -1,0 +1,10 @@
+{
+  "name": "roq/htx/json/MarketStatusData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "marketStatus",
+      "type": "std/int32"
+    }
+  ]
+}

@@ -1,9 +1,0 @@
-{
-  "name": "roq/huobi/OrderEntryState",
-  "type": "enum",
-  "values": [
-    {
-      "name": "done"
-    }
-  ]
-}

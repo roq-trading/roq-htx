@@ -1,0 +1,12 @@
+{
+  "name": "roq/htx/json/Trading",
+  "type": "enum",
+  "values": [
+    {
+      "name": "enabled"
+    },
+    {
+      "name": "disabled"
+    }
+  ]
+}
