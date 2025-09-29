@@ -3,15 +3,37 @@
 .. |checkmark| unicode:: U+2713
 
 roq-htx
-=========
+=======
+
+.. tab:: Unstable
+
+  .. code-block:: shell
+
+     $ conda install \
+           --channel https://roq-trading.com/conda/unstable \
+           roq-htx
+
+.. tab:: Stable
+
+  .. code-block:: shell
+
+     $ conda install \
+           --channel https://roq-trading.com/conda/stable \
+           roq-htx
 
 
-Links
------
+:code:`roq-htx`
+---------------
 
-* `Website <https://www.htx.com/en-us/>`__
-* `Support <https://htxglobal.zendesk.com/hc/en-us>`__
-* `API <https://htxapi.github.io/docs/spot/v1/en/#change-log>`__
+.. code-block:: shell
+
+   $ roq-htx [FLAGS]
+
+
+Description
+~~~~~~~~~~~
+
+:code:`roq-bitget` is a gateway
 
 
 Supports
@@ -81,40 +103,6 @@ Supports
         -
       * - Funds
         - |checkmark|
-
-
-Installing
-----------
-
-* :ref:`Using Conda <tutorial-conda>`
-
-.. tab:: Unstable
-
-  .. code-block:: shell
-
-     $ conda install \
-           --channel https://roq-trading.com/conda/unstable \
-           roq-htx
-
-.. tab:: Stable
-
-  .. code-block:: shell
-
-     $ conda install \
-           --channel https://roq-trading.com/conda/stable \
-           roq-htx
-
-
-Using
------
-
-.. code-block:: shell
-
-   $ roq-htx \
-         --name "htx" \
-         --config_file $CONFIG_FILE_PATH \
-         --client_listen_address $UNIX_SOCKET_PATH \
-         --flagfile $ENVIRONMENT_FLAGFILE
 
 
 .. _roq-htx-flags:
