@@ -20,7 +20,24 @@ namespace roq {
 namespace htx {
 namespace json {
 
-bool Parser::dispatch(Parser::Handler &handler, std::string_view const &message, core::json::BufferStack &buffer_stack, TraceInfo const &trace_info) {
+// === HELPERS ===
+
+namespace {
+template <typename T>
+void dispatch_helper(auto &handler, auto &message, auto &buffer_stack, auto &trace_info) {
+  T obj{message, buffer_stack};
+  create_trace_and_dispatch(handler, trace_info, obj);
+}
+}  // namespace
+
+// === IMPLEMENTATION ===
+
+bool Parser::dispatch(
+    Parser::Handler &handler,
+    std::string_view const &message,
+    core::json::BufferStack &buffer_stack,
+    TraceInfo const &trace_info,
+    bool allow_unknown_event_types) {
   Frame frame{message, buffer_stack};
   if (!frame.ping.count()) {
     switch (frame.status) {
@@ -29,37 +46,35 @@ bool Parser::dispatch(Parser::Handler &handler, std::string_view const &message,
         Topic topic{extract_topic(frame.ch)};
         switch (topic) {
           using enum Topic::type_t;
-          case BBO: {
-            json::BBO bbo{message, buffer_stack};
-            create_trace_and_dispatch(handler, trace_info, bbo);
-            return true;
-          }
-          case TRADE: {
-            Trade trade{message, buffer_stack};
-            create_trace_and_dispatch(handler, trace_info, trade);
-            return true;
-          }
-          case DETAIL: {
-            Detail detail{message, buffer_stack};
-            create_trace_and_dispatch(handler, trace_info, detail);
-            return true;
-          }
-          case TICKER: {
-            Ticker ticker{message, buffer_stack};
-            create_trace_and_dispatch(handler, trace_info, ticker);
-            return true;
-          }
-          case MBP: {
-            json::MBP mbp{message, buffer_stack};
-            create_trace_and_dispatch(handler, trace_info, mbp);
-            return true;
-          }
-          default:
+          case UNDEFINED_INTERNAL:
             break;
+          case UNKNOWN_INTERNAL:
+            if (allow_unknown_event_types) {
+              return false;
+            }
+            break;
+          case BBO:
+            dispatch_helper<json::BBO>(handler, message, buffer_stack, trace_info);
+            return true;
+          case TRADE:
+            dispatch_helper<Trade>(handler, message, buffer_stack, trace_info);
+            return true;
+          case DETAIL:
+            dispatch_helper<Detail>(handler, message, buffer_stack, trace_info);
+            return true;
+          case TICKER:
+            dispatch_helper<Ticker>(handler, message, buffer_stack, trace_info);
+            return true;
+          case MBP:
+            dispatch_helper<json::MBP>(handler, message, buffer_stack, trace_info);
+            return true;
         }
         break;
       }
       case UNKNOWN_INTERNAL:
+        if (allow_unknown_event_types) {
+          return false;
+        }
         break;
       case OK:
         if (!std::empty(frame.subbed)) {
@@ -75,8 +90,7 @@ bool Parser::dispatch(Parser::Handler &handler, std::string_view const &message,
           if (!std::empty(frame.rep)) {
             Topic topic{extract_topic(frame.rep)};
             if (topic == Topic::MBP) {
-              MBPSnapshot mbp_snapshot{message, buffer_stack};
-              create_trace_and_dispatch(handler, trace_info, mbp_snapshot);
+              dispatch_helper<MBPSnapshot>(handler, message, buffer_stack, trace_info);
               return true;
             }
           }
@@ -100,8 +114,7 @@ bool Parser::dispatch(Parser::Handler &handler, std::string_view const &message,
     create_trace_and_dispatch(handler, trace_info, ping);
     return true;
   }
-  log::warn(R"(Unexpected: message="{}")"sv, message);
-  return false;
+  log::fatal(R"(Unexpected: message="{}")"sv, message);
 }
 
 }  // namespace json

@@ -33,7 +33,7 @@ roq-htx
 Description
 ~~~~~~~~~~~
 
-:code:`roq-bitget` is a gateway
+:code:`roq-htx` is a gateway
 
 
 Supports

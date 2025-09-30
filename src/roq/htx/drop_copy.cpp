@@ -92,7 +92,7 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, A
           .ping = create_metrics(shared.settings, name_, "ping"sv),
           .heartbeat = create_metrics(shared.settings, name_, "heartbeat"sv),
       },
-      account_{account}, download_{{}, [this](auto state) { return download(state); }} {
+      account_{account}, shared_{shared}, download_{{}, [this](auto state) { return download(state); }} {
 }
 
 bool DropCopy::ready() const {
@@ -204,11 +204,14 @@ uint32_t DropCopy::download(DropCopyState state) {
 
 void DropCopy::parse(std::string_view const &message) {
   profile_.parse([&]() {
+    auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
-      json::Parser::dispatch(*this, message, decode_buffer_, trace_info);
+      if (!json::Parser::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+        log_message();
+      }
     } catch (...) {
-      log::warn(R"(message="{}")"sv, message);
+      log_message();
       utils::exceptions::Unhandled::terminate();
     }
   });
