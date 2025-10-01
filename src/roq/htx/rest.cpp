@@ -225,7 +225,7 @@ void Rest::get_market_status() {
 }
 
 void Rest::get_market_status_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
-  constexpr auto const STATE = RestState::MARKET_STATUS;
+  auto const STATE = RestState::MARKET_STATUS;
   profile_.market_status_ack([&]() {
     auto handle_success = [&](auto &body) {
       if (download_.skip(sequence, STATE)) {
@@ -274,7 +274,7 @@ void Rest::get_currencies() {
 }
 
 void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
-  constexpr auto const STATE = RestState::CURRENCIES;
+  auto const STATE = RestState::CURRENCIES;
   profile_.currencies_ack([&]() {
     auto handle_success = [&](auto &body) {
       if (download_.skip(sequence, STATE)) {
@@ -323,7 +323,7 @@ void Rest::get_symbols() {
 }
 
 void Rest::get_symbols_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
-  constexpr auto const STATE = RestState::SYMBOLS;
+  auto const STATE = RestState::SYMBOLS;
   profile_.symbols_ack([&]() {
     auto handle_success = [&](auto &body) {
       if (download_.skip(sequence, STATE)) {
