@@ -51,7 +51,7 @@ static_assert(static_cast<roq::Side>(Helper{Side{Side::UNDEFINED_INTERNAL}}) == 
 static_assert(static_cast<roq::Side>(Helper{Side{Side::BUY}}) == roq::Side::BUY);
 static_assert(static_cast<roq::Side>(Helper{Side{Side::SELL}}) == roq::Side::SELL);
 
-// Trading ==> roq::Side
+// Trading ==> roq::TradingStatus
 
 template <>
 template <>

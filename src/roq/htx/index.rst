@@ -1,6 +1,17 @@
 .. _roq-htx:
 
-.. |checkmark| unicode:: U+2713
+.. |dagger| unicode:: U+2020
+.. |double-dagger| unicode:: U+2021
+.. |right-arrow| unicode:: U+2192
+.. |right-double-arrow| unicode:: U+21D2
+.. |left-right-double-arrow| unicode:: U+21D4
+.. |check-mark| unicode:: U+2705
+.. |cross-mark| unicode:: U+274C
+.. |negative-cross-mark| unicode:: U+274E
+.. |footnote-1| unicode:: U+2776
+.. |footnote-2| unicode:: U+2777
+.. |footnote-3| unicode:: U+2778
+
 
 roq-htx
 =======
@@ -22,20 +33,6 @@ roq-htx
            roq-htx
 
 
-:code:`roq-htx`
----------------
-
-.. code-block:: shell
-
-   $ roq-htx [FLAGS]
-
-
-Description
-~~~~~~~~~~~
-
-:code:`roq-htx` is a gateway
-
-
 Supports
 --------
 
@@ -46,72 +43,113 @@ Supports
 
     .. list-table::
       :widths: auto
+      :align: left
 
-      * - Spot
-        - |checkmark|
-      * - Futures
+      * - :cpp:enumerator:`Spot <roq::SecurityType::SPOT>`
+        - |check-mark|
         -
-      * - Options
+      * - :cpp:enumerator:`Futures <roq::SecurityType::FUTURES>`
+        - |cross-mark|
         -
-      * - Combos
+      * - :cpp:enumerator:`Swap <roq::SecurityType::SWAP>`
+        - |cross-mark|
+        -
+      * - :cpp:enumerator:`Option <roq::SecurityType::OPTION>`
+        - |cross-mark|
         -
 
   .. grid-item-card::  Market Data
 
     .. list-table::
       :widths: auto
+      :align: left
 
-      * - Reference Data
-        - |checkmark|
-      * - Market Status
-        - |checkmark|
-      * - Top of Book
-        - |checkmark|
-      * - Market by Price
-        - |checkmark|
-      * - Market by Order
+      * - :cpp:class:`ReferenceData <roq::ReferenceData>`
+        - |check-mark|
+        - |footnote-1|
+      * - :cpp:class:`MarketStatus <roq::MarketStatus>`
+        - |check-mark|
+        - |footnote-1|
+      * - :cpp:class:`TopOfBook <roq::TopOfBook>`
+        - |check-mark|
         -
-      * - Trade Summary
-        - |checkmark|
-      * - Statistics
-        - |checkmark|
-      * - Time Series
+      * - :cpp:class:`MarketByPrice <roq::MarketByPriceUpdate>`
+        - |check-mark|
+        -
+      * - :cpp:class:`MarketByOrder <roq::MarketByOrderUpdate>`
+        - |cross-mark|
+        -
+      * - :cpp:class:`TradeSummary <roq::TradeSummary>`
+        - |check-mark|
+        -
+      * - :cpp:class:`Statistics <roq::StatisticsUpdate>`
+        - |check-mark|
+        -
+      * - :cpp:class:`TimeSeries <roq::TimeSeriesUpdate>`
+        - |cross-mark|
         -
 
-  .. grid-item-card::  Order Management
+  .. grid-item-card::  Orders
 
     .. list-table::
       :widths: auto
+      :align: left
 
-      * - Create
-        - |checkmark|
-      * - Modify
+      * - :cpp:class:`CreateOrder <roq::CreateOrder>`
+        - |negative-cross-mark|
         -
-      * - Cancel
-        - |checkmark|
-      * - Cancel All
-        - |checkmark|
-      * - Auto-Cancel
-        - |checkmark|
+      * - :cpp:class:`ModifyOrder <roq::ModifyOrder>`
+        - |cross-mark|
+        -
+      * - :cpp:class:`CancelOrder <roq::CancelOrder>`
+        - |negative-cross-mark|
+        -
+      * - :cpp:class:`CancelAllOrders <roq::CancelAllOrders>`
+        - |negative-cross-mark|
+        -
+      * - :cpp:class:`MassQuote <roq::MassQuote>`
+        - |cross-mark|
+        -
+      * - :cpp:class:`CancelQuotes <roq::CancelQuotes>`
+        - |cross-mark|
+        -
 
-  .. grid-item-card::  Account Management
+  .. grid-item-card::  Account
 
     .. list-table::
       :widths: auto
+      :align: left
 
-      * - Positions
+      * - :cpp:class:`Funds <roq::FundsUpdate>`
+        - |negative-cross-mark|
         -
-      * - Funds
-        - |checkmark|
+      * - :cpp:class:`Position <roq::PositionUpdate>`
+        - |cross-mark|
+        -
+
+.. note::
+
+   |check-mark| = Available.
+
+   |negative-cross-mark| = Not implemented.
+
+   |cross-mark| = Unavailable.
+
+   |footnote-1| The exchange protocol does not support streaming updates for reference data and market status.
+
+
+Using
+-----
+
+.. code-block:: shell
+
+   $ roq-htx [FLAGS]
 
 
 .. _roq-htx-flags:
 
 Flags
 -----
-
-* :ref:`Using Flags <abseil-cpp>`
-* :ref:`Gateway Flags <gateway-flags>`
 
 .. code-block:: shell
 
@@ -150,16 +188,15 @@ Environments
 Configuration
 -------------
 
-* :ref:`Gateway Config <gateway-config>`
-
 .. code-block:: shell
 
    $ $CONDA_PREFIX/share/roq-htx/config.toml
 
 .. important::
 
-   The template will be replaced when the software is upgraded.
-   Make a copy and modify to your needs.
+   This template will be replaced when the software is upgraded.
+   Make a copy and modify to your own needs.
+
 
 .. include:: config.toml
    :code: toml
@@ -168,333 +205,101 @@ Configuration
 Market Data
 -----------
 
-.. tab:: Live
 
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
+Inbound
+~~~~~~~
 
-    * - Event
-      - Stream
-      - Messages
-      - Comments
+.. tab:: TradingStatus
 
-    * - :cpp:class:`roq::ReferenceData`
-      -
-      -
-      -
+   .. list-table::
+     :header-rows: 1
+     :widths: auto
+     :align: left
 
-    * - :cpp:class:`roq::MarketStatus`
-      -
-      -
-      -
+     * - :code:`api_trading`
+       -
+       -
 
-    * - :cpp:class:`roq::TopOfBook`
-      - MarketData
-      - market.$symbol.bbo
-      -
+     * - :code:`enabled`
+       - |right-double-arrow|
+       - :cpp:enumerator:`OPEN <roq::TradingStatus::OPEN>`
 
-    * - :cpp:class:`roq::MarketByPriceUpdate`
-      - MBPFeed
-      - market.$symbol.mbp.20
-      -
-
-    * - :cpp:class:`roq::MarketByOrderUpdate`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::TradeSummary`
-      - MarketData
-      - market.$symbol.trade.detail
-      -
-
-    * - :cpp:class:`roq::StatisticsUpdate`
-      - MarketData
-      - market.$symbol.ticker, market.$symbol.detail
-      -
-
-.. tab:: Download
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::ReferenceData`
-      - Rest
-      - /v1/common/currencys, /v1/common/symbols
-      -
-
-    * - :cpp:class:`roq::MarketStatus`
-      - MarketData
-      -  /v1/common/symbols
-      -
-
-    * - :cpp:class:`roq::TopOfBook`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::MarketByPriceUpdate`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::MarketByOrderUpdate`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::TradeSummary`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::StatisticsUpdate`
-      -
-      -
-      -
+     * - :code:`disabled`
+       - |right-double-arrow|
+       - :cpp:enumerator:`HALT <roq::TradingStatus::HALT>`
 
 
-Statistics
-~~~~~~~~~~
+.. tab:: StatisticsType
 
-.. list-table::
-  :header-rows: 1
-  :widths: auto
+   .. list-table::
+     :header-rows: 1
+     :widths: auto
+     :align: left
 
-  * - Type
-    - Comments
+     * - Channel
+       - Field
+       -
+       -
 
-  * - :cpp:class:`OPEN_PRICE`
-    - (detail) :code:`open`
+     * - :code:`detail`
+       - :code:`open`
+       - |right-double-arrow|
+       - :cpp:enumerator:`OPEN_PRICE <roq::StatisticsType::OPEN_PRICE>`
 
-  * - :cpp:class:`HIGHEST_TRADED_PRICE`
-    - (detail) :code:`high`
+     * - :code:`detail`
+       - :code:`high`
+       - |right-double-arrow|
+       - :cpp:enumerator:`HIGHEST_TRADED_PRICE <roq::StatisticsType::HIGHEST_TRADED_PRICE>`
 
-  * - :cpp:class:`LOWEST_TRADED_PRICE`
-    - (detail) :code:`low`
+     * - :code:`detail`
+       - :code:`low`
+       - |right-double-arrow|
+       - :cpp:enumerator:`LOWEST_TRADED_PRICE <roq::StatisticsType::LOWEST_TRADED_PRICE>`
 
-  * - :cpp:class:`CLOSE_PRICE`
-    - (detail) :code:`close`
+     * - :code:`detail`
+       - :code:`close`
+       - |right-double-arrow|
+       - :cpp:enumerator:`CLOSE <roq::StatisticsType::CLOSE>`
 
-  * - :cpp:class:`TRADE_VOLUME`
-    - (detail) :code:`vol`
+     * - :code:`detail`
+       - :code:`vol`
+       - |right-double-arrow|
+       - :cpp:enumerator:`TRADE_VOLUME <roq::StatisticsType::TRADE_VOLUME>`
 
 
 Order Management
 ----------------
 
-.. tab:: Live
 
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::OrderUpdate`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::TradeUpdate`
-      -
-      -
-      -
-
-.. tab:: Download
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::OrderUpdate`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::TradeUpdate`
-      -
-      -
-      -
-
-.. tab:: Request
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::CreateOrder`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::ModifyOrder`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::CancelOrder`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::CancelAllOrders`
-      -
-      -
-      -
-
-.. tab:: Response
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::OrderAck`
-      -
-      -
-      -
+Inbound
+~~~~~~~
 
 
-Order Types
-~~~~~~~~~~~
-
-TBD
-
-
-Time in Force
-~~~~~~~~~~~~~
-
-TBD
-
-
-Position Effect
-~~~~~~~~~~~~~~~
-
-TBD
-
-
-Execution Instructions
-~~~~~~~~~~~~~~~~~~~~~~
-
-TBD
-
-
-Account Management
-------------------
-
-.. tab:: Live
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::PositionUpdate`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::FundsUpdate`
-      -
-      -
-      -
-
-.. tab:: Download
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Event
-      - Stream
-      - Messages
-      - Comments
-
-    * - :cpp:class:`roq::PositionUpdate`
-      -
-      -
-      -
-
-    * - :cpp:class:`roq::FundsUpdate`
-      -
-      -
-      -
-
-
-Streams
--------
-
-.. tab:: Rest
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Type
-      - Comments
-
-    * - REST
-      - Primary purpose
-
-.. tab:: MarketData
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Type
-      - Comments
-
-    * - WebSocket
-      - Primary purpose
-
-.. tab:: MBPFeed
-
-  .. list-table::
-    :header-rows: 1
-    :widths: auto
-
-    * - Type
-      - Comments
-
-    * - WebSocket
-      - Primary purpose
-
-
-Constraints
------------
+Outbound
+~~~~~~~~
 
 
 Comments
 --------
 
 * Only including symbols having :code:`state=ONLINE` and :code:`api_trading=ENABLED`
+
+
+References
+----------
+
+
+Common
+~~~~~~
+
+* :ref:`Using Conda <tutorial-conda>`
+* :ref:`Using Flags <abseil-cpp>`
+* :ref:`Gateway Flags <gateway-flags>`
+* :ref:`Gateway Config <gateway-config>`
+
+
+Exchange
+~~~~~~~~
+
+* `Website <https://www.htx.com/>`__
+* `Documentation <https://www.htx.com/en-us/opend/newApiPages/>`__

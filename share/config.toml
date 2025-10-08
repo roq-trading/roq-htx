@@ -1,3 +1,5 @@
+# config template for the roq-htx gateway
+
 symbols = [
   "^btcusd[a-z]$",
   "^ethusd[a-z]$"
@@ -7,8 +9,8 @@ symbols = [
 
   [accounts.A1]
   master = true
-  login = "YOUR_HUOBI_API_KEY_GOES_HERE"
-  secret = "YOUR_HUOBI_SECRET_GOES_HERE"
+  login = "YOUR_HTX_API_KEY_GOES_HERE"
+  secret = "YOUR_HTX_SECRET_GOES_HERE"
   symbols = [ ".*" ]
 
 [users]
