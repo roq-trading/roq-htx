@@ -3,7 +3,13 @@
   "type": "enum",
   "values": [
     {
-      "name": "offline"
+      "name": "unknown"
+    },
+    {
+      "name": "not-online"
+    },
+    {
+      "name": "pre-online"
     },
     {
       "name": "online"
@@ -12,7 +18,13 @@
       "name": "suspend"
     },
     {
-      "name": "pre-online"
+      "name": "offline"
+    },
+    {
+      "name": "transfer-board"
+    },
+    {
+      "name": "fuse"
     }
   ]
 }

@@ -204,27 +204,23 @@ void MBPFeed::operator()(ConnectionStatus status) {
 }
 
 void MBPFeed::subscribe(std::span<Symbol const> const &symbols) {
-  if (std::empty(symbols)) {
-    return;
+  for (auto &item : symbols) {
+    subscribe(item, "market"sv, shared_.api.market_data.mbp_depth_theme);
   }
-  subscribe(symbols, "market"sv, "mbp.20"sv);  // note! 150 is throttled
 }
 
-void MBPFeed::subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {
-  assert(!std::empty(symbols));
-  for (auto &symbol : symbols) {
-    auto id = ++request_id_;
-    auto message = fmt::format(
-        R"({{)"
-        R"("sub":"{}.{}.{}",)"
-        R"("id":"{}")"
-        R"(}})"sv,
-        source,
-        symbol,
-        theme,
-        id);
-    request_queue_.emplace_back(message);
-  }
+void MBPFeed::subscribe(std::string_view const &symbol, std::string_view const &source, std::string_view const &theme) {
+  auto id = ++request_id_;
+  auto message = fmt::format(
+      R"({{)"
+      R"("sub":"{}.{}.{}",)"
+      R"("id":"{}")"
+      R"(}})"sv,
+      source,
+      symbol,
+      theme,
+      id);
+  request_queue_.emplace_back(message);
 }
 
 void MBPFeed::request(std::string_view const &symbol, std::string_view const &source, std::string_view const &theme) {

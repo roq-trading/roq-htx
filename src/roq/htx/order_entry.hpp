@@ -24,15 +24,12 @@
 #include "roq/htx/order_entry_state.hpp"
 #include "roq/htx/shared.hpp"
 
+#include "roq/htx/json/open_orders.hpp"
+
 namespace roq {
 namespace htx {
 
 struct OrderEntry final : public web::rest::Client::Handler {
-  struct ListenKeyUpdate final {
-    std::string_view account;
-    std::string_view listen_key;
-  };
-
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
@@ -68,6 +65,21 @@ struct OrderEntry final : public web::rest::Client::Handler {
 
   uint32_t download(OrderEntryState state);
 
+  // open-orders
+
+  void open_orders();
+  void open_orders_ack(Trace<web::rest::Response> const &);
+  void operator()(Trace<json::OpenOrders> const &);
+
+  // helpers
+
+  void process_response(web::rest::Response const &, auto error_handler, auto success_handler);
+
+  template <typename... Args>
+  void operator()(Trace<server::oms::Response> const &, uint8_t user_id, uint64_t order_id, Args &&...);
+
+  void operator()(Trace<server::oms::OrderUpdate> const &, std::string_view const &client_order_id);
+
  private:
   Handler &handler_;
   // config
@@ -82,9 +94,9 @@ struct OrderEntry final : public web::rest::Client::Handler {
     utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    utils::metrics::Profile listen_key, listen_key_ack,  //
-        account, account_ack,                            //
-        new_order, new_order_ack,                        //
+    utils::metrics::Profile open_orders, open_orders_ack,  //
+        account, account_ack,                              //
+        new_order, new_order_ack,                          //
         cancel_order, cancel_order_ack;
   } profile_;
   struct {
@@ -92,6 +104,8 @@ struct OrderEntry final : public web::rest::Client::Handler {
   } latency_;
   // account
   Account &account_;
+  // shared
+  Shared &shared_;
   // state
   ConnectionStatus status_ = {};
   core::Download<OrderEntryState> download_;

@@ -3,6 +3,9 @@
   "type": "enum",
   "values": [
     {
+      "name": "open_orders"
+    },
+    {
       "name": "done"
     }
   ]

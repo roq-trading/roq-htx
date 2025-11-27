@@ -38,10 +38,9 @@ auto create_name(auto stream_id) {
   return fmt::format("{}:{}"sv, stream_id, NAME);
 }
 
-auto create_connection(auto &handler, auto &settings, auto &context, auto const &listen_key) {
+auto create_connection(auto &handler, auto &settings, auto &context) {
   assert(!std::empty(listen_key));
   auto uri = settings.ws.order_uri;
-  auto query = fmt::format("?streams={}"sv, listen_key);
   auto config = web::socket::Client::Config{
       // connection
       .interface = {},
@@ -55,7 +54,7 @@ auto create_connection(auto &handler, auto &settings, auto &context, auto const 
       // proxy
       .proxy = {},
       // http
-      .query = query,
+      .query = {},
       .user_agent = ROQ_PACKAGE_NAME,
       .request_timeout = {},
       .ping_frequency = settings.ws.ping_freq,
@@ -73,8 +72,8 @@ struct create_metrics final : public utils::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, std::string_view const &listen_key)
-    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context, listen_key)},
+DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
+    : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_)}, connection_{create_connection(*this, shared.settings, context)},
       decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
@@ -92,7 +91,7 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, A
           .ping = create_metrics(shared.settings, name_, "ping"sv),
           .heartbeat = create_metrics(shared.settings, name_, "heartbeat"sv),
       },
-      account_{account}, shared_{shared}, download_{{}, [this](auto state) { return download(state); }} {
+      account_{account}, shared_{shared} {
 }
 
 bool DropCopy::ready() const {
@@ -133,12 +132,11 @@ void DropCopy::operator()(web::socket::Client::Disconnected const &) {
   ++counter_.disconnect;
   ready_ = false;
   (*this)(ConnectionStatus::DISCONNECTED);
-  download_.reset();
 }
 
 void DropCopy::operator()(web::socket::Client::Ready const &) {
-  (*this)(ConnectionStatus::DOWNLOADING);
-  download_.begin();
+  send_login();
+  (*this)(ConnectionStatus::LOGIN_SENT);
 }
 
 void DropCopy::operator()(web::socket::Client::Close const &) {
@@ -148,19 +146,19 @@ void DropCopy::operator()(web::socket::Client::Latency const &latency) {
   TraceInfo trace_info;
   auto external_latency = ExternalLatency{
       .stream_id = stream_id_,
-      .account = account_.get_name(),
+      .account = account_.name,
       .latency = latency.sample,
   };
   create_trace_and_dispatch(handler_, trace_info, external_latency);
   latency_.ping.update(latency.sample);
 }
 
-void DropCopy::operator()(web::socket::Client::Text const &) {
-  log::fatal("Unexpected"sv);
+void DropCopy::operator()(web::socket::Client::Text const &text) {
+  // parse(text.payload);
 }
 
 void DropCopy::operator()(web::socket::Client::Binary const &) {
-  log::fatal("Not implemented"sv);
+  log::fatal("Unexpected"sv);
 }
 
 void DropCopy::operator()(ConnectionStatus status) {
@@ -168,7 +166,7 @@ void DropCopy::operator()(ConnectionStatus status) {
     TraceInfo trace_info;
     auto stream_status = StreamStatus{
         .stream_id = stream_id_,
-        .account = account_.get_name(),
+        .account = account_.name,
         .supports = SUPPORTS,
         .transport = Transport::TCP,
         .protocol = Protocol::HTTP,
@@ -185,25 +183,28 @@ void DropCopy::operator()(ConnectionStatus status) {
   }
 }
 
-uint32_t DropCopy::download(DropCopyState state) {
-  switch (state) {
-    using enum DropCopyState;
-    case UNDEFINED:
-      assert(false);
-      break;
-    case DONE:
-      (*this)(ConnectionStatus::READY);
-      assert(!ready_);
-      ready_ = true;
-      // subscribe(symbols_);
-      return {};
-  }
-  assert(false);
-  return {};
+void DropCopy::send_pong(std::chrono::milliseconds timestamp) {
+  auto message = fmt::format(
+      R"({{)"
+      R"("op":"pong",)"
+      R"("ts":{})"
+      R"(}})"sv,
+      timestamp.count());
+  // log::debug(R"(message="{}")"sv, message);
+  (*connection_).send_text(message);
+}
+
+void DropCopy::send_login() {
+  auto now_utc = clock::get_realtime<std::chrono::seconds>();
+  auto message = account_.create_ws_auth("/ws/v2"sv, now_utc);
+  log::warn("DEBUG {}"sv, message);
+  log::debug(R"(message="{}")"sv, message);
+  (*connection_).send_text(message);
 }
 
 void DropCopy::parse(std::string_view const &message) {
   profile_.parse([&]() {
+    log::warn("DEBUG {}"sv, message);
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
@@ -221,7 +222,7 @@ void DropCopy::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     log::debug("ping={}"sv, ping);
-    // send_pong(ping.timestamp);
+    send_pong(ping.timestamp);
   });
 }
 

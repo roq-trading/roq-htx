@@ -64,7 +64,8 @@ struct MBPFeed final : public web::socket::Client::Handler, public json::Parser:
   void operator()(ConnectionStatus);
 
   void subscribe(std::span<Symbol const> const &symbols);
-  void subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme);
+
+  void subscribe(std::string_view const &, std::string_view const &source, std::string_view const &theme);
 
   void request(std::string_view const &symbol, std::string_view const &source, std::string_view const &theme);
 

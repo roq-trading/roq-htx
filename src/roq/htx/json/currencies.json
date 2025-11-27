@@ -4,12 +4,20 @@
   "values": [
     {
       "name": "status",
-      "type": "std/string_view"
+      "type": "roq/htx/json/Status"
     },
     {
       "name": "data",
       "type": "std/string_view",
       "array": "std/span"
+    },
+    {
+      "name": "err-code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "err-msg",
+      "type": "std/string_view"
     }
   ]
 }

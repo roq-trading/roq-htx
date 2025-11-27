@@ -1,6 +1,6 @@
 set(TARGET_NAME ${PROJECT_NAME}-json)
 
-set(SOURCES map.cpp parser.cpp)
+set(SOURCES map.cpp parser.cpp utils.cpp)
 
 include(RoqAutogen)
 
@@ -16,6 +16,7 @@ set(AUTOGEN_SCHEMAS
     frame.json
     market_status_data.json
     market_status.json
+    open_orders.json
     mbp.json
     mbp_snapshot_data.json
     mbp_snapshot.json

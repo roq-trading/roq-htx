@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("json_currencies_simple", "[json_currencies]") {
+TEST_CASE("simple", "[json_currencies]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":[)"
@@ -458,7 +458,7 @@ TEST_CASE("json_currencies_simple", "[json_currencies]") {
                  R"(})";
   core::json::BufferStack buffer{8192, 1};
   json::Currencies obj{message, buffer};
-  CHECK(obj.status == "ok"sv);
+  CHECK(obj.status == json::Status::OK);
   auto &data = obj.data;
   REQUIRE(std::size(data) == 436);
   auto &d0 = data[0];

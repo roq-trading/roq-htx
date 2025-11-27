@@ -207,7 +207,7 @@ void Rest::get_market_status() {
   profile_.market_status([&]() {
     auto request = web::rest::Request{
         .method = web::http::Method::GET,
-        .path = "/v2/market-status"sv,
+        .path = shared_.api.market_data.get_market_status,
         .query = {},
         .accept = web::http::Accept::APPLICATION_JSON,
         .content_type = {},
@@ -227,19 +227,23 @@ void Rest::get_market_status() {
 void Rest::get_market_status_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
   auto const STATE = RestState::MARKET_STATUS;
   profile_.market_status_ack([&]() {
+    auto handle_error = [&](auto origin, auto status, auto error, auto text) {
+      log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
+      download_.retry(STATE);
+    };
     auto handle_success = [&](auto &body) {
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
         json::MarketStatus market_status{body, decode_buffer_};
-        Trace event_2{event, market_status};
-        (*this)(event_2);
-        download_.check(STATE);
+        if (market_status.code == 200) {
+          Trace event_2{event, market_status};
+          (*this)(event_2);
+          download_.check(STATE);
+        } else {
+          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(market_status.code), market_status.message);
+        }
       }
-    };
-    auto handle_error = [&]([[maybe_unused]] auto origin, [[maybe_unused]] auto status, auto error, auto text) {
-      log::warn(R"(error={}, text="{}")"sv, error, text);
-      download_.retry(STATE);
     };
     process_response(event, handle_success, handle_error);
   });
@@ -256,7 +260,7 @@ void Rest::get_currencies() {
   profile_.currencies([&]() {
     auto request = web::rest::Request{
         .method = web::http::Method::GET,
-        .path = "/v1/common/currencys"sv,
+        .path = shared_.api.market_data.get_currencies,
         .query = {},
         .accept = web::http::Accept::APPLICATION_JSON,
         .content_type = {},
@@ -276,19 +280,23 @@ void Rest::get_currencies() {
 void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
   auto const STATE = RestState::CURRENCIES;
   profile_.currencies_ack([&]() {
+    auto handle_error = [&](auto origin, auto status, auto error, auto text) {
+      log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
+      download_.retry(STATE);
+    };
     auto handle_success = [&](auto &body) {
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
         json::Currencies currencies{body, decode_buffer_};
-        Trace event_2{event, currencies};
-        (*this)(event_2);
-        download_.check(STATE);
+        if (currencies.status == json::Status::OK) {
+          Trace event_2{event, currencies};
+          (*this)(event_2);
+          download_.check(STATE);
+        } else {
+          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(currencies.err_code), currencies.err_msg);
+        }
       }
-    };
-    auto handle_error = [&]([[maybe_unused]] auto origin, [[maybe_unused]] auto status, auto error, auto text) {
-      log::warn(R"(error={}, text="{}")"sv, error, text);
-      download_.retry(STATE);
     };
     process_response(event, handle_success, handle_error);
   });
@@ -305,7 +313,7 @@ void Rest::get_symbols() {
   profile_.symbols([&]() {
     auto request = web::rest::Request{
         .method = web::http::Method::GET,
-        .path = "/v1/common/symbols"sv,
+        .path = shared_.api.market_data.get_symbols,
         .query = {},
         .accept = web::http::Accept::APPLICATION_JSON,
         .content_type = {},
@@ -325,19 +333,23 @@ void Rest::get_symbols() {
 void Rest::get_symbols_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
   auto const STATE = RestState::SYMBOLS;
   profile_.symbols_ack([&]() {
+    auto handle_error = [&](auto origin, auto status, auto error, auto text) {
+      log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
+      download_.retry(STATE);
+    };
     auto handle_success = [&](auto &body) {
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
         json::Symbols symbols{body, decode_buffer_};
-        Trace event_2{event, symbols};
-        (*this)(event_2);
-        download_.check(STATE);
+        if (symbols.status == json::Status::OK) {
+          Trace event_2{event, symbols};
+          (*this)(event_2);
+          download_.check(STATE);
+        } else {
+          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(symbols.err_code), symbols.err_msg);
+        }
       }
-    };
-    auto handle_error = [&]([[maybe_unused]] auto origin, [[maybe_unused]] auto status, auto error, auto text) {
-      log::warn(R"(error={}, text="{}")"sv, error, text);
-      download_.retry(STATE);
     };
     process_response(event, handle_success, handle_error);
   });
@@ -400,6 +412,7 @@ void Rest::operator()(Trace<json::Symbols> const &event) {
       symbols_2.emplace_back(symbol);
     }
     ++counter;
+    // XXX FIXME TODO what is "state" ???
     auto market_status = MarketStatus{
         .stream_id = stream_id_,
         .exchange = shared_.settings.exchange,
@@ -411,7 +424,7 @@ void Rest::operator()(Trace<json::Symbols> const &event) {
     };
     create_trace_and_dispatch(handler_, trace_info, market_status, true);
   }
-  log::info("Exchange info: including symbols {}/{}"sv, counter, std::size(symbols.data));
+  log::info("Symbols: including symbols {}/{}"sv, counter, std::size(symbols.data));
   if (!std::empty(symbols_2)) {
     auto symbols_update = SymbolsUpdate{
         .symbols = symbols_2,

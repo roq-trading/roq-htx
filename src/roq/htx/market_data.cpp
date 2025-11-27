@@ -213,30 +213,27 @@ void MarketData::operator()(ConnectionStatus status) {
 }
 
 void MarketData::subscribe(std::span<Symbol const> const &symbols) {
-  if (std::empty(symbols)) {
-    return;
+  for (auto &item : symbols) {
+    subscribe(item, "market"sv, "bbo"sv);
+    subscribe(item, "market"sv, "ticker"sv);
+    subscribe(item, "market"sv, "trade.detail"sv);
+    subscribe(item, "market"sv, "detail"sv);
   }
-  subscribe(symbols, "market"sv, "bbo"sv);
-  subscribe(symbols, "market"sv, "ticker"sv);
-  subscribe(symbols, "market"sv, "trade.detail"sv);
-  subscribe(symbols, "market"sv, "detail"sv);
 }
 
-void MarketData::subscribe(std::span<Symbol const> const &symbols, std::string_view const &source, std::string_view const &theme) {
+void MarketData::subscribe(std::string_view const &symbol, std::string_view const &source, std::string_view const &theme) {
   assert(!std::empty(symbols));
-  for (auto &symbol : symbols) {
-    auto id = ++request_id_;
-    auto message = fmt::format(
-        R"({{)"
-        R"("sub":"{}.{}.{}",)"
-        R"("id":"{}")"
-        R"(}})"sv,
-        source,
-        symbol,
-        theme,
-        id);
-    request_queue_.emplace_back(message);
-  }
+  auto id = ++request_id_;
+  auto message = fmt::format(
+      R"({{)"
+      R"("sub":"{}.{}.{}",)"
+      R"("id":"{}")"
+      R"(}})"sv,
+      source,
+      symbol,
+      theme,
+      id);
+  request_queue_.emplace_back(message);
 }
 
 void MarketData::send_pong(std::chrono::milliseconds timestamp) {
@@ -245,7 +242,7 @@ void MarketData::send_pong(std::chrono::milliseconds timestamp) {
       R"("pong":{})"
       R"(}})"sv,
       timestamp.count());
-  (*connection_).send_text(message);  // note! special, can't delay
+  (*connection_).send_text(message);  // note! immediate (not using the queue)
 }
 
 void MarketData::parse(std::string_view const &message) {

@@ -184,6 +184,15 @@ Environments
    .. include:: flags/prod/flags.cfg
      :code: shell
 
+.. tab:: Prod (AWS)
+
+   .. code-block:: shell
+
+      $ $CONDA_PREFIX/share/roq-htx/flags/prod/flags-aws.cfg
+
+   .. include:: flags/prod/flags-aws.cfg
+     :code: shell
+
 
 Configuration
 -------------

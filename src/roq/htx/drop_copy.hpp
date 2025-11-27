@@ -13,14 +13,11 @@
 
 #include "roq/web/socket/client.hpp"
 
-#include "roq/core/download.hpp"
-
 #include "roq/core/json/buffer_stack.hpp"
 
 #include "roq/server.hpp"
 
 #include "roq/htx/account.hpp"
-#include "roq/htx/drop_copy_state.hpp"
 #include "roq/htx/shared.hpp"
 
 #include "roq/htx/json/parser.hpp"
@@ -35,7 +32,7 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
     virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
   };
 
-  DropCopy(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &, std::string_view const &listen_key);
+  DropCopy(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
   DropCopy(DropCopy const &) = delete;
 
@@ -59,7 +56,9 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
  private:
   void operator()(ConnectionStatus);
 
-  uint32_t download(DropCopyState);
+  void send_pong(std::chrono::milliseconds timestamp);
+
+  void send_login();
 
   void parse(std::string_view const &message);
 
@@ -99,7 +98,6 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
   // state
   bool ready_ = false;
   ConnectionStatus status_ = {};
-  core::Download<DropCopyState> download_;
 };
 
 }  // namespace htx

@@ -11,6 +11,7 @@ event_type.hpp
 frame.hpp
 market_status_data.hpp
 market_status.hpp
+open_orders.hpp
 mbp.hpp
 mbp_snapshot_data.hpp
 mbp_snapshot.hpp
@@ -43,6 +44,7 @@ event_type.cpp
 frame.cpp
 market_status_data.cpp
 market_status.cpp
+open_orders.cpp
 mbp.cpp
 mbp_snapshot_data.cpp
 mbp_snapshot.cpp
