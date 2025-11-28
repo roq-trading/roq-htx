@@ -17,7 +17,7 @@ struct API final {
     std::string_view mbp_depth_theme;
   } market_data;
   struct {
-    std::string_view account_info = {};
+    std::string_view accounts = {};
     std::string_view open_orders = {};
     std::string_view place_order = {};
     std::string_view cancel_order = {};

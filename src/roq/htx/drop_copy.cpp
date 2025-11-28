@@ -39,7 +39,6 @@ auto create_name(auto stream_id) {
 }
 
 auto create_connection(auto &handler, auto &settings, auto &context) {
-  assert(!std::empty(listen_key));
   auto uri = settings.ws.order_uri;
   auto config = web::socket::Client::Config{
       // connection
@@ -154,7 +153,7 @@ void DropCopy::operator()(web::socket::Client::Latency const &latency) {
 }
 
 void DropCopy::operator()(web::socket::Client::Text const &text) {
-  // parse(text.payload);
+  parse(text.payload);
 }
 
 void DropCopy::operator()(web::socket::Client::Binary const &) {

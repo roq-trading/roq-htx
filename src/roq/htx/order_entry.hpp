@@ -24,6 +24,7 @@
 #include "roq/htx/order_entry_state.hpp"
 #include "roq/htx/shared.hpp"
 
+#include "roq/htx/json/accounts.hpp"
 #include "roq/htx/json/open_orders.hpp"
 
 namespace roq {
@@ -65,6 +66,12 @@ struct OrderEntry final : public web::rest::Client::Handler {
 
   uint32_t download(OrderEntryState state);
 
+  // accounts
+
+  void accounts();
+  void accounts_ack(Trace<web::rest::Response> const &);
+  void operator()(Trace<json::Accounts> const &);
+
   // open-orders
 
   void open_orders();
@@ -94,9 +101,11 @@ struct OrderEntry final : public web::rest::Client::Handler {
     utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    utils::metrics::Profile open_orders, open_orders_ack,  //
-        account, account_ack,                              //
-        new_order, new_order_ack,                          //
+    utils::metrics::Profile  //
+        accounts,
+        accounts_ack,                  //
+        open_orders, open_orders_ack,  //
+        new_order, new_order_ack,      //
         cancel_order, cancel_order_ack;
   } profile_;
   struct {

@@ -1,5 +1,9 @@
 !!! THIS FILE HAS BEEN AUTO-GENERATED !!!
 roq-htx-json
+accounts.hpp
+account_type.hpp
+account_state.hpp
+accounts_data_item.hpp
 bbo.hpp
 bbo_tick.hpp
 currencies.hpp
@@ -12,6 +16,7 @@ frame.hpp
 market_status_data.hpp
 market_status.hpp
 open_orders.hpp
+open_orders_data_item.hpp
 mbp.hpp
 mbp_snapshot_data.hpp
 mbp_snapshot.hpp
@@ -33,6 +38,10 @@ trade.hpp
 trade_tick_item.hpp
 trading.hpp
 trade_tick.hpp
+accounts.cpp
+account_type.cpp
+account_state.cpp
+accounts_data_item.cpp
 bbo.cpp
 bbo_tick.cpp
 currencies.cpp
@@ -45,6 +54,7 @@ frame.cpp
 market_status_data.cpp
 market_status.cpp
 open_orders.cpp
+open_orders_data_item.cpp
 mbp.cpp
 mbp_snapshot_data.cpp
 mbp_snapshot.cpp

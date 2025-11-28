@@ -222,7 +222,6 @@ void MarketData::subscribe(std::span<Symbol const> const &symbols) {
 }
 
 void MarketData::subscribe(std::string_view const &symbol, std::string_view const &source, std::string_view const &theme) {
-  assert(!std::empty(symbols));
   auto id = ++request_id_;
   auto message = fmt::format(
       R"({{)"

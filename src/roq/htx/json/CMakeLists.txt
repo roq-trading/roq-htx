@@ -5,6 +5,10 @@ set(SOURCES map.cpp parser.cpp utils.cpp)
 include(RoqAutogen)
 
 set(AUTOGEN_SCHEMAS
+    accounts.json
+    account_type.json
+    account_state.json
+    accounts_data_item.json
     bbo.json
     bbo_tick.json
     currencies.json
@@ -17,6 +21,7 @@ set(AUTOGEN_SCHEMAS
     market_status_data.json
     market_status.json
     open_orders.json
+    open_orders_data_item.json
     mbp.json
     mbp_snapshot_data.json
     mbp_snapshot.json

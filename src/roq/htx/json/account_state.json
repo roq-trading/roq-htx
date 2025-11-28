@@ -1,0 +1,12 @@
+{
+  "name": "roq/htx/json/AccountState",
+  "type": "enum",
+  "values": [
+    {
+      "name": "working"
+    },
+    {
+      "name": "lock"
+    }
+  ]
+}

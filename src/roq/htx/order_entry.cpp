@@ -89,10 +89,10 @@ OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_i
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
       profile_{
+          .accounts = create_metrics(shared.settings, name_, "accounts"sv),
+          .accounts_ack = create_metrics(shared.settings, name_, "accounts_ack"sv),
           .open_orders = create_metrics(shared.settings, name_, "open_orders"sv),
           .open_orders_ack = create_metrics(shared.settings, name_, "open_orders_ack"sv),
-          .account = create_metrics(shared.settings, name_, "account"sv),
-          .account_ack = create_metrics(shared.settings, name_, "account_ack"sv),
           .new_order = create_metrics(shared.settings, name_, "new_order"sv),
           .new_order_ack = create_metrics(shared.settings, name_, "new_order_ack"sv),
           .cancel_order = create_metrics(shared.settings, name_, "cancel_order"sv),
@@ -101,7 +101,7 @@ OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_i
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
       },
-      account_{account}, shared_{shared_}, download_{shared.settings.rest.request_timeout, [this](auto state) { return download(state); }} {
+      account_{account}, shared_{shared}, download_{shared.settings.rest.request_timeout, [this](auto state) { return download(state); }} {
 }
 
 void OrderEntry::operator()(Event<Start> const &) {
@@ -121,10 +121,10 @@ void OrderEntry::operator()(metrics::Writer &writer) const {
       // counter
       .write(counter_.disconnect, metrics::Type::COUNTER)
       // profile
+      .write(profile_.accounts, metrics::Type::PROFILE)
+      .write(profile_.accounts_ack, metrics::Type::PROFILE)
       .write(profile_.open_orders, metrics::Type::PROFILE)
       .write(profile_.open_orders_ack, metrics::Type::PROFILE)
-      .write(profile_.account, metrics::Type::PROFILE)
-      .write(profile_.account_ack, metrics::Type::PROFILE)
       .write(profile_.new_order, metrics::Type::PROFILE)
       .write(profile_.new_order_ack, metrics::Type::PROFILE)
       .write(profile_.cancel_order, metrics::Type::PROFILE)
@@ -214,6 +214,9 @@ uint32_t OrderEntry::download(OrderEntryState state) {
     case UNDEFINED:
       assert(false);
       break;
+    case ACCOUNTS:
+      accounts();
+      return 1;
     case OPEN_ORDERS:
       open_orders();
       return 1;
@@ -223,6 +226,64 @@ uint32_t OrderEntry::download(OrderEntryState state) {
   }
   assert(false);
   return {};
+}
+
+// accounts
+
+void OrderEntry::accounts() {
+  profile_.accounts([&]() {
+    auto now_utc = clock::get_realtime<std::chrono::seconds>();
+    auto method = web::http::Method::GET;
+    auto path = shared_.api.order_management.accounts;
+    auto query = account_.create_query(method, path, now_utc);
+    auto request = web::rest::Request{
+        .method = method,
+        .path = path,
+        .query = query,
+        .accept = web::http::Accept::APPLICATION_JSON,
+        .content_type = web::http::ContentType::APPLICATION_JSON,
+        .headers = {},
+        .body = {},
+        .quality_of_service = {},
+    };
+    log::warn("DEBUG request={}"sv, request);
+    auto callback = [this]([[maybe_unused]] auto &request_id, auto &response) {
+      TraceInfo trace_info;
+      Trace event{trace_info, response};
+      accounts_ack(event);
+    };
+    (*connection_)("orders"sv, request, callback);
+  });
+}
+
+void OrderEntry::accounts_ack(Trace<web::rest::Response> const &event) {
+  auto const STATE = OrderEntryState::ACCOUNTS;
+  profile_.accounts_ack([&]() {
+    auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
+      log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
+      if (download_.downloading()) {
+        download_.retry(STATE);
+      }
+    };
+    auto handle_success = [&](auto &body) {
+      log::warn("DEBUG {}"sv, body);
+      json::Accounts accounts{body, decode_buffer_};
+      if (accounts.status == json::Status::OK) {
+        Trace event_2{event, accounts};
+        (*this)(event_2);
+        download_.check_relaxed(STATE);
+      } else {
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(accounts.err_code), accounts.err_msg);
+      }
+    };
+    process_response(event, handle_error, handle_success);
+  });
+}
+
+void OrderEntry::operator()(Trace<json::Accounts> const &event) {
+  auto &[trace_info, accounts] = event;
+  log::info<2>("accounts={}"sv, accounts);
+  // XXX FIXME TODO
 }
 
 // open-orders
@@ -265,16 +326,13 @@ void OrderEntry::open_orders_ack(Trace<web::rest::Response> const &event) {
     auto handle_success = [&](auto &body) {
       log::warn("DEBUG {}"sv, body);
       json::OpenOrders open_orders{body, decode_buffer_};
-      /*
       if (open_orders.status == json::Status::OK) {
         Trace event_2{event, open_orders};
         (*this)(event_2);
         download_.check_relaxed(STATE);
       } else {
-        // handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(open_orders.ret_code), open_orders.ret_msg);
-        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, Error{}, ""sv);  // XXX FIXME TODO
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(open_orders.err_code), open_orders.err_msg);
       }
-      */
     };
     process_response(event, handle_error, handle_success);
   });
@@ -283,53 +341,7 @@ void OrderEntry::open_orders_ack(Trace<web::rest::Response> const &event) {
 void OrderEntry::operator()(Trace<json::OpenOrders> const &event) {
   auto &[trace_info, open_orders] = event;
   log::info<2>("open_orders={}"sv, open_orders);
-  /*
-  for (auto &item : open_orders.data.orders) {
-    auto client_order_id = fmt::format("{}"sv, item.client_order_id);
-    auto remaining_quantity = [&]() {
-      if (utils::compare(item.volume, 0.0) > 0) {
-        return item.volume - item.trade_volume;  // note! can't modify order
-      }
-      return NaN;
-    }();
-    auto order_update = server::oms::OrderUpdate{
-        .account = account_.name,
-        .exchange = shared_.settings.exchange,
-        .symbol = item.contract_code,
-        .side = map(item.direction),
-        .position_effect = map(item.offset),
-        .margin_mode = {},
-        .max_show_quantity = NaN,
-        .order_type = map(item.order_price_type),
-        .time_in_force = {},
-        .execution_instructions = {},
-        .create_time_utc = {},
-        .update_time_utc = item.created_at,
-        .external_account = {},
-        .external_order_id = item.order_id_str,
-        .client_order_id = client_order_id,
-        .order_status = map(item.status),
-        .quantity = item.volume,
-        .price = item.price,
-        .stop_price = NaN,
-        .leverage = item.lever_rate,
-        .remaining_quantity = remaining_quantity,
-        .traded_quantity = item.trade_volume,
-        .average_traded_price = NaN,
-        .last_traded_quantity = NaN,
-        .last_traded_price = NaN,
-        .last_liquidity = {},
-        .routing_id = {},
-        .max_request_version = {},
-        .max_response_version = {},
-        .max_accepted_version = {},
-        .update_type = UpdateType::SNAPSHOT,
-        .sending_time_utc = open_orders.ts,
-    };
-    Trace event_2{trace_info, order_update};
-    (*this)(event_2, client_order_id);
-  }
-  */
+  // XXX FIXME TODO
 }
 
 // helpers

@@ -3,6 +3,7 @@ include(RoqAutogen)
 set(TARGET_NAME ${PROJECT_NAME}-test)
 
 set(SOURCES
+    json_accounts.cpp
     json_bbo.cpp
     json_currencies.cpp
     json_detail.cpp
@@ -11,6 +12,7 @@ set(SOURCES
     json_mbp_snapshot.cpp
     json_symbols.cpp
     json_ticker.cpp
+    json_open_orders.cpp
     json_trade.cpp
     json_utils.cpp
     main.cpp)

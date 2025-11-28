@@ -18,7 +18,7 @@ API API::create(Settings const &settings) {
           .mbp_depth_theme = "mbp.20"sv,  // note! 150 is throttled
       },
       .order_management{
-          .account_info = "/linear-swap-api/v1/swap_account_info"sv,
+          .accounts = "/v1/account/accounts"sv,
           .open_orders = "/v1/order/openOrders"sv,
           .place_order = "/linear-swap-api/v1/swap_order"sv,
           .cancel_order = "/linear-swap-api/v1/swap_cancel"sv,

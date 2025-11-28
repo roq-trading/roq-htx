@@ -1,0 +1,22 @@
+{
+  "name": "roq/htx/json/AccountsDataItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "id",
+      "type": "std/int64"
+    },
+    {
+      "name": "type",
+      "type": "roq/htx/json/AccountType"
+    },
+    {
+      "name": "subtype",
+      "type": "std/string_view"
+    },
+    {
+      "name": "state",
+      "type": "roq/htx/json/AccountState"
+    }
+  ]
+}
