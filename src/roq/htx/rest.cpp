@@ -361,7 +361,6 @@ void Rest::operator()(Trace<json::Symbols> const &event) {
   std::vector<Symbol> symbols_2;
   size_t counter = {};
   for (auto &item : symbols.data) {
-    log::debug("item={}"sv, item);
     if (item.state != json::State::ONLINE || item.api_trading != json::Trading::ENABLED) {
       log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
       continue;
@@ -417,7 +416,7 @@ void Rest::operator()(Trace<json::Symbols> const &event) {
         .stream_id = stream_id_,
         .exchange = shared_.settings.exchange,
         .symbol = symbol,
-        .trading_status = json::Map{item.api_trading},
+        .trading_status = map(item.api_trading),
         .exchange_time_utc = {},
         .exchange_sequence = {},
         .sending_time_utc = {},
@@ -437,7 +436,7 @@ template <typename SuccessHandler, typename ErrorHandler>
 void Rest::process_response(web::rest::Response const &response, SuccessHandler success_handler, ErrorHandler error_handler) {
   try {
     auto [status, category, body] = response.result();
-    log::debug(R"(status={}, category={}, body="{}")"sv, status, category, body);
+    // log::debug(R"(status={}, category={}, body="{}")"sv, status, category, body);
     switch (category) {
       using enum web::http::Category;
       case SUCCESS:  // 2xx

@@ -60,10 +60,17 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
 
   void send_login();
 
+  void subscribe();
+  void subscribe(std::string_view const &channel);
+
   void parse(std::string_view const &message);
 
+  void operator()(Trace<json::Req> const &) override;
   void operator()(Trace<json::Ping> const &) override;
+  void operator()(Trace<json::Ping2> const &) override;
   void operator()(Trace<json::Error> const &) override;
+  void operator()(Trace<json::Error2> const &) override;
+  void operator()(Trace<json::Sub> const &) override;
   void operator()(Trace<json::Subbed> const &) override;
   void operator()(Trace<json::BBO> const &) override;
   void operator()(Trace<json::Trade> const &) override;
@@ -86,7 +93,8 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
     utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    utils::metrics::Profile parse, ping, error, outbound_account_info, outbound_account_position, balance_update, execution_report;
+    utils::metrics::Profile parse,  //
+        req, ping, error, sub, outbound_account_info, outbound_account_position, balance_update, execution_report;
   } profile_;
   struct {
     utils::metrics::Latency ping, heartbeat;

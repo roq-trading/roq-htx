@@ -11,9 +11,13 @@
 #include "roq/htx/json/bbo.hpp"
 #include "roq/htx/json/detail.hpp"
 #include "roq/htx/json/error.hpp"
+#include "roq/htx/json/error_2.hpp"
 #include "roq/htx/json/mbp.hpp"
 #include "roq/htx/json/mbp_snapshot.hpp"
 #include "roq/htx/json/ping.hpp"
+#include "roq/htx/json/ping_2.hpp"
+#include "roq/htx/json/req.hpp"
+#include "roq/htx/json/sub.hpp"
 #include "roq/htx/json/subbed.hpp"
 #include "roq/htx/json/ticker.hpp"
 #include "roq/htx/json/trade.hpp"
@@ -24,8 +28,12 @@ namespace json {
 
 struct Parser final {
   struct Handler {
-    virtual void operator()(Trace<Ping> const &) = 0;
+    virtual void operator()(Trace<Req> const &) = 0;   // dc
+    virtual void operator()(Trace<Ping> const &) = 0;  // dc
+    virtual void operator()(Trace<Ping2> const &) = 0;
     virtual void operator()(Trace<Error> const &) = 0;
+    virtual void operator()(Trace<Error2> const &) = 0;
+    virtual void operator()(Trace<Sub> const &) = 0;  // dc
     virtual void operator()(Trace<Subbed> const &) = 0;
     virtual void operator()(Trace<BBO> const &) = 0;
     virtual void operator()(Trace<Trade> const &) = 0;

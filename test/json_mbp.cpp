@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("json_mbp_simple", "[json_mbp]") {
+TEST_CASE("simple", "[json_mbp]") {
   auto message = R"({)"
                  R"("ch":"market.btcusdt.mbp.20",)"
                  R"("ts":1639744309814,)"

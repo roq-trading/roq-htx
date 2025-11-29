@@ -1,0 +1,14 @@
+{
+  "name": "roq/htx/json/Error2",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "code",
+      "type": "std/int32"
+    },
+    {
+      "name": "message",
+      "type": "std/string_view"
+    }
+  ]
+}

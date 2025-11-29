@@ -1,0 +1,10 @@
+{
+  "name": "roq/htx/json/Ping2",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "ping",
+      "type": "std/milliseconds"
+    }
+  ]
+}

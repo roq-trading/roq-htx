@@ -1,6 +1,6 @@
 {
   "name": "roq/htx/json/Subbed",
-  "type": "struct",
+  "type": "dictionary",
   "values": [
     {
       "name": "id",

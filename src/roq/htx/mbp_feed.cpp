@@ -261,18 +261,42 @@ void MBPFeed::parse(std::string_view const &message) {
   });
 }
 
+void MBPFeed::operator()(Trace<json::Req> const &) {
+  log::fatal("Unexpected"sv);
+}
+
 void MBPFeed::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
-    log::debug("ping={}"sv, ping);
-    send_pong(ping.timestamp);
+    send_pong(ping.data.ts);
+  });
+}
+
+void MBPFeed::operator()(Trace<json::Ping2> const &event) {
+  profile_.ping([&]() {
+    auto &[trace_info, ping] = event;
+    send_pong(ping.ping);
   });
 }
 
 void MBPFeed::operator()(Trace<json::Error> const &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
-    log::warn("error={}"sv, error);
+    log::error("error={}"sv, error);
+  });
+}
+
+void MBPFeed::operator()(Trace<json::Error2> const &event) {
+  profile_.error([&]() {
+    auto &[trace_info, error] = event;
+    log::error("error={}"sv, error);
+  });
+}
+
+void MBPFeed::operator()(Trace<json::Sub> const &event) {
+  profile_.subbed([&]() {
+    auto &[trace_info, sub] = event;
+    log::info<1>("sub={}"sv, sub);
   });
 }
 
@@ -436,13 +460,9 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
 }
 
 void MBPFeed::check_request_queue(std::chrono::nanoseconds now) {
-  request_queue_.dispatch(
-      [&](auto now) { return shared_.rate_limiter.can_request(now); },
-      [&](auto &message) {
-        log::debug(R"(Sending request: message="{}")"sv, message);
-        (*connection_).send_text(message);
-      },
-      now);
+  auto can_send_helper = [&](auto now) { return shared_.rate_limiter.can_request(now); };
+  auto send_helper = [&](auto &message) { (*connection_).send_text(message); };
+  request_queue_.dispatch(can_send_helper, send_helper, now);
 }
 
 }  // namespace htx

@@ -1,14 +1,15 @@
 set(TARGET_NAME ${PROJECT_NAME}-json)
 
-set(SOURCES map.cpp parser.cpp utils.cpp)
+set(SOURCES encoder.cpp map.cpp parser.cpp utils.cpp)
 
 include(RoqAutogen)
 
 set(AUTOGEN_SCHEMAS
-    accounts.json
-    account_type.json
-    account_state.json
     accounts_data_item.json
+    accounts.json
+    account_state.json
+    account_type.json
+    action.json
     bbo.json
     bbo_tick.json
     currencies.json
@@ -16,22 +17,26 @@ set(AUTOGEN_SCHEMAS
     detail.json
     detail_tick.json
     error.json
+    error_2.json
     event_type.json
-    frame.json
     market_status_data.json
     market_status.json
-    open_orders.json
-    open_orders_data_item.json
     mbp.json
     mbp_snapshot_data.json
     mbp_snapshot.json
     mbp_tick.json
+    open_orders_data_item.json
+    open_orders.json
     partition.json
+    ping_2.json
+    ping_data.json
     ping.json
     quotation.json
+    req.json
     side.json
     state.json
     status.json
+    sub.json
     subbed.json
     symbols_item.json
     symbols.json
@@ -41,8 +46,8 @@ set(AUTOGEN_SCHEMAS
     topic.json
     trade.json
     trade_tick_item.json
-    trading.json
-    trade_tick.json)
+    trade_tick.json
+    trading.json)
 
 roq_autogen_hpp(
   OUTPUT

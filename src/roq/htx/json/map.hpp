@@ -2,36 +2,28 @@
 
 #pragma once
 
-#include <tuple>
-
-#include "roq/api.hpp"
-
 #include "roq/htx/json/side.hpp"
 #include "roq/htx/json/trading.hpp"
 
+#include "roq/side.hpp"
+#include "roq/trading_status.hpp"
+
+#include "roq/map.hpp"
+
 namespace roq {
-namespace htx {
-namespace json {
 
-template <typename... Args>
-struct Map final {
-  explicit Map(Args &&...args) : args_{std::forward<Args>(args)...} {}
-  explicit Map(Args const &...args) : args_{args...} {}
+template <>
+template <>
+std::optional<Side> Map<htx::json::Side>::helper() const;
 
-  Map(Map const &) = delete;
+template <>
+template <>
+std::optional<TradingStatus> Map<htx::json::Trading>::helper() const;
 
-  template <typename R>
-  operator R();
+// ===
 
- private:
-  std::tuple<Args...> const args_;
-};
+template <>
+template <>
+std::optional<htx::json::Side> Map<roq::Side>::helper() const;
 
-template <typename R, typename... Args>
-inline R map(Args &&...args) {
-  return static_cast<R>(Map{std::forward<Args>(args)...});
-}
-
-}  // namespace json
-}  // namespace htx
 }  // namespace roq

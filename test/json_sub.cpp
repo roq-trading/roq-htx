@@ -3,9 +3,8 @@
 #include <catch2/catch_all.hpp>
 
 #include "roq/core/json/buffer_stack.hpp"
-#include "roq/core/json/parser.hpp"
 
-#include "roq/htx/json/market_status.hpp"
+#include "roq/htx/json/sub.hpp"
 
 using namespace roq;
 using namespace roq::htx;
@@ -15,17 +14,13 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("simple", "[json_market_status]") {
+TEST_CASE("success", "[json_sub]") {
   auto message = R"({)"
+                 R"("action":"sub",)"
                  R"("code":200,)"
-                 R"("message":"success",)"
-                 R"("data":{)"
-                 R"("marketStatus":1)"
-                 R"(})"
+                 R"("ch":"trade.clearing#*",)"
+                 R"("data":{})"
                  R"(})";
   core::json::BufferStack buffer{8192, 1};
-  json::MarketStatus obj{message, buffer};
-  CHECK(obj.message == "success"sv);
-  auto &data = obj.data;
-  CHECK(data.market_status == 1);
+  [[maybe_unused]] json::Sub obj{message, buffer};
 }

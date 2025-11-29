@@ -2,124 +2,102 @@
 
 #include "roq/htx/json/map.hpp"
 
-#include "roq/logging.hpp"
-
 using namespace std::literals;
 
 namespace roq {
-namespace htx {
-namespace json {
-
-// === HELPERS ===
 
 namespace {
-// note! constexpr helper for static testing
 template <typename... Args>
-struct Helper final {
-  explicit constexpr Helper(std::tuple<Args...> const &args) : args_{args} {}
-  explicit constexpr Helper(Args &&...args_) : args_{std::forward<Args>(args_)...} {}
+using Helper = detail::MapHelper<Args...>;
+}
 
-  template <typename R>
-  constexpr operator R();
+// htx ==> roq
 
- private:
-  std::tuple<Args...> const args_;
-};
-
-// ==> roq
-
-// Side ==> roq::Side
+// htx::json::Side ==> roq::Side
 
 template <>
 template <>
-constexpr Helper<Side>::operator roq::Side() {
+constexpr Helper<htx::json::Side>::operator std::optional<roq::Side>() const {
   switch (std::get<0>(args_)) {
-    using enum Side::type_t;
+    using enum htx::json::Side::type_t;
     case UNDEFINED_INTERNAL:
-      return {};
+      return roq::Side::UNDEFINED;
     case UNKNOWN_INTERNAL:
-      break;
+      return roq::Side::UNDEFINED;
     case BUY:
       return roq::Side::BUY;
     case SELL:
       return roq::Side::SELL;
   }
-  roq::log::fatal("Unexpected"sv);
+  return {};
 }
 
-static_assert(static_cast<roq::Side>(Helper{Side{Side::UNDEFINED_INTERNAL}}) == roq::Side::UNDEFINED);
-static_assert(static_cast<roq::Side>(Helper{Side{Side::BUY}}) == roq::Side::BUY);
-static_assert(static_cast<roq::Side>(Helper{Side{Side::SELL}}) == roq::Side::SELL);
-
-// Trading ==> roq::TradingStatus
+static_assert(Helper{htx::json::Side{htx::json::Side::UNDEFINED_INTERNAL}} == roq::Side::UNDEFINED);
+static_assert(Helper{htx::json::Side{htx::json::Side::BUY}} == roq::Side::BUY);
+static_assert(Helper{htx::json::Side{htx::json::Side::SELL}} == roq::Side::SELL);
 
 template <>
 template <>
-constexpr Helper<Trading>::operator roq::TradingStatus() {
+std::optional<roq::Side> Map<htx::json::Side>::helper() const {
+  return Helper{args_};
+}
+
+// htx::json::Trading ==> roq::TradingStatus
+
+template <>
+template <>
+constexpr Helper<htx::json::Trading>::operator std::optional<roq::TradingStatus>() const {
   switch (std::get<0>(args_)) {
-    using enum json::Trading::type_t;
+    using enum htx::json::Trading::type_t;
     case UNDEFINED_INTERNAL:
-      return {};
+      return roq::TradingStatus::UNDEFINED;
     case UNKNOWN_INTERNAL:
-      break;
+      return roq::TradingStatus::UNDEFINED;
     case ENABLED:
       return roq::TradingStatus::OPEN;
     case DISABLED:
-      return roq::TradingStatus::HALT;
+      return roq::TradingStatus::CLOSE;
   }
-  roq::log::fatal("Unexpected"sv);
+  return {};
 }
 
-static_assert(static_cast<roq::TradingStatus>(Helper{Trading{Trading::UNDEFINED_INTERNAL}}) == roq::TradingStatus::UNDEFINED);
-static_assert(static_cast<roq::TradingStatus>(Helper{Trading{Trading::ENABLED}}) == roq::TradingStatus::OPEN);
-static_assert(static_cast<roq::TradingStatus>(Helper{Trading{Trading::DISABLED}}) == roq::TradingStatus::HALT);
-
-// roq ==>
-
-// Side ==> roq::Side
+static_assert(Helper{htx::json::Trading{htx::json::Trading::UNDEFINED_INTERNAL}} == roq::TradingStatus::UNDEFINED);
+static_assert(Helper{htx::json::Trading{htx::json::Trading::ENABLED}} == roq::TradingStatus::OPEN);
+static_assert(Helper{htx::json::Trading{htx::json::Trading::DISABLED}} == roq::TradingStatus::CLOSE);
 
 template <>
 template <>
-constexpr Helper<roq::Side>::operator Side() {
+std::optional<roq::TradingStatus> Map<htx::json::Trading>::helper() const {
+  return Helper{args_};
+}
+
+// roq ==> htx::json
+
+// roq::Side ==> htx::json::Side
+
+template <>
+template <>
+constexpr Helper<roq::Side>::operator std::optional<htx::json::Side>() const {
   switch (std::get<0>(args_)) {
     using enum roq::Side;
     case UNDEFINED:
-      return {};
+      return htx::json::Side::UNDEFINED_INTERNAL;
     case BUY:
-      return json::Side::BUY;
+      return htx::json::Side::BUY;
     case SELL:
-      return json::Side::SELL;
+      return htx::json::Side::SELL;
   }
-  roq::log::fatal("Unexpected"sv);
+  return {};
 }
 
-static_assert(static_cast<Side>(Helper{roq::Side::UNDEFINED}) == Side{Side::UNDEFINED_INTERNAL});
-static_assert(static_cast<Side>(Helper{roq::Side::BUY}) == Side{Side::BUY});
-static_assert(static_cast<Side>(Helper{roq::Side::SELL}) == Side{Side::SELL});
-}  // namespace
-
-// === IMPLEMENTATION ===
-
-// ==> roq
+static_assert(Helper{roq::Side::UNDEFINED} == htx::json::Side{htx::json::Side::UNDEFINED_INTERNAL});
+static_assert(Helper{roq::Side::BUY} == htx::json::Side{htx::json::Side::BUY});
+static_assert(Helper{roq::Side::SELL} == htx::json::Side{htx::json::Side::SELL});
 
 template <>
 template <>
-Map<Side>::operator roq::Side() {
+std::optional<htx::json::Side> Map<roq::Side>::helper() const {
   return Helper{args_};
 }
 
-template <>
-template <>
-Map<Trading>::operator roq::TradingStatus() {
-  return Helper{args_};
-}
-
-template <>
-template <>
-Map<roq::Side>::operator Side() {
-  return Helper{args_};
-}
-
-}  // namespace json
-}  // namespace htx
 }  // namespace roq

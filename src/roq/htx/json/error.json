@@ -1,7 +1,15 @@
 {
   "name": "roq/htx/json/Error",
-  "type": "struct",
+  "type": "dictionary",
   "values": [
+    {
+      "name": "status",
+      "type": "roq/htx/json/Status"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    },
     {
       "name": "id",
       "type": "std/int64"
@@ -13,10 +21,6 @@
     {
       "name": "err-msg",
       "type": "std/string_view"
-    },
-    {
-      "name": "ts",
-      "type": "std/milliseconds"
     }
   ]
 }

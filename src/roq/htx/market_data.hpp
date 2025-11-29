@@ -74,8 +74,12 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
 
   void parse(std::string_view const &message);
 
+  void operator()(Trace<json::Req> const &) override;
   void operator()(Trace<json::Ping> const &) override;
+  void operator()(Trace<json::Ping2> const &) override;
   void operator()(Trace<json::Error> const &) override;
+  void operator()(Trace<json::Error2> const &) override;
+  void operator()(Trace<json::Sub> const &) override;
   void operator()(Trace<json::Subbed> const &) override;
   void operator()(Trace<json::BBO> const &) override;
   void operator()(Trace<json::Trade> const &) override;

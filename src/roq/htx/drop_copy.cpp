@@ -79,8 +79,10 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, A
       },
       profile_{
           .parse = create_metrics(shared.settings, name_, "parse"sv),
+          .req = create_metrics(shared.settings, name_, "req"sv),
           .ping = create_metrics(shared.settings, name_, "ping"sv),
           .error = create_metrics(shared.settings, name_, "error"sv),
+          .sub = create_metrics(shared.settings, name_, "sub"sv),
           .outbound_account_info = create_metrics(shared.settings, name_, "outbound_account_info"sv),
           .outbound_account_position = create_metrics(shared.settings, name_, "outbound_account_position"sv),
           .balance_update = create_metrics(shared.settings, name_, "balance_update"sv),
@@ -115,6 +117,10 @@ void DropCopy::operator()(metrics::Writer &writer) const {
       .write(counter_.disconnect, metrics::Type::COUNTER)
       // profile
       .write(profile_.parse, metrics::Type::PROFILE)
+      .write(profile_.req, metrics::Type::PROFILE)
+      .write(profile_.ping, metrics::Type::PROFILE)
+      .write(profile_.error, metrics::Type::PROFILE)
+      .write(profile_.sub, metrics::Type::PROFILE)
       .write(profile_.outbound_account_info, metrics::Type::PROFILE)
       .write(profile_.outbound_account_position, metrics::Type::PROFILE)
       .write(profile_.balance_update, metrics::Type::PROFILE)
@@ -136,6 +142,22 @@ void DropCopy::operator()(web::socket::Client::Disconnected const &) {
 void DropCopy::operator()(web::socket::Client::Ready const &) {
   send_login();
   (*this)(ConnectionStatus::LOGIN_SENT);
+}
+
+void DropCopy::subscribe() {
+  subscribe("accounts.update"sv);
+  subscribe("orders#*"sv);
+  subscribe("trade.clearing#*"sv);
+}
+
+void DropCopy::subscribe(std::string_view const &channel) {
+  auto message = fmt::format(
+      R"({{)"
+      R"("action":"sub",)"
+      R"("ch":"{}")"
+      R"(}})"sv,
+      channel);
+  (*connection_).send_text(message);
 }
 
 void DropCopy::operator()(web::socket::Client::Close const &) {
@@ -185,8 +207,10 @@ void DropCopy::operator()(ConnectionStatus status) {
 void DropCopy::send_pong(std::chrono::milliseconds timestamp) {
   auto message = fmt::format(
       R"({{)"
-      R"("op":"pong",)"
+      R"("action":"pong",)"
+      R"("data":{{)"
       R"("ts":{})"
+      R"(}})"
       R"(}})"sv,
       timestamp.count());
   // log::debug(R"(message="{}")"sv, message);
@@ -217,18 +241,54 @@ void DropCopy::parse(std::string_view const &message) {
   });
 }
 
+void DropCopy::operator()(Trace<json::Req> const &event) {
+  profile_.req([&]() {
+    auto &[trace_info, req] = event;
+    log::debug("req={}"sv, req);
+    if (req.ch == "auth"sv) {
+      if (req.code == 200) {
+        subscribe();
+        (*this)(ConnectionStatus::READY);
+      } else {
+        log::error("req={}"sv, req);
+        (*connection_).close();
+      }
+    }
+  });
+}
+
 void DropCopy::operator()(Trace<json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
-    log::debug("ping={}"sv, ping);
-    send_pong(ping.timestamp);
+    send_pong(ping.data.ts);
+  });
+}
+
+void DropCopy::operator()(Trace<json::Ping2> const &event) {
+  profile_.ping([&]() {
+    auto &[trace_info, ping] = event;
+    send_pong(ping.ping);
   });
 }
 
 void DropCopy::operator()(Trace<json::Error> const &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
-    log::warn("error={}"sv, error);
+    log::error("error={}"sv, error);
+  });
+}
+
+void DropCopy::operator()(Trace<json::Error2> const &event) {
+  profile_.error([&]() {
+    auto &[trace_info, error] = event;
+    log::error("error={}"sv, error);
+  });
+}
+
+void DropCopy::operator()(Trace<json::Sub> const &event) {
+  profile_.sub([&]() {
+    auto &[trace_info, sub] = event;
+    log::info("sub={}"sv, sub);
   });
 }
 

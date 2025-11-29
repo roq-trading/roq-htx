@@ -20,9 +20,10 @@ API API::create(Settings const &settings) {
       .order_management{
           .accounts = "/v1/account/accounts"sv,
           .open_orders = "/v1/order/openOrders"sv,
-          .place_order = "/linear-swap-api/v1/swap_order"sv,
-          .cancel_order = "/linear-swap-api/v1/swap_cancel"sv,
-          .cancel_all_orders = "/linear-swap-api/v1/swap_cancelall"sv,
+          .place_order = "/v1/order/orders/place"sv,
+          .cancel_order = "/v1/order/orders/{order-id}/submitcancel"sv,
+          .cancel_client_order = "/v1/order/orders/submitCancelClientOrder"sv,
+          .cancel_all_orders = "/v1/order/cancelAllOrders"sv,
       },
   };
 }
