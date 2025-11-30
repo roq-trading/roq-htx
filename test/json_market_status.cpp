@@ -3,7 +3,6 @@
 #include <catch2/catch_all.hpp>
 
 #include "roq/core/json/buffer_stack.hpp"
-#include "roq/core/json/parser.hpp"
 
 #include "roq/htx/json/market_status.hpp"
 
@@ -23,8 +22,8 @@ TEST_CASE("simple", "[json_market_status]") {
                  R"("marketStatus":1)"
                  R"(})"
                  R"(})";
-  core::json::BufferStack buffer{8192, 1};
-  json::MarketStatus obj{message, buffer};
+  core::json::BufferStack buffers{8192, 1};
+  json::MarketStatus obj{message, buffers};
   CHECK(obj.message == "success"sv);
   auto &data = obj.data;
   CHECK(data.market_status == 1);

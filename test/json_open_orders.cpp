@@ -19,6 +19,7 @@ TEST_CASE("empty", "[json_open_orders]") {
                  R"("status":"ok",)"
                  R"("data":[])"
                  R"(})";
-  core::json::BufferStack buffer{8192, 1};
-  [[maybe_unused]] json::OpenOrders obj{message, buffer};
+  core::json::BufferStack buffers{8192, 1};
+  json::OpenOrders obj{message, buffers};
+  CHECK(obj.status == json::Status::OK);
 }

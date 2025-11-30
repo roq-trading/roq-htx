@@ -2,8 +2,6 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/parser.hpp"
-
 #include "roq/htx/json/utils.hpp"
 
 using namespace roq;

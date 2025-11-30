@@ -25,6 +25,7 @@ TEST_CASE("simple", "[json_accounts]") {
                  R"(})"
                  R"(])"
                  R"(})";
-  core::json::BufferStack buffer{8192, 1};
-  [[maybe_unused]] json::Accounts obj{message, buffer};
+  core::json::BufferStack buffers{8192, 1};
+  json::Accounts obj{message, buffers};
+  CHECK(obj.status == json::Status::OK);
 }

@@ -456,8 +456,8 @@ TEST_CASE("simple", "[json_currencies]") {
                  R"("gal")"
                  R"(])"
                  R"(})";
-  core::json::BufferStack buffer{8192, 1};
-  json::Currencies obj{message, buffer};
+  core::json::BufferStack buffers{8192, 1};
+  json::Currencies obj{message, buffers};
   CHECK(obj.status == json::Status::OK);
   auto &data = obj.data;
   REQUIRE(std::size(data) == 436);

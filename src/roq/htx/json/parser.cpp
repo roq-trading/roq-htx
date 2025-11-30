@@ -85,7 +85,7 @@ bool Parser::dispatch(
         break;
       }
       case utils::hash::FNV::compute(KEY_CH): {
-        Topic topic{value};
+        Topic topic{extract_topic(std::get<std::string_view>(value))};
         switch (topic) {
           using enum Topic::type_t;
           case UNDEFINED_INTERNAL:
