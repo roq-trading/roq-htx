@@ -1,0 +1,21 @@
+{
+  "name": "roq/htx/json/PlaceOrderAck",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "status",
+      "type": "roq/htx/json/Status"
+    },
+    {
+      "name": "data"
+    },
+    {
+      "name": "err-code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "err-msg",
+      "type": "std/string_view"
+    }
+  ]
+}

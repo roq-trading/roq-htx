@@ -1,0 +1,30 @@
+{
+  "name": "roq/htx/json/BalanceDataListItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "currency",
+      "type": "std/string_view"
+    },
+    {
+      "name": "type",
+      "type": "std/string_view"
+    },
+    {
+      "name": "balance",
+      "type": "std/double"
+    },
+    {
+      "name": "available",
+      "type": "std/double"
+    },
+    {
+      "name": "debt",
+      "type": "std/double"
+    },
+    {
+      "name": "seq-num",
+      "type": "std/int64"
+    }
+  ]
+}

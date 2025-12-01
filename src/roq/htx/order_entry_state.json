@@ -6,6 +6,9 @@
       "name": "accounts"
     },
     {
+      "name": "balance"
+    },
+    {
       "name": "open_orders"
     },
     {

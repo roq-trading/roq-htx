@@ -100,4 +100,51 @@ std::optional<htx::json::Side> Map<roq::Side>::helper() const {
   return Helper{args_};
 }
 
+// {roq::Side, roq::OrderType} ==> htx::json::OrderType
+
+template <>
+template <>
+constexpr Helper<roq::Side, roq::OrderType>::operator std::optional<htx::json::OrderType>() const {
+  switch (std::get<0>(args_)) {
+    using enum roq::Side;
+    case UNDEFINED:
+      return htx::json::OrderType::UNDEFINED_INTERNAL;
+    case BUY:
+      switch (std::get<1>(args_)) {
+        using enum roq::OrderType;
+        case UNDEFINED:
+          return htx::json::OrderType::UNDEFINED_INTERNAL;
+        case MARKET:
+          return htx::json::OrderType::BUY_MARKET;
+        case LIMIT:
+          return htx::json::OrderType::BUY_LIMIT;
+      }
+      break;
+    case SELL:
+      switch (std::get<1>(args_)) {
+        using enum roq::OrderType;
+        case UNDEFINED:
+          return htx::json::OrderType::UNDEFINED_INTERNAL;
+        case MARKET:
+          return htx::json::OrderType::SELL_MARKET;
+        case LIMIT:
+          return htx::json::OrderType::SELL_LIMIT;
+      }
+      break;
+  }
+  return {};
+}
+
+static_assert(Helper{roq::Side::UNDEFINED, roq::OrderType::UNDEFINED} == htx::json::OrderType{htx::json::OrderType::UNDEFINED_INTERNAL});
+static_assert(Helper{roq::Side::BUY, roq::OrderType::MARKET} == htx::json::OrderType{htx::json::OrderType::BUY_MARKET});
+static_assert(Helper{roq::Side::SELL, roq::OrderType::MARKET} == htx::json::OrderType{htx::json::OrderType::SELL_MARKET});
+static_assert(Helper{roq::Side::BUY, roq::OrderType::LIMIT} == htx::json::OrderType{htx::json::OrderType::BUY_LIMIT});
+static_assert(Helper{roq::Side::SELL, roq::OrderType::LIMIT} == htx::json::OrderType{htx::json::OrderType::SELL_LIMIT});
+
+template <>
+template <>
+std::optional<htx::json::OrderType> Map<roq::Side, roq::OrderType>::helper() const {
+  return Helper{args_};
+}
+
 }  // namespace roq

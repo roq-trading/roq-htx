@@ -1,0 +1,23 @@
+{
+  "name": "roq/htx/json/BalanceData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "id",
+      "type": "std/int64"
+    },
+    {
+      "name": "type",
+      "type": "roq/htx/json/AccountType"
+    },
+    {
+      "name": "state",
+      "type": "roq/htx/json/AccountState"
+    },
+    {
+      "name": "list",
+      "type": "roq/htx/json/BalanceDataListItem",
+      "array": "std/span"
+    }
+  ]
+}

@@ -25,7 +25,11 @@
 #include "roq/htx/shared.hpp"
 
 #include "roq/htx/json/accounts.hpp"
+#include "roq/htx/json/balance.hpp"
 #include "roq/htx/json/open_orders.hpp"
+
+#include "roq/htx/json/cancel_all_orders_ack.hpp"
+#include "roq/htx/json/place_order_ack.hpp"
 
 namespace roq {
 namespace htx {
@@ -72,11 +76,29 @@ struct OrderEntry final : public web::rest::Client::Handler {
   void accounts_ack(Trace<web::rest::Response> const &);
   void operator()(Trace<json::Accounts> const &);
 
+  // balance
+
+  void balance();
+  void balance_ack(Trace<web::rest::Response> const &);
+  void operator()(Trace<json::Balance> const &);
+
   // open-orders
 
   void open_orders();
   void open_orders_ack(Trace<web::rest::Response> const &);
   void operator()(Trace<json::OpenOrders> const &);
+
+  // place-order
+
+  void place_order(Event<CreateOrder> const &, server::oms::Order const &, std::string_view const &request_id);
+  void place_order_ack(Trace<web::rest::Response> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
+  void operator()(Trace<json::PlaceOrderAck> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
+
+  // cancel-all-orders
+
+  void cancel_all_orders(Event<CancelAllOrders> const &, std::string_view const &request_id);
+  void cancel_all_orders_ack(Trace<web::rest::Response> const &, std::string_view const &request_id);
+  void operator()(Trace<json::CancelAllOrdersAck> const &);
 
   // helpers
 
@@ -103,10 +125,12 @@ struct OrderEntry final : public web::rest::Client::Handler {
   struct {
     utils::metrics::Profile  //
         accounts,
-        accounts_ack,                  //
-        open_orders, open_orders_ack,  //
-        new_order, new_order_ack,      //
-        cancel_order, cancel_order_ack;
+        accounts_ack,                    //
+        balance, balance_ack,            //
+        open_orders, open_orders_ack,    //
+        place_order, place_order_ack,    //
+        cancel_order, cancel_order_ack,  //
+        cancel_all_orders, cancel_all_orders_ack;
   } profile_;
   struct {
     utils::metrics::Latency ping;
@@ -118,6 +142,9 @@ struct OrderEntry final : public web::rest::Client::Handler {
   // state
   ConnectionStatus status_ = {};
   core::Download<OrderEntryState> download_;
+  //
+  std::string encode_buffer_;
+  int64_t account_id_ = {};
 };
 
 }  // namespace htx

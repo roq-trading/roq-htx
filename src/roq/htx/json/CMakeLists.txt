@@ -10,14 +10,18 @@ set(AUTOGEN_SCHEMAS
     account_state.json
     account_type.json
     action.json
+    balance.json
+    balance_data.json
+    balance_data_list_item.json
     bbo.json
     bbo_tick.json
+    cancel_all_orders_ack.json
     currencies.json
     currencies.json
     detail.json
     detail_tick.json
-    error.json
     error_2.json
+    error.json
     event_type.json
     market_status_data.json
     market_status.json
@@ -27,17 +31,19 @@ set(AUTOGEN_SCHEMAS
     mbp_tick.json
     open_orders_data_item.json
     open_orders.json
+    order_type.json
     partition.json
     ping_2.json
     ping_data.json
     ping.json
+    place_order_ack.json
     quotation.json
     req.json
     side.json
     state.json
     status.json
-    sub.json
     subbed.json
+    sub.json
     symbols_item.json
     symbols.json
     symbol_status.json

@@ -4,19 +4,22 @@ set(TARGET_NAME ${PROJECT_NAME}-test)
 
 set(SOURCES
     json_accounts.cpp
+    json_balance.cpp
     json_bbo.cpp
+    json_cancel_all_orders_ack.cpp
     json_currencies.cpp
     json_detail.cpp
-    json_error.cpp
     json_error_2.cpp
+    json_error.cpp
     json_market_status.cpp
     json_mbp.cpp
     json_mbp_snapshot.cpp
     json_open_orders.cpp
     json_ping.cpp
+    json_place_order_ack.cpp
     json_req.cpp
-    json_sub.cpp
     json_subbed.cpp
+    json_sub.cpp
     json_symbols.cpp
     json_ticker.cpp
     json_trade.cpp
