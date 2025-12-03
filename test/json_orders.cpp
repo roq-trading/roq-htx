@@ -99,3 +99,96 @@ TEST_CASE("filled", "[json_orders]") {
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }
+
+TEST_CASE("partial_filled_1", "[json_orders]") {
+  auto message = R"({)"
+                 R"("action":"push",)"
+                 R"("ch":"orders#*",)"
+                 R"("data":{)"
+                 R"("tradePrice":"92700",)"
+                 R"("tradeVolume":"0.00018",)"
+                 R"("tradeTime":1764765015078,)"
+                 R"("aggressor":false,)"
+                 R"("execAmt":"0.00018",)"
+                 R"("orderPrice":"92700",)"
+                 R"("orderSize":"0.0005",)"
+                 R"("remainAmt":"0.00032",)"
+                 R"("tradeId":103617362803,)"
+                 R"("totalTradeAmount":"16.68600",)"
+                 R"("orderSource":"spot-api",)"
+                 R"("symbol":"btcusdt",)"
+                 R"("eventType":"trade",)"
+                 R"("clientOrderId":"1wACflxAskMAAQAAAAAA",)"
+                 R"("orderStatus":"partial-filled",)"
+                 R"("orderId":1474911835261957,)"
+                 R"("type":"buy-limit")"
+                 R"(})"
+                 R"(})";
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.ch == "orders#*"sv);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
+}
+
+TEST_CASE("partial_filled_2", "[json_orders]") {
+  auto message = R"({)"
+                 R"("action":"push",)"
+                 R"("ch":"orders#*",)"
+                 R"("data":{)"
+                 R"("tradePrice":"92700",)"
+                 R"("tradeVolume":"0.00018",)"
+                 R"("tradeTime":1764770521664,)"
+                 R"("aggressor":false,)"
+                 R"("execAmt":"0.00036",)"
+                 R"("remainAmt":"0.00014",)"
+                 R"("totalTradeAmount":"33.37200",)"
+                 R"("tradeId":103617366374,)"
+                 R"("orderSource":"spot-api",)"
+                 R"("orderPrice":"92700",)"
+                 R"("orderSize":"0.0005",)"
+                 R"("eventType":"trade",)"
+                 R"("symbol":"btcusdt",)"
+                 R"("orderStatus":"partial-filled",)"
+                 R"("orderId":1474911835261957,)"
+                 R"("clientOrderId":"1wACflxAskMAAQAAAAAA",)"
+                 R"("type":"buy-limit")"
+                 R"(})"
+                 R"(})";
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.ch == "orders#*"sv);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
+}
+
+TEST_CASE("partial_filled_3", "[json_orders]") {
+  auto message = R"({)"
+                 R"("action":"push",)"
+                 R"("ch":"orders#*",)"
+                 R"("data":{)"
+                 R"("tradePrice":"92700",)"
+                 R"("tradeVolume":"0.00014",)"
+                 R"("tradeTime":1764770521719,)"
+                 R"("aggressor":false,)"
+                 R"("execAmt":"0.0005",)"
+                 R"("remainAmt":"0",)"
+                 R"("totalTradeAmount":"46.35000",)"
+                 R"("tradeId":103617366375,)"
+                 R"("orderSource":"spot-api",)"
+                 R"("orderPrice":"92700",)"
+                 R"("orderSize":"0.0005",)"
+                 R"("eventType":"trade",)"
+                 R"("symbol":"btcusdt",)"
+                 R"("orderStatus":"filled",)"
+                 R"("orderId":1474911835261957,)"
+                 R"("clientOrderId":"1wACflxAskMAAQAAAAAA",)"
+                 R"("type":"buy-limit")"
+                 R"(})"
+                 R"(})";
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.ch == "orders#*"sv);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
+}

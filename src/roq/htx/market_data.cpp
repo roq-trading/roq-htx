@@ -325,6 +325,8 @@ void MarketData::operator()(Trace<json::BBO> const &event) {
         .exchange_time_utc = bbo.ts,
         .exchange_sequence = {},
         .sending_time_utc = {},
+        .price_precision = {},
+        .quantity_precision = {},
     };
     create_trace_and_dispatch(handler_, trace_info, top_of_book, true);
   });
@@ -360,6 +362,8 @@ void MarketData::operator()(Trace<json::Trade> const &event) {
         .exchange_time_utc = trade.ts,
         .exchange_sequence = trade.tick.id,
         .sending_time_utc = {},
+        .price_precision = {},
+        .quantity_precision = {},
     };
     create_trace_and_dispatch(handler_, trace_info, trade_summary, true);
   });

@@ -6,6 +6,7 @@
 
 #include "roq/mask.hpp"
 
+#include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
 #include "roq/utils/metrics/factory.hpp"
@@ -31,7 +32,9 @@ auto const NAME = "om"sv;
 auto const SUPPORTS = Mask{
     SupportType::CREATE_ORDER,
     SupportType::CANCEL_ORDER,
+    SupportType::ORDER,
     SupportType::ORDER_ACK,
+    SupportType::FUNDS,
 };
 
 size_t const MAX_DECODE_BUFFER_DEPTH = 1;
@@ -369,7 +372,7 @@ void OrderEntry::operator()(Trace<json::BalanceAck> const &event) {
         .external_account = external_account,
         .update_type = UpdateType::SNAPSHOT,
         .exchange_time_utc = {},
-        // XXX FIXME TODO exchange_sequence
+        .exchange_sequence = utils::safe_cast(item.seq_num),
         .sending_time_utc = {},
     };
     create_trace_and_dispatch(handler_, trace_info, funds_update, true);
@@ -444,8 +447,8 @@ void OrderEntry::operator()(Trace<json::OpenOrdersAck> const &event) {
         .margin_mode = {},
         .max_show_quantity = NaN,
         .order_type = map(item.type),
-        .time_in_force = {},
-        .execution_instructions = {},
+        .time_in_force = map(item.type),
+        .execution_instructions = map(item.type),
         .create_time_utc = item.created_at,
         .update_time_utc = item.created_at,
         .external_account = external_account,

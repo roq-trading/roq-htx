@@ -55,6 +55,8 @@ constexpr Helper<htx::json::OrderStatus>::operator std::optional<roq::OrderStatu
       return roq::OrderStatus::UNDEFINED;
     case SUBMITTED:
       return roq::OrderStatus::WORKING;
+    case PARTIAL_FILLED:
+      return roq::OrderStatus::WORKING;
     case FILLED:
       return roq::OrderStatus::COMPLETED;
     case CANCELED:
@@ -65,12 +67,78 @@ constexpr Helper<htx::json::OrderStatus>::operator std::optional<roq::OrderStatu
 
 static_assert(Helper{htx::json::OrderStatus{htx::json::OrderStatus::UNDEFINED_INTERNAL}} == roq::OrderStatus::UNDEFINED);
 static_assert(Helper{htx::json::OrderStatus{htx::json::OrderStatus::SUBMITTED}} == roq::OrderStatus::WORKING);
+static_assert(Helper{htx::json::OrderStatus{htx::json::OrderStatus::PARTIAL_FILLED}} == roq::OrderStatus::WORKING);
 static_assert(Helper{htx::json::OrderStatus{htx::json::OrderStatus::FILLED}} == roq::OrderStatus::COMPLETED);
 static_assert(Helper{htx::json::OrderStatus{htx::json::OrderStatus::CANCELED}} == roq::OrderStatus::CANCELED);
 
 template <>
 template <>
 std::optional<roq::OrderStatus> Map<htx::json::OrderStatus>::helper() const {
+  return Helper{args_};
+}
+
+// htx::json::OrderType ==> roq::Mask<roq::ExecutionInstruction>
+
+template <>
+template <>
+constexpr Helper<htx::json::OrderType>::operator std::optional<roq::Mask<roq::ExecutionInstruction>>() const {
+  switch (std::get<0>(args_)) {
+    using enum htx::json::OrderType::type_t;
+    case UNDEFINED_INTERNAL:
+      return roq::Mask<roq::ExecutionInstruction>{};
+    case UNKNOWN_INTERNAL:
+      return roq::Mask<roq::ExecutionInstruction>{};
+    case BUY_MARKET:
+      return roq::Mask<roq::ExecutionInstruction>{};
+    case SELL_MARKET:
+      return roq::Mask<roq::ExecutionInstruction>{};
+    case BUY_LIMIT:
+      return roq::Mask<roq::ExecutionInstruction>{};
+    case SELL_LIMIT:
+      return roq::Mask<roq::ExecutionInstruction>{};
+    case BUY_IOC:
+      return roq::Mask<roq::ExecutionInstruction>{};
+    case SELL_IOC:
+      return roq::Mask<roq::ExecutionInstruction>{};
+    case BUY_LIMIT_MAKER:
+      return roq::Mask{roq::ExecutionInstruction::PARTICIPATE_DO_NOT_INITIATE};
+    case SELL_LIMIT_MAKER:
+      return roq::Mask{roq::ExecutionInstruction::PARTICIPATE_DO_NOT_INITIATE};
+    case BUY_STOP_LIMIT:
+      return roq::Mask<roq::ExecutionInstruction>{};
+    case SELL_STOP_LIMIT:
+      return roq::Mask<roq::ExecutionInstruction>{};
+    case BUY_LIMIT_FOK:
+      return roq::Mask<roq::ExecutionInstruction>{};
+    case SELL_LIMIT_FOK:
+      return roq::Mask<roq::ExecutionInstruction>{};
+    case BUY_STOP_LIMIT_FOK:
+      return roq::Mask<roq::ExecutionInstruction>{};
+    case SELL_STOP_LIMIT_FOK:
+      return roq::Mask<roq::ExecutionInstruction>{};
+  }
+  return {};
+}
+
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::UNDEFINED_INTERNAL}} == roq::Mask<roq::ExecutionInstruction>{});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_MARKET}} == roq::Mask<roq::ExecutionInstruction>{});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_MARKET}} == roq::Mask<roq::ExecutionInstruction>{});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_LIMIT}} == roq::Mask<roq::ExecutionInstruction>{});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_LIMIT}} == roq::Mask<roq::ExecutionInstruction>{});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_IOC}} == roq::Mask<roq::ExecutionInstruction>{});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_IOC}} == roq::Mask<roq::ExecutionInstruction>{});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_LIMIT_MAKER}} == roq::Mask{roq::ExecutionInstruction::PARTICIPATE_DO_NOT_INITIATE});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_LIMIT_MAKER}} == roq::Mask{roq::ExecutionInstruction::PARTICIPATE_DO_NOT_INITIATE});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_STOP_LIMIT}} == roq::Mask<roq::ExecutionInstruction>{});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_STOP_LIMIT}} == roq::Mask<roq::ExecutionInstruction>{});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_LIMIT_FOK}} == roq::Mask<roq::ExecutionInstruction>{});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_LIMIT_FOK}} == roq::Mask<roq::ExecutionInstruction>{});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_STOP_LIMIT_FOK}} == roq::Mask<roq::ExecutionInstruction>{});
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_STOP_LIMIT_FOK}} == roq::Mask<roq::ExecutionInstruction>{});
+
+template <>
+template <>
+std::optional<roq::Mask<roq::ExecutionInstruction>> Map<htx::json::OrderType>::helper() const {
   return Helper{args_};
 }
 
@@ -204,6 +272,71 @@ std::optional<roq::Side> Map<htx::json::OrderType>::helper() const {
   return Helper{args_};
 }
 
+// htx::json::OrderType ==> roq::TimeInForce
+
+template <>
+template <>
+constexpr Helper<htx::json::OrderType>::operator std::optional<roq::TimeInForce>() const {
+  switch (std::get<0>(args_)) {
+    using enum htx::json::OrderType::type_t;
+    case UNDEFINED_INTERNAL:
+      return roq::TimeInForce::UNDEFINED;
+    case UNKNOWN_INTERNAL:
+      return roq::TimeInForce::UNDEFINED;
+    case BUY_MARKET:
+      return roq::TimeInForce::UNDEFINED;
+    case SELL_MARKET:
+      return roq::TimeInForce::UNDEFINED;
+    case BUY_LIMIT:
+      return roq::TimeInForce::GTC;
+    case SELL_LIMIT:
+      return roq::TimeInForce::GTC;
+    case BUY_IOC:
+      return roq::TimeInForce::IOC;
+    case SELL_IOC:
+      return roq::TimeInForce::IOC;
+    case BUY_LIMIT_MAKER:
+      return roq::TimeInForce::GTC;
+    case SELL_LIMIT_MAKER:
+      return roq::TimeInForce::GTC;
+    case BUY_STOP_LIMIT:
+      return roq::TimeInForce::GTC;
+    case SELL_STOP_LIMIT:
+      return roq::TimeInForce::GTC;
+    case BUY_LIMIT_FOK:
+      return roq::TimeInForce::FOK;
+    case SELL_LIMIT_FOK:
+      return roq::TimeInForce::FOK;
+    case BUY_STOP_LIMIT_FOK:
+      return roq::TimeInForce::FOK;
+    case SELL_STOP_LIMIT_FOK:
+      return roq::TimeInForce::FOK;
+  }
+  return {};
+}
+
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::UNDEFINED_INTERNAL}} == roq::TimeInForce::UNDEFINED);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_MARKET}} == roq::TimeInForce::UNDEFINED);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_MARKET}} == roq::TimeInForce::UNDEFINED);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_LIMIT}} == roq::TimeInForce::GTC);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_LIMIT}} == roq::TimeInForce::GTC);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_IOC}} == roq::TimeInForce::IOC);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_IOC}} == roq::TimeInForce::IOC);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_LIMIT_MAKER}} == roq::TimeInForce::GTC);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_LIMIT_MAKER}} == roq::TimeInForce::GTC);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_STOP_LIMIT}} == roq::TimeInForce::GTC);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_STOP_LIMIT}} == roq::TimeInForce::GTC);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_LIMIT_FOK}} == roq::TimeInForce::FOK);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_LIMIT_FOK}} == roq::TimeInForce::FOK);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::BUY_STOP_LIMIT_FOK}} == roq::TimeInForce::FOK);
+static_assert(Helper{htx::json::OrderType{htx::json::OrderType::SELL_STOP_LIMIT_FOK}} == roq::TimeInForce::FOK);
+
+template <>
+template <>
+std::optional<roq::TimeInForce> Map<htx::json::OrderType>::helper() const {
+  return Helper{args_};
+}
+
 // htx::json::Trading ==> roq::TradingStatus
 
 template <>
@@ -266,46 +399,102 @@ std::optional<htx::json::Direction> Map<roq::Side>::helper() const {
 
 template <>
 template <>
-constexpr Helper<roq::Side, roq::OrderType>::operator std::optional<htx::json::OrderType>() const {
-  switch (std::get<0>(args_)) {
+constexpr Helper<roq::Side, roq::OrderType, roq::TimeInForce, roq::Mask<roq::ExecutionInstruction>>::operator std::optional<htx::json::OrderType>() const {
+  auto &[side, order_type, time_in_force, execution_instructions] = args_;
+  auto maker = [&]() { return execution_instructions.has(ExecutionInstruction::PARTICIPATE_DO_NOT_INITIATE); }();
+  switch (side) {
     using enum roq::Side;
     case UNDEFINED:
       return htx::json::OrderType::UNDEFINED_INTERNAL;
-    case BUY:
-      switch (std::get<1>(args_)) {
+    case BUY: {
+      if (time_in_force == TimeInForce::IOC) {
+        return htx::json::OrderType::BUY_IOC;
+      }
+      switch (order_type) {
         using enum roq::OrderType;
         case UNDEFINED:
           return htx::json::OrderType::UNDEFINED_INTERNAL;
         case MARKET:
           return htx::json::OrderType::BUY_MARKET;
         case LIMIT:
-          return htx::json::OrderType::BUY_LIMIT;
+          if (maker) {
+            return htx::json::OrderType::BUY_LIMIT_MAKER;
+          } else if (time_in_force == TimeInForce::FOK) {
+            return htx::json::OrderType::BUY_LIMIT_FOK;
+          } else {
+            return htx::json::OrderType::BUY_LIMIT;
+          }
       }
       break;
-    case SELL:
-      switch (std::get<1>(args_)) {
+    }
+    case SELL: {
+      if (time_in_force == TimeInForce::IOC) {
+        return htx::json::OrderType::SELL_IOC;
+      }
+      switch (order_type) {
         using enum roq::OrderType;
         case UNDEFINED:
           return htx::json::OrderType::UNDEFINED_INTERNAL;
         case MARKET:
           return htx::json::OrderType::SELL_MARKET;
         case LIMIT:
-          return htx::json::OrderType::SELL_LIMIT;
+          if (maker) {
+            return htx::json::OrderType::SELL_LIMIT_MAKER;
+          } else if (time_in_force == TimeInForce::FOK) {
+            return htx::json::OrderType::SELL_LIMIT_FOK;
+          } else {
+            return htx::json::OrderType::SELL_LIMIT;
+          }
       }
       break;
+    }
   }
   return {};
 }
 
-static_assert(Helper{roq::Side::UNDEFINED, roq::OrderType::UNDEFINED} == htx::json::OrderType{htx::json::OrderType::UNDEFINED_INTERNAL});
-static_assert(Helper{roq::Side::BUY, roq::OrderType::MARKET} == htx::json::OrderType{htx::json::OrderType::BUY_MARKET});
-static_assert(Helper{roq::Side::SELL, roq::OrderType::MARKET} == htx::json::OrderType{htx::json::OrderType::SELL_MARKET});
-static_assert(Helper{roq::Side::BUY, roq::OrderType::LIMIT} == htx::json::OrderType{htx::json::OrderType::BUY_LIMIT});
-static_assert(Helper{roq::Side::SELL, roq::OrderType::LIMIT} == htx::json::OrderType{htx::json::OrderType::SELL_LIMIT});
+static_assert(
+    Helper{roq::Side::UNDEFINED, roq::OrderType::UNDEFINED, roq::TimeInForce::UNDEFINED, roq::Mask<roq::ExecutionInstruction>{}} ==
+    htx::json::OrderType{htx::json::OrderType::UNDEFINED_INTERNAL});
+static_assert(
+    Helper{roq::Side::BUY, roq::OrderType::MARKET, roq::TimeInForce::UNDEFINED, roq::Mask<roq::ExecutionInstruction>{}} ==
+    htx::json::OrderType{htx::json::OrderType::BUY_MARKET});
+static_assert(
+    Helper{roq::Side::SELL, roq::OrderType::MARKET, roq::TimeInForce::UNDEFINED, roq::Mask<roq::ExecutionInstruction>{}} ==
+    htx::json::OrderType{htx::json::OrderType::SELL_MARKET});
+static_assert(
+    Helper{roq::Side::BUY, roq::OrderType::LIMIT, roq::TimeInForce::UNDEFINED, roq::Mask<roq::ExecutionInstruction>{}} ==
+    htx::json::OrderType{htx::json::OrderType::BUY_LIMIT});
+static_assert(
+    Helper{roq::Side::SELL, roq::OrderType::LIMIT, roq::TimeInForce::UNDEFINED, roq::Mask<roq::ExecutionInstruction>{}} ==
+    htx::json::OrderType{htx::json::OrderType::SELL_LIMIT});
+static_assert(
+    Helper{roq::Side::BUY, roq::OrderType::MARKET, roq::TimeInForce::IOC, roq::Mask<roq::ExecutionInstruction>{}} ==
+    htx::json::OrderType{htx::json::OrderType::BUY_IOC});
+static_assert(
+    Helper{roq::Side::SELL, roq::OrderType::MARKET, roq::TimeInForce::IOC, roq::Mask<roq::ExecutionInstruction>{}} ==
+    htx::json::OrderType{htx::json::OrderType::SELL_IOC});
+static_assert(
+    Helper{roq::Side::BUY, roq::OrderType::LIMIT, roq::TimeInForce::IOC, roq::Mask<roq::ExecutionInstruction>{}} ==
+    htx::json::OrderType{htx::json::OrderType::BUY_IOC});
+static_assert(
+    Helper{roq::Side::SELL, roq::OrderType::LIMIT, roq::TimeInForce::IOC, roq::Mask<roq::ExecutionInstruction>{}} ==
+    htx::json::OrderType{htx::json::OrderType::SELL_IOC});
+static_assert(
+    Helper{roq::Side::BUY, roq::OrderType::LIMIT, roq::TimeInForce::FOK, roq::Mask<roq::ExecutionInstruction>{}} ==
+    htx::json::OrderType{htx::json::OrderType::BUY_LIMIT_FOK});
+static_assert(
+    Helper{roq::Side::SELL, roq::OrderType::LIMIT, roq::TimeInForce::FOK, roq::Mask<roq::ExecutionInstruction>{}} ==
+    htx::json::OrderType{htx::json::OrderType::SELL_LIMIT_FOK});
+static_assert(
+    Helper{roq::Side::BUY, roq::OrderType::LIMIT, roq::TimeInForce::FOK, roq::Mask{roq::ExecutionInstruction::PARTICIPATE_DO_NOT_INITIATE}} ==
+    htx::json::OrderType{htx::json::OrderType::BUY_LIMIT_MAKER});
+static_assert(
+    Helper{roq::Side::SELL, roq::OrderType::LIMIT, roq::TimeInForce::FOK, roq::Mask{roq::ExecutionInstruction::PARTICIPATE_DO_NOT_INITIATE}} ==
+    htx::json::OrderType{htx::json::OrderType::SELL_LIMIT_MAKER});
 
 template <>
 template <>
-std::optional<htx::json::OrderType> Map<roq::Side, roq::OrderType>::helper() const {
+std::optional<htx::json::OrderType> Map<roq::Side, roq::OrderType, roq::TimeInForce, roq::Mask<roq::ExecutionInstruction>>::helper() const {
   return Helper{args_};
 }
 

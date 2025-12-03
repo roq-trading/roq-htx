@@ -4,6 +4,7 @@
 
 #include "roq/mask.hpp"
 
+#include "roq/utils/safe_cast.hpp"
 #include "roq/utils/update.hpp"
 
 #include "roq/utils/charconv/to_string.hpp"
@@ -29,6 +30,8 @@ auto const NAME = "ex"sv;
 
 auto const SUPPORTS = Mask{
     SupportType::FUNDS,
+    SupportType::ORDER,
+    SupportType::TRADE,
 };
 
 size_t const MAX_DECODE_BUFFER_DEPTH = 1;
@@ -340,7 +343,7 @@ void DropCopy::operator()(Trace<json::Accounts> const &event) {
       .external_account = external_account,
       .update_type = update_type,
       .exchange_time_utc = {},
-      // XXX FIXME TODO exchange_sequence
+      .exchange_sequence = utils::safe_cast(data.seq_num),
       .sending_time_utc = data.change_time,
   };
   create_trace_and_dispatch(handler_, trace_info, funds_update, true);
@@ -350,8 +353,23 @@ void DropCopy::operator()(Trace<json::Orders> const &event) {
   auto &[trace_info, orders] = event;
   log::info<2>("orders={}"sv, orders);
   auto &data = orders.data;
+  auto update_time = [&]() {
+    if (data.event_type == json::EventType::TRADE) {
+      return data.trade_time;
+    }
+    if (data.last_act_time.count()) {
+      return data.last_act_time;
+    }
+    return data.order_create_time;
+  }();
   auto external_account = fmt::format("{}"sv, data.account_id);
   auto external_order_id = fmt::format("{}"sv, data.order_id);
+  auto last_liquidity = [&]() -> Liquidity {
+    if (data.event_type == json::EventType::TRADE) {
+      return data.aggressor ? Liquidity::TAKER : Liquidity::MAKER;
+    }
+    return {};
+  }();
   auto order_update = server::oms::OrderUpdate{
       .account = account_.name,
       .exchange = shared_.settings.exchange,
@@ -361,10 +379,10 @@ void DropCopy::operator()(Trace<json::Orders> const &event) {
       .margin_mode = {},
       .max_show_quantity = NaN,
       .order_type = map(data.type),
-      .time_in_force = {},
-      .execution_instructions = {},
+      .time_in_force = map(data.type),
+      .execution_instructions = map(data.type),
       .create_time_utc = data.order_create_time,
-      .update_time_utc = data.order_create_time,
+      .update_time_utc = update_time,
       .external_account = external_account,
       .external_order_id = external_order_id,
       .client_order_id = data.client_order_id,
@@ -376,9 +394,9 @@ void DropCopy::operator()(Trace<json::Orders> const &event) {
       .remaining_quantity = data.remain_amt,
       .traded_quantity = data.exec_amt,
       .average_traded_price = NaN,
-      .last_traded_quantity = NaN,
-      .last_traded_price = NaN,
-      .last_liquidity = {},
+      .last_traded_quantity = data.trade_volume,
+      .last_traded_price = data.trade_price,
+      .last_liquidity = last_liquidity,
       .routing_id = {},
       .max_request_version = {},
       .max_response_version = {},
@@ -387,7 +405,7 @@ void DropCopy::operator()(Trace<json::Orders> const &event) {
       .sending_time_utc = data.order_create_time,
   };
   if (shared_.update_order(data.client_order_id, stream_id_, trace_info, order_update, [&]([[maybe_unused]] auto &order) {
-        // no fills here
+        // we don't have the fees from the fills => postpone to clearing
       })) {
   } else {
     log::warn<1>(R"(*** EXTERNAL ORDER *** (order_id="{}", client_order_id="{}"))"sv, data.order_id, data.client_order_id);

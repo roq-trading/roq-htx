@@ -22,7 +22,7 @@ namespace json {
 std::string_view Encoder::place_order(
     std::string &buffer, CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id, int64_t account_id) {
   buffer.clear();
-  auto type = map(create_order.side, create_order.order_type).template get<json::OrderType>();
+  auto type = map(create_order.side, create_order.order_type, create_order.time_in_force, create_order.execution_instructions).template get<json::OrderType>();
   fmt::format_to(
       std::back_inserter(buffer),
       R"({{)"

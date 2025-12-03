@@ -83,3 +83,108 @@ TEST_CASE("taker", "[json_clearing]") {
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }
+
+TEST_CASE("partial_filled_1", "[json_clearing]") {
+  auto message = R"({)"
+                 R"("action":"push",)"
+                 R"("ch":"trade.clearing#*",)"
+                 R"("data":{)"
+                 R"("eventType":"trade",)"
+                 R"("symbol":"btcusdt",)"
+                 R"("orderId":1474911835261957,)"
+                 R"("orderSide":"buy",)"
+                 R"("orderType":"buy-limit",)"
+                 R"("accountId":68824237,)"
+                 R"("source":"spot-api",)"
+                 R"("orderPrice":"92700",)"
+                 R"("orderSize":"0.0005",)"
+                 R"("clientOrderId":"1wACflxAskMAAQAAAAAA",)"
+                 R"("orderCreateTime":1764764995435,)"
+                 R"("orderStatus":"partial-filled",)"
+                 R"("feeCurrency":"btc",)"
+                 R"("tradePrice":"92700",)"
+                 R"("tradeVolume":"0.00018",)"
+                 R"("aggressor":false,)"
+                 R"("tradeId":103617362803,)"
+                 R"("tradeTime":1764765015078,)"
+                 R"("transactFee":"0.00000036",)"
+                 R"("feeDeduct":"0",)"
+                 R"("feeDeductType":"")"
+                 R"(})"
+                 R"(})";
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.ch == "trade.clearing#*"sv);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
+}
+
+TEST_CASE("partial_filled_2", "[json_clearing]") {
+  auto message = R"({)"
+                 R"("action":"push",)"
+                 R"("ch":"trade.clearing#*",)"
+                 R"("data":{)"
+                 R"("eventType":"trade",)"
+                 R"("symbol":"btcusdt",)"
+                 R"("orderId":1474911835261957,)"
+                 R"("orderSide":"buy",)"
+                 R"("orderType":"buy-limit",)"
+                 R"("accountId":68824237,)"
+                 R"("source":"spot-api",)"
+                 R"("orderPrice":"92700",)"
+                 R"("orderSize":"0.0005",)"
+                 R"("clientOrderId":"1wACflxAskMAAQAAAAAA",)"
+                 R"("orderCreateTime":1764764995435,)"
+                 R"("orderStatus":"partial-filled",)"
+                 R"("feeCurrency":"btc",)"
+                 R"("tradePrice":"92700",)"
+                 R"("tradeVolume":"0.00018",)"
+                 R"("aggressor":false,)"
+                 R"("tradeId":103617366374,)"
+                 R"("tradeTime":1764770521664,)"
+                 R"("transactFee":"0.00000036",)"
+                 R"("feeDeduct":"0",)"
+                 R"("feeDeductType":"")"
+                 R"(})"
+                 R"(})";
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.ch == "trade.clearing#*"sv);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
+}
+
+TEST_CASE("partial_filled_3", "[json_clearing]") {
+  auto message = R"({)"
+                 R"("action":"push",)"
+                 R"("ch":"trade.clearing#*",)"
+                 R"("data":{)"
+                 R"("eventType":"trade",)"
+                 R"("symbol":"btcusdt",)"
+                 R"("orderId":1474911835261957,)"
+                 R"("orderSide":"buy",)"
+                 R"("orderType":"buy-limit",)"
+                 R"("accountId":68824237,)"
+                 R"("source":"spot-api",)"
+                 R"("orderPrice":"92700",)"
+                 R"("orderSize":"0.0005",)"
+                 R"("clientOrderId":"1wACflxAskMAAQAAAAAA",)"
+                 R"("orderCreateTime":1764764995435,)"
+                 R"("orderStatus":"filled",)"
+                 R"("feeCurrency":"btc",)"
+                 R"("tradePrice":"92700",)"
+                 R"("tradeVolume":"0.00014",)"
+                 R"("aggressor":false,)"
+                 R"("tradeId":103617366375,)"
+                 R"("tradeTime":1764770521719,)"
+                 R"("transactFee":"0.00000028",)"
+                 R"("feeDeduct":"0",)"
+                 R"("feeDeductType":"")"
+                 R"(})"
+                 R"(})";
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.ch == "trade.clearing#*"sv);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
+}
