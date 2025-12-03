@@ -9,6 +9,7 @@ set(SOURCES
     json_bbo.cpp
     json_cancel_all_orders_ack.cpp
     json_cancel_order_ack.cpp
+    json_clearing.cpp
     json_currencies.cpp
     json_detail.cpp
     json_error_2.cpp

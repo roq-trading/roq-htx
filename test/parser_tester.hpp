@@ -45,6 +45,7 @@ struct ParserTester final : public json::Parser::Handler {
   //
   void operator()(Trace<json::Accounts> const &event) override { dispatch(event); }
   void operator()(Trace<json::Orders> const &event) override { dispatch(event); }
+  void operator()(Trace<json::Clearing> const &event) override { dispatch(event); }
 
   template <typename U>
   void dispatch(Trace<U> const &event) {

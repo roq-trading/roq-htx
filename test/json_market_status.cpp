@@ -14,6 +14,8 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
+using value_type = json::MarketStatus;
+
 TEST_CASE("simple", "[json_market_status]") {
   auto message = R"({)"
                  R"("code":200,)"
@@ -22,9 +24,12 @@ TEST_CASE("simple", "[json_market_status]") {
                  R"("marketStatus":1)"
                  R"(})"
                  R"(})";
+  auto helper = [&](value_type &obj) {
+    CHECK(obj.message == "success"sv);
+    auto &data = obj.data;
+    CHECK(data.market_status == 1);
+  };
   core::json::BufferStack buffers{8192, 1};
-  json::MarketStatus obj{message, buffers};
-  CHECK(obj.message == "success"sv);
-  auto &data = obj.data;
-  CHECK(data.market_status == 1);
+  value_type obj{message, buffers};
+  helper(obj);
 }

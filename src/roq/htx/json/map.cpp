@@ -55,6 +55,8 @@ constexpr Helper<htx::json::OrderStatus>::operator std::optional<roq::OrderStatu
       return roq::OrderStatus::UNDEFINED;
     case SUBMITTED:
       return roq::OrderStatus::WORKING;
+    case FILLED:
+      return roq::OrderStatus::COMPLETED;
     case CANCELED:
       return roq::OrderStatus::CANCELED;
   }
@@ -63,6 +65,7 @@ constexpr Helper<htx::json::OrderStatus>::operator std::optional<roq::OrderStatu
 
 static_assert(Helper{htx::json::OrderStatus{htx::json::OrderStatus::UNDEFINED_INTERNAL}} == roq::OrderStatus::UNDEFINED);
 static_assert(Helper{htx::json::OrderStatus{htx::json::OrderStatus::SUBMITTED}} == roq::OrderStatus::WORKING);
+static_assert(Helper{htx::json::OrderStatus{htx::json::OrderStatus::FILLED}} == roq::OrderStatus::COMPLETED);
 static_assert(Helper{htx::json::OrderStatus{htx::json::OrderStatus::CANCELED}} == roq::OrderStatus::CANCELED);
 
 template <>

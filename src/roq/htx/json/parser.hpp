@@ -23,6 +23,7 @@
 #include "roq/htx/json/trade.hpp"
 
 #include "roq/htx/json/accounts.hpp"
+#include "roq/htx/json/clearing.hpp"
 #include "roq/htx/json/orders.hpp"
 
 namespace roq {
@@ -46,6 +47,7 @@ struct Parser final {
     virtual void operator()(Trace<MBPSnapshot> const &) = 0;
     virtual void operator()(Trace<Accounts> const &) = 0;
     virtual void operator()(Trace<Orders> const &) = 0;
+    virtual void operator()(Trace<Clearing> const &) = 0;
   };
 
   static bool dispatch(Handler &, std::string_view const &message, core::json::BufferStack &, TraceInfo const &, bool allow_unknown_event_types);

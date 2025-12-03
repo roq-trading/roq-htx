@@ -6,6 +6,9 @@
       "name": "submitted"
     },
     {
+      "name": "filled"
+    },
+    {
       "name": "canceled"
     }
   ]

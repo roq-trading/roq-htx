@@ -14,6 +14,8 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
+using value_type = json::AccountsAck;
+
 TEST_CASE("simple", "[json_accounts_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
@@ -25,7 +27,8 @@ TEST_CASE("simple", "[json_accounts_ack]") {
                  R"(})"
                  R"(])"
                  R"(})";
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
-  json::AccountsAck obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  value_type obj{message, buffers};
+  helper(obj);
 }

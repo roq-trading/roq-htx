@@ -355,6 +355,25 @@ void OrderEntry::balance_ack(Trace<web::rest::Response> const &event) {
 void OrderEntry::operator()(Trace<json::BalanceAck> const &event) {
   auto &[trace_info, balance_ack] = event;
   log::info<2>("balance_ack={}"sv, balance_ack);
+  auto &data = balance_ack.data;
+  auto external_account = fmt::format("{}"sv, data.id);
+  for (auto &item : data.list) {
+    auto funds_update = FundsUpdate{
+        .stream_id = stream_id_,
+        .account = account_.name,
+        .currency = item.currency,
+        .margin_mode = {},
+        .balance = item.balance,
+        .hold = NaN,
+        .borrowed = NaN,
+        .external_account = external_account,
+        .update_type = UpdateType::SNAPSHOT,
+        .exchange_time_utc = {},
+        // XXX FIXME TODO exchange_sequence
+        .sending_time_utc = {},
+    };
+    create_trace_and_dispatch(handler_, trace_info, funds_update, true);
+  }
 }
 
 // open-orders

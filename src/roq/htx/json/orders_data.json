@@ -69,6 +69,26 @@
     {
       "name": "canceledSourceDesc",
       "type": "std/string_view"
+    },
+    {
+      "name": "tradePrice",
+      "type": "std/double"
+    },
+    {
+      "name": "aggressor",
+      "type": "std/bool"
+    },
+    {
+      "name": "tradeVolume",
+      "type": "std/double"
+    },
+    {
+      "name": "tradeTime",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "tradeId",
+      "type": "std/int64"
     }
   ]
 }

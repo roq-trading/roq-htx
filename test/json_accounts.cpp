@@ -35,3 +35,45 @@ TEST_CASE("simple", "[json_accounts]") {
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }
+
+TEST_CASE("buy_btcusdt_usdt", "[json_accounts]") {
+  auto message = R"({)"
+                 R"("action":"push",)"
+                 R"("ch":"accounts.update",)"
+                 R"("data":{)"
+                 R"("currency":"usdt",)"
+                 R"("accountId":68824237,)"
+                 R"("balance":"78.45797228",)"
+                 R"("changeType":"order.match",)"
+                 R"("accountType":"trade",)"
+                 R"("seqNum":18,)"
+                 R"("changeTime":1764754899212)"
+                 R"(})"
+                 R"(})";
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.ch == "accounts.update"sv);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
+}
+
+TEST_CASE("buy_btcusdt_btc", "[json_accounts]") {
+  auto message = R"({)"
+                 R"("action":"push",)"
+                 R"("ch":"accounts.update",)"
+                 R"("data":{)"
+                 R"("currency":"btc",)"
+                 R"("accountId":68824237,)"
+                 R"("balance":"0.0001096",)"
+                 R"("changeType":"order.match",)"
+                 R"("accountType":"trade",)"
+                 R"("seqNum":4,)"
+                 R"("changeTime":1764754899212)"
+                 R"(})"
+                 R"(})";
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.ch == "accounts.update"sv);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
+}

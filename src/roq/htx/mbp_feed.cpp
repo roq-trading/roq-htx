@@ -467,6 +467,10 @@ void MBPFeed::operator()(Trace<json::Orders> const &) {
   log::fatal("Unexpected"sv);
 }
 
+void MBPFeed::operator()(Trace<json::Clearing> const &) {
+  log::fatal("Unexpected"sv);
+}
+
 void MBPFeed::check_request_queue(std::chrono::nanoseconds now) {
   auto can_send_helper = [&](auto now) { return shared_.rate_limiter.can_request(now); };
   auto send_helper = [&](auto &message) { (*connection_).send_text(message); };

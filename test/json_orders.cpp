@@ -68,3 +68,34 @@ TEST_CASE("canceled", "[json_orders]") {
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }
+
+TEST_CASE("filled", "[json_orders]") {
+  auto message = R"({)"
+                 R"("action":"push",)"
+                 R"("ch":"orders#*",)"
+                 R"("data":{)"
+                 R"("tradePrice":"92800",)"
+                 R"("aggressor":false,)"
+                 R"("tradeVolume":"0.0001",)"
+                 R"("tradeTime":1764753390751,)"
+                 R"("execAmt":"0.0001",)"
+                 R"("tradeId":103617355903,)"
+                 R"("orderSource":"spot-api",)"
+                 R"("orderPrice":"92800",)"
+                 R"("orderSize":"0.0001",)"
+                 R"("remainAmt":"0",)"
+                 R"("totalTradeAmount":"9.2800",)"
+                 R"("symbol":"btcusdt",)"
+                 R"("eventType":"trade",)"
+                 R"("clientOrderId":"6QACxZoaq0MAAQAAAAAA",)"
+                 R"("orderStatus":"filled",)"
+                 R"("orderId":1474910140509947,)"
+                 R"("type":"buy-limit")"
+                 R"(})"
+                 R"(})";
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.ch == "orders#*"sv);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
+}

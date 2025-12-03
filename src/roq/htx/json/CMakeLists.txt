@@ -19,6 +19,8 @@ set(AUTOGEN_SCHEMAS
     bbo_tick.json
     cancel_all_orders_ack.json
     cancel_order_ack.json
+    clearing_data.json
+    clearing.json
     currencies.json
     currencies.json
     detail.json

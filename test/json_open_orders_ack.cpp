@@ -57,6 +57,6 @@ TEST_CASE("simple", "[json_open_orders_ack]") {
     REQUIRE(std::size(obj.data) == 1);
   };
   core::json::BufferStack buffers{8192, 1};
-  json::OpenOrdersAck obj{message, buffers};
+  value_type obj{message, buffers};
   helper(obj);
 }

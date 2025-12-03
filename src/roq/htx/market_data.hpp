@@ -90,6 +90,7 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
   //
   void operator()(Trace<json::Accounts> const &) override;
   void operator()(Trace<json::Orders> const &) override;
+  void operator()(Trace<json::Clearing> const &) override;
 
   void check_request_queue(std::chrono::nanoseconds now);
 

@@ -44,6 +44,12 @@ auto dispatch_helper(auto &handler, auto &message, auto &buffer_stack, auto &tra
 }
 
 constexpr auto extract_topic(std::string_view const &channel) {
+  if (channel == "orders#*"sv) {
+    return "orders"sv;
+  }
+  if (channel == "trade.clearing#*"sv) {
+    return "clearing"sv;
+  }
   auto sep1 = channel.find_first_of('.');
   if (sep1 != channel.npos) {
     auto tmp1 = channel.substr(0, sep1);
@@ -62,9 +68,6 @@ constexpr auto extract_topic(std::string_view const &channel) {
     }
     return channel.substr(sep1);
   }
-  if (channel == "orders#*"sv) {
-    return "orders"sv;
-  }
   return channel;
 }
 
@@ -76,7 +79,7 @@ static_assert(extract_topic("market.btcusdt.mbp.20"sv) == "mbp"sv);
 static_assert(extract_topic("market.btcusdt.ticker"sv) == "ticker"sv);
 static_assert(extract_topic("market.btcusdt.trade.detail"sv) == "trade"sv);
 static_assert(extract_topic("orders#*"sv) == "orders"sv);
-// static_assert(extract_topic("trade.clearing#*"sv) == "trade"sv);
+static_assert(extract_topic("trade.clearing#*"sv) == "clearing"sv);
 }  // namespace
 
 // === IMPLEMENTATION ===
@@ -149,6 +152,9 @@ bool Parser::dispatch(
             return true;
           case ORDERS:
             result = dispatch_helper<Orders>(handler, message, buffer_stack, trace_info);
+            return true;
+          case CLEARING:
+            result = dispatch_helper<Clearing>(handler, message, buffer_stack, trace_info);
             return true;
         }
         break;

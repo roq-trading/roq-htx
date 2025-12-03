@@ -14,6 +14,8 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
+using value_type = json::BalanceAck;
+
 // note! truncated
 TEST_CASE("simple", "[json_balance_ack]") {
   auto message = R"({)"
@@ -65,7 +67,8 @@ TEST_CASE("simple", "[json_balance_ack]") {
                  R"(])"
                  R"(})"
                  R"(})";
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
-  json::BalanceAck obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  value_type obj{message, buffers};
+  helper(obj);
 }

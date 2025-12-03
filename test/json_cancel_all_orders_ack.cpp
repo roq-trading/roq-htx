@@ -14,14 +14,17 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
+using value_type = json::CancelAllOrdersAck;
+
 TEST_CASE("success", "[json_cancel_all_orders_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":true)"
                  R"(})";
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
-  json::CancelAllOrdersAck obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  value_type obj{message, buffers};
+  helper(obj);
 }
 
 TEST_CASE("failure", "[json_cancel_all_orders_ack]") {
@@ -31,7 +34,8 @@ TEST_CASE("failure", "[json_cancel_all_orders_ack]") {
                  R"("err-msg":"The account is not logged in, please log in and try again.",)"
                  R"("data":null)"
                  R"(})";
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::ERROR); };
   core::json::BufferStack buffers{8192, 1};
-  json::CancelAllOrdersAck obj{message, buffers};
-  CHECK(obj.status == json::Status::ERROR);
+  value_type obj{message, buffers};
+  helper(obj);
 }

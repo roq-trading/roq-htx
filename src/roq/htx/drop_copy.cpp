@@ -6,6 +6,8 @@
 
 #include "roq/utils/update.hpp"
 
+#include "roq/utils/charconv/to_string.hpp"
+
 #include "roq/utils/exceptions/unhandled.hpp"
 
 #include "roq/utils/metrics/factory.hpp"
@@ -324,6 +326,24 @@ void DropCopy::operator()(Trace<json::MBPSnapshot> const &) {
 void DropCopy::operator()(Trace<json::Accounts> const &event) {
   auto &[trace_info, accounts] = event;
   log::info<2>("accounts={}"sv, accounts);
+  auto &data = accounts.data;
+  auto external_account = fmt::format("{}"sv, data.account_id);
+  auto update_type = std::empty(data.change_type) ? UpdateType::SNAPSHOT : UpdateType::INCREMENTAL;
+  auto funds_update = FundsUpdate{
+      .stream_id = stream_id_,
+      .account = account_.name,
+      .currency = data.currency,
+      .margin_mode = {},
+      .balance = data.balance,
+      .hold = NaN,
+      .borrowed = NaN,
+      .external_account = external_account,
+      .update_type = update_type,
+      .exchange_time_utc = {},
+      // XXX FIXME TODO exchange_sequence
+      .sending_time_utc = data.change_time,
+  };
+  create_trace_and_dispatch(handler_, trace_info, funds_update, true);
 }
 
 void DropCopy::operator()(Trace<json::Orders> const &event) {
@@ -354,7 +374,7 @@ void DropCopy::operator()(Trace<json::Orders> const &event) {
       .stop_price = NaN,
       .leverage = NaN,
       .remaining_quantity = data.remain_amt,
-      .traded_quantity = data.total_trade_amount,
+      .traded_quantity = data.exec_amt,
       .average_traded_price = NaN,
       .last_traded_quantity = NaN,
       .last_traded_price = NaN,
@@ -372,6 +392,51 @@ void DropCopy::operator()(Trace<json::Orders> const &event) {
   } else {
     log::warn<1>(R"(*** EXTERNAL ORDER *** (order_id="{}", client_order_id="{}"))"sv, data.order_id, data.client_order_id);
   }
+}
+
+void DropCopy::operator()(Trace<json::Clearing> const &event) {
+  auto &[trace_info, clearing] = event;
+  log::info<2>("clearing={}"sv, clearing);
+  auto &data = clearing.data;
+  auto external_account = fmt::format("{}"sv, data.account_id);
+  auto external_order_id = fmt::format("{}"sv, data.order_id);
+  auto liquidity = data.aggressor ? Liquidity::TAKER : Liquidity::MAKER;
+  auto fill = Fill{
+      .exchange_time_utc = data.trade_time,
+      .external_trade_id = {},
+      .quantity = data.trade_volume,
+      .price = data.trade_price,
+      .liquidity = liquidity,
+      .commission_amount = data.transact_fee,
+      .commission_currency = data.fee_currency,
+      .base_amount = NaN,
+      .quote_amount = NaN,
+      .profit_loss_amount = NaN,
+  };
+  utils::charconv::to_string(std::back_inserter(fill.external_trade_id), data.trade_id);
+  auto trade_update = TradeUpdate{
+      .stream_id = stream_id_,
+      .account = account_.name,
+      .order_id = {},
+      .exchange = shared_.settings.exchange,
+      .symbol = data.symbol,
+      .side = map(data.order_side),
+      .position_effect = {},
+      .margin_mode = {},
+      .quantity_type = {},
+      .create_time_utc = data.trade_time,
+      .update_time_utc = data.trade_time,
+      .external_account = external_account,
+      .external_order_id = external_order_id,
+      .client_order_id = {},
+      .fills = {&fill, 1},
+      .routing_id = {},
+      .update_type = UpdateType::INCREMENTAL,
+      .sending_time_utc = data.trade_time,
+      .user = {},
+      .strategy_id = {},
+  };
+  create_trace_and_dispatch(handler_, trace_info, trade_update, true, SOURCE_NONE, data.client_order_id);
 }
 
 }  // namespace htx

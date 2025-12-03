@@ -1,0 +1,27 @@
+{
+  "name": "roq/htx/json/ClearingData",
+  "type": "dictionary",
+  "values": [
+    { "name": "eventType", "type": "roq/htx/json/EventType" },
+    { "name": "symbol", "type": "std/string_view" },
+    { "name": "orderId", "type": "std/int64_t" },
+    { "name": "orderSide", "type": "roq/htx/json/Direction" },
+    { "name": "orderType", "type": "roq/htx/json/OrderType" },
+    { "name": "accountId", "type": "std/int64" },
+    { "name": "source", "type": "std/string_view" },
+    { "name": "orderPrice", "type": "std/double" },
+    { "name": "orderSize", "type": "std/double" },
+    { "name": "clientOrderId", "type": "std/string_view" },
+    { "name": "orderCreateTime", "type": "std/milliseconds" },
+    { "name": "orderStatus", "type": "roq/htx/json/OrderStatus" },
+    { "name": "feeCurrency", "type": "std/string_view" },
+    { "name": "tradePrice", "type": "std/double" },
+    { "name": "tradeVolume", "type": "std/double" },
+    { "name": "aggressor", "type": "std/bool" },
+    { "name": "tradeId", "type": "std/int64" },
+    { "name": "tradeTime", "type": "std/milliseconds" },
+    { "name": "transactFee", "type": "std/double" },
+    { "name": "feeDeduct", "type": "std/double" },
+    { "name": "feeDeductType", "type": "std/string_view" }
+  ]
+}

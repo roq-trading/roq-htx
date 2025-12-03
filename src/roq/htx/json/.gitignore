@@ -14,6 +14,8 @@ bbo.hpp
 bbo_tick.hpp
 cancel_all_orders_ack.hpp
 cancel_order_ack.hpp
+clearing_data.hpp
+clearing.hpp
 currencies.hpp
 currencies.hpp
 detail.hpp
@@ -69,6 +71,8 @@ bbo.cpp
 bbo_tick.cpp
 cancel_all_orders_ack.cpp
 cancel_order_ack.cpp
+clearing_data.cpp
+clearing.cpp
 currencies.cpp
 currencies.cpp
 detail.cpp
