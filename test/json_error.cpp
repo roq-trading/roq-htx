@@ -2,7 +2,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/htx/json/parser.hpp"
+#include "parser_tester.hpp"
 
 using namespace roq;
 using namespace roq::htx;
@@ -12,6 +12,8 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
+using value_type = json::Error;
+
 TEST_CASE("simple", "[json_error]") {
   auto message = R"({)"
                  R"("status":"error",)"
@@ -20,33 +22,9 @@ TEST_CASE("simple", "[json_error]") {
                  R"("err-code":"bad-request",)"
                  R"("err-msg":"The coin pair does not currently offer subscription services.")"
                  R"(})";
-  core::json::BufferStack buffers{8192, 1};
-  // simple
-  json::Error obj{message, buffers};
-  CHECK(obj.status == json::Status::ERROR);
-  // parser
-  struct Handler final : public json::Parser::Handler {
-    void operator()(Trace<json::Req> const &) override { FAIL(); }
-    void operator()(Trace<json::Ping> const &) override { FAIL(); }
-    void operator()(Trace<json::Ping2> const &) override { FAIL(); }
-    void operator()(Trace<json::Error> const &event) override {
-      found = true;
-      auto &[trace_info, error] = event;
-      CHECK(error.status == json::Status::ERROR);
-    }
-    void operator()(Trace<json::Error2> const &) override { FAIL(); }
-    void operator()(Trace<json::Sub> const &) override { FAIL(); }
-    void operator()(Trace<json::Subbed> const &) override { FAIL(); }
-    void operator()(Trace<json::BBO> const &) override { FAIL(); }
-    void operator()(Trace<json::Trade> const &) override { FAIL(); }
-    void operator()(Trace<json::Detail> const &) override { FAIL(); }
-    void operator()(Trace<json::Ticker> const &) override { FAIL(); }
-    void operator()(Trace<json::MBP> const &) override { FAIL(); }
-    void operator()(Trace<json::MBPSnapshot> const &) override { FAIL(); }
-
-    bool found = false;
-  } handler;
-  auto res = json::Parser::dispatch(handler, message, buffers, {}, false);
-  CHECK(res == true);
-  CHECK(handler.found == true);
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.status == json::Status::ERROR);
+    CHECK(obj.ts == 1764300263709ms);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }

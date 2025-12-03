@@ -1,5 +1,5 @@
 {
-  "name": "roq/htx/json/Side",
+  "name": "roq/htx/json/Direction",
   "type": "enum",
   "values": [
     {

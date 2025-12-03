@@ -291,7 +291,10 @@ Outbound
 Comments
 --------
 
-* Only including symbols having :code:`state=ONLINE` and :code:`api_trading=ENABLED`
+* When placing orders, you may get an error with :code:`"err-code":"account-frozen-account-inexistent-error"` and
+  :code:`"err-msg":"account for id XXX and user id YYY does not exist"`.
+  This could be related to no funding not being available for the base currency.
+  The error message seems a bit mis-leading.
 
 
 References

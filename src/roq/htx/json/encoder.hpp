@@ -5,10 +5,8 @@
 #include <string>
 #include <string_view>
 
-#include "roq/cancel_all_orders.hpp"
 #include "roq/cancel_order.hpp"
 #include "roq/create_order.hpp"
-#include "roq/modify_order.hpp"
 
 #include "roq/server/oms/order.hpp"
 
@@ -21,6 +19,9 @@ struct Encoder final {
       std::string &buffer, CreateOrder const &, server::oms::Order const &, std::string_view const &request_id, int64_t account_id);
 
   static std::string_view cancel_order(
+      std::string &buffer, CancelOrder const &, server::oms::Order const &, std::string_view const &request_id, std::string_view const &previous_request_id);
+
+  static std::string_view cancel_client_order(
       std::string &buffer, CancelOrder const &, server::oms::Order const &, std::string_view const &request_id, std::string_view const &previous_request_id);
 };
 

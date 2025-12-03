@@ -1,5 +1,5 @@
 {
-  "name": "roq/htx/json/BalanceDataListItem",
+  "name": "roq/htx/json/BalanceAckDataListItem",
   "type": "dictionary",
   "values": [
     {

@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/htx/json/balance.hpp"
+#include "roq/htx/json/balance_ack.hpp"
 
 using namespace roq;
 using namespace roq::htx;
@@ -15,7 +15,7 @@ using namespace std::chrono_literals;
 using namespace Catch::literals;
 
 // note! truncated
-TEST_CASE("simple", "[json_balance]") {
+TEST_CASE("simple", "[json_balance_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
                  R"("data":{)"
@@ -66,6 +66,6 @@ TEST_CASE("simple", "[json_balance]") {
                  R"(})"
                  R"(})";
   core::json::BufferStack buffers{8192, 1};
-  json::Balance obj{message, buffers};
+  json::BalanceAck obj{message, buffers};
   CHECK(obj.status == json::Status::OK);
 }

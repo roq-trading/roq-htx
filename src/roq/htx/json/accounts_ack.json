@@ -1,5 +1,5 @@
 {
-  "name": "roq/htx/json/PlaceOrderAck",
+  "name": "roq/htx/json/AccountsAck",
   "type": "dictionary",
   "values": [
     {
@@ -8,11 +8,8 @@
     },
     {
       "name": "data",
-      "type": "std/string_view"
-    },
-    {
-      "name": "clientOrderId",
-      "type": "std/string_view"
+      "type": "roq/htx/json/AccountsAckDataItem",
+      "array": "std/span"
     },
     {
       "name": "err-code",

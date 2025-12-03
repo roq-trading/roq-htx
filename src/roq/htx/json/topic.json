@@ -19,6 +19,12 @@
     },
     {
       "name": "auth"
+    },
+    {
+      "name": "accounts"
+    },
+    {
+      "name": "orders"
     }
   ]
 }

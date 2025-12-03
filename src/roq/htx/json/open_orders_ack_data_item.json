@@ -1,0 +1,66 @@
+{
+  "name": "roq/htx/json/OpenOrdersAckDataItem",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "source",
+      "type": "std/string_view"
+    },
+    {
+      "name": "symbol",
+      "type": "std/string_view"
+    },
+    {
+      "name": "created-at",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "ice-amount",
+      "type": "std/double"
+    },
+    {
+      "name": "client-order-id",
+      "type": "std/string_view"
+    },
+    {
+      "name": "account-type",
+      "type": "roq/htx/json/AccountType"
+    },
+    {
+      "name": "account-id",
+      "type": "std/int64"
+    },
+    {
+      "name": "price",
+      "type": "std/double"
+    },
+    {
+      "name": "amount",
+      "type": "std/double"
+    },
+    {
+      "name": "filled-cash-amount",
+      "type": "std/double"
+    },
+    {
+      "name": "filled-fees",
+      "type": "std/double"
+    },
+    {
+      "name": "filled-amount",
+      "type": "std/double"
+    },
+    {
+      "name": "id",
+      "type": "std/int64"
+    },
+    {
+      "name": "state",
+      "type": "roq/htx/json/OrderStatus"
+    },
+    {
+      "name": "type",
+      "type": "roq/htx/json/OrderType"
+    }
+  ]
+}

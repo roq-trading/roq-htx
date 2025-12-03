@@ -3,10 +3,12 @@ include(RoqAutogen)
 set(TARGET_NAME ${PROJECT_NAME}-test)
 
 set(SOURCES
+    json_accounts_ack.cpp
     json_accounts.cpp
-    json_balance.cpp
+    json_balance_ack.cpp
     json_bbo.cpp
     json_cancel_all_orders_ack.cpp
+    json_cancel_order_ack.cpp
     json_currencies.cpp
     json_detail.cpp
     json_error_2.cpp
@@ -14,7 +16,8 @@ set(SOURCES
     json_market_status.cpp
     json_mbp.cpp
     json_mbp_snapshot.cpp
-    json_open_orders.cpp
+    json_open_orders_ack.cpp
+    json_orders.cpp
     json_ping.cpp
     json_place_order_ack.cpp
     json_req.cpp
@@ -23,7 +26,6 @@ set(SOURCES
     json_symbols.cpp
     json_ticker.cpp
     json_trade.cpp
-    json_utils.cpp
     main.cpp)
 
 roq_gitignore(OUTPUT .gitignore SOURCES ${TARGET_NAME})

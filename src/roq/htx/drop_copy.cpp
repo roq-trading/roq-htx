@@ -12,6 +12,7 @@
 
 #include "roq/web/socket/client.hpp"
 
+#include "roq/htx/json/map.hpp"
 #include "roq/htx/json/utils.hpp"
 
 using namespace std::literals;
@@ -318,6 +319,59 @@ void DropCopy::operator()(Trace<json::MBP> const &) {
 
 void DropCopy::operator()(Trace<json::MBPSnapshot> const &) {
   log::fatal("Unexpected"sv);
+}
+
+void DropCopy::operator()(Trace<json::Accounts> const &event) {
+  auto &[trace_info, accounts] = event;
+  log::info<2>("accounts={}"sv, accounts);
+}
+
+void DropCopy::operator()(Trace<json::Orders> const &event) {
+  auto &[trace_info, orders] = event;
+  log::info<2>("orders={}"sv, orders);
+  auto &data = orders.data;
+  auto external_account = fmt::format("{}"sv, data.account_id);
+  auto external_order_id = fmt::format("{}"sv, data.order_id);
+  auto order_update = server::oms::OrderUpdate{
+      .account = account_.name,
+      .exchange = shared_.settings.exchange,
+      .symbol = data.symbol,
+      .side = map(data.type),
+      .position_effect = {},
+      .margin_mode = {},
+      .max_show_quantity = NaN,
+      .order_type = map(data.type),
+      .time_in_force = {},
+      .execution_instructions = {},
+      .create_time_utc = data.order_create_time,
+      .update_time_utc = data.order_create_time,
+      .external_account = external_account,
+      .external_order_id = external_order_id,
+      .client_order_id = data.client_order_id,
+      .order_status = map(data.order_status),
+      .quantity = data.order_size,
+      .price = data.order_price,
+      .stop_price = NaN,
+      .leverage = NaN,
+      .remaining_quantity = data.remain_amt,
+      .traded_quantity = data.total_trade_amount,
+      .average_traded_price = NaN,
+      .last_traded_quantity = NaN,
+      .last_traded_price = NaN,
+      .last_liquidity = {},
+      .routing_id = {},
+      .max_request_version = {},
+      .max_response_version = {},
+      .max_accepted_version = {},
+      .update_type = UpdateType::INCREMENTAL,
+      .sending_time_utc = data.order_create_time,
+  };
+  if (shared_.update_order(data.client_order_id, stream_id_, trace_info, order_update, [&]([[maybe_unused]] auto &order) {
+        // no fills here
+      })) {
+  } else {
+    log::warn<1>(R"(*** EXTERNAL ORDER *** (order_id="{}", client_order_id="{}"))"sv, data.order_id, data.client_order_id);
+  }
 }
 
 }  // namespace htx

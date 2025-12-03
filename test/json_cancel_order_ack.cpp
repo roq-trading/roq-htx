@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/htx/json/open_orders.hpp"
+#include "roq/htx/json/cancel_order_ack.hpp"
 
 using namespace roq;
 using namespace roq::htx;
@@ -14,12 +14,15 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-TEST_CASE("empty", "[json_open_orders]") {
+using value_type = json::CancelOrderAck;
+
+TEST_CASE("success", "[json_cancel_order_ack]") {
   auto message = R"({)"
                  R"("status":"ok",)"
-                 R"("data":[])"
+                 R"("data":"1474909653904303")"
                  R"(})";
+  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
-  json::OpenOrders obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  value_type obj{message, buffers};
+  helper(obj);
 }

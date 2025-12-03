@@ -1,5 +1,5 @@
 {
-  "name": "roq/htx/json/BalanceData",
+  "name": "roq/htx/json/BalanceAckData",
   "type": "dictionary",
   "values": [
     {
@@ -16,7 +16,7 @@
     },
     {
       "name": "list",
-      "type": "roq/htx/json/BalanceDataListItem",
+      "type": "roq/htx/json/BalanceAckDataListItem",
       "array": "std/span"
     }
   ]

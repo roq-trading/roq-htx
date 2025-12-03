@@ -25,7 +25,7 @@
     },
     {
       "name": "direction",
-      "type": "roq/htx/json/Side"
+      "type": "roq/htx/json/Direction"
     }
   ]
 }

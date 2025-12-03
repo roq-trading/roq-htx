@@ -1,5 +1,5 @@
 {
-  "name": "roq/htx/json/AccountsDataItem",
+  "name": "roq/htx/json/AccountsAckDataItem",
   "type": "dictionary",
   "values": [
     {

@@ -24,11 +24,12 @@
 #include "roq/htx/order_entry_state.hpp"
 #include "roq/htx/shared.hpp"
 
-#include "roq/htx/json/accounts.hpp"
-#include "roq/htx/json/balance.hpp"
-#include "roq/htx/json/open_orders.hpp"
+#include "roq/htx/json/accounts_ack.hpp"
+#include "roq/htx/json/balance_ack.hpp"
+#include "roq/htx/json/open_orders_ack.hpp"
 
 #include "roq/htx/json/cancel_all_orders_ack.hpp"
+#include "roq/htx/json/cancel_order_ack.hpp"
 #include "roq/htx/json/place_order_ack.hpp"
 
 namespace roq {
@@ -74,25 +75,31 @@ struct OrderEntry final : public web::rest::Client::Handler {
 
   void accounts();
   void accounts_ack(Trace<web::rest::Response> const &);
-  void operator()(Trace<json::Accounts> const &);
+  void operator()(Trace<json::AccountsAck> const &);
 
   // balance
 
   void balance();
   void balance_ack(Trace<web::rest::Response> const &);
-  void operator()(Trace<json::Balance> const &);
+  void operator()(Trace<json::BalanceAck> const &);
 
   // open-orders
 
   void open_orders();
   void open_orders_ack(Trace<web::rest::Response> const &);
-  void operator()(Trace<json::OpenOrders> const &);
+  void operator()(Trace<json::OpenOrdersAck> const &);
 
   // place-order
 
   void place_order(Event<CreateOrder> const &, server::oms::Order const &, std::string_view const &request_id);
   void place_order_ack(Trace<web::rest::Response> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
   void operator()(Trace<json::PlaceOrderAck> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
+
+  // cancel-order
+
+  void cancel_order(Event<CancelOrder> const &, server::oms::Order const &, std::string_view const &request_id, std::string_view const &previous_request_id);
+  void cancel_order_ack(Trace<web::rest::Response> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
+  void operator()(Trace<json::CancelOrderAck> const &, uint8_t user_id, uint64_t order_id, uint32_t version);
 
   // cancel-all-orders
 

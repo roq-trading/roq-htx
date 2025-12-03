@@ -5,21 +5,25 @@ set(SOURCES encoder.cpp map.cpp parser.cpp utils.cpp)
 include(RoqAutogen)
 
 set(AUTOGEN_SCHEMAS
-    accounts_data_item.json
+    accounts_ack_data_item.json
+    accounts_ack.json
+    accounts_data.json
     accounts.json
     account_state.json
     account_type.json
     action.json
-    balance.json
-    balance_data.json
-    balance_data_list_item.json
+    balance_ack_data.json
+    balance_ack_data_list_item.json
+    balance_ack.json
     bbo.json
     bbo_tick.json
     cancel_all_orders_ack.json
+    cancel_order_ack.json
     currencies.json
     currencies.json
     detail.json
     detail_tick.json
+    direction.json
     error_2.json
     error.json
     event_type.json
@@ -29,8 +33,11 @@ set(AUTOGEN_SCHEMAS
     mbp_snapshot_data.json
     mbp_snapshot.json
     mbp_tick.json
-    open_orders_data_item.json
-    open_orders.json
+    open_orders_ack_data_item.json
+    open_orders_ack.json
+    orders_data.json
+    orders.json
+    order_status.json
     order_type.json
     partition.json
     ping_2.json
@@ -39,7 +46,6 @@ set(AUTOGEN_SCHEMAS
     place_order_ack.json
     quotation.json
     req.json
-    side.json
     state.json
     status.json
     subbed.json

@@ -2,9 +2,7 @@
 
 #include <catch2/catch_all.hpp>
 
-#include "roq/core/json/buffer_stack.hpp"
-
-#include "roq/htx/json/accounts.hpp"
+#include "parser_tester.hpp"
 
 using namespace roq;
 using namespace roq::htx;
@@ -14,18 +12,26 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
+using value_type = json::Accounts;
+
 TEST_CASE("simple", "[json_accounts]") {
   auto message = R"({)"
-                 R"("status":"ok",)"
-                 R"("data":[{)"
-                 R"("id":71463752,)"
-                 R"("type":"spot",)"
-                 R"("subtype":"",)"
-                 R"("state":"working")"
+                 R"("action":"push",)"
+                 R"("ch":"accounts.update",)"
+                 R"("data":{)"
+                 R"("currency":"usdc",)"
+                 R"("accountId":68824237,)"
+                 R"("balance":"98.72432",)"
+                 R"("available":"98.72432",)"
+                 R"("changeType":null,)"
+                 R"("accountType":"trade",)"
+                 R"("changeTime":null,)"
+                 R"("seqNum":1)"
                  R"(})"
-                 R"(])"
                  R"(})";
-  core::json::BufferStack buffers{8192, 1};
-  json::Accounts obj{message, buffers};
-  CHECK(obj.status == json::Status::OK);
+  auto helper = [](value_type const &obj) {
+    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.ch == "accounts.update"sv);
+  };
+  ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }

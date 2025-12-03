@@ -432,6 +432,14 @@ void MarketData::operator()(Trace<json::MBPSnapshot> const &) {
   log::fatal("Unexpected"sv);
 }
 
+void MarketData::operator()(Trace<json::Accounts> const &) {
+  log::fatal("Unexpected"sv);
+}
+
+void MarketData::operator()(Trace<json::Orders> const &) {
+  log::fatal("Unexpected"sv);
+}
+
 void MarketData::check_request_queue(std::chrono::nanoseconds now) {
   auto can_send_helper = [&](auto now) { return shared_.rate_limiter.can_request(now); };
   auto send_helper = [&](auto &message) { (*connection_).send_text(message); };

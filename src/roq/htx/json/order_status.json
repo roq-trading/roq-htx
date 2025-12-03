@@ -1,0 +1,12 @@
+{
+  "name": "roq/htx/json/OrderStatus",
+  "type": "enum",
+  "values": [
+    {
+      "name": "submitted"
+    },
+    {
+      "name": "canceled"
+    }
+  ]
+}

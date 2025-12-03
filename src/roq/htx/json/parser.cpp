@@ -42,6 +42,41 @@ auto dispatch_helper(auto &handler, auto &message, auto &buffer_stack, auto &tra
   create_trace_and_dispatch(handler, trace_info, obj);
   return true;
 }
+
+constexpr auto extract_topic(std::string_view const &channel) {
+  auto sep1 = channel.find_first_of('.');
+  if (sep1 != channel.npos) {
+    auto tmp1 = channel.substr(0, sep1);
+    if (tmp1 == "accounts"sv) {
+      return tmp1;
+    }
+    ++sep1;
+    auto sep2 = channel.find_first_of('.', sep1);
+    if (sep2 != channel.npos) {
+      ++sep2;
+      auto sep3 = channel.find_first_of('.', sep2);
+      if (sep3 != channel.npos) {
+        return channel.substr(sep2, sep3 - sep2);
+      }
+      return channel.substr(sep2);
+    }
+    return channel.substr(sep1);
+  }
+  if (channel == "orders#*"sv) {
+    return "orders"sv;
+  }
+  return channel;
+}
+
+static_assert(extract_topic("accounts.update"sv) == "accounts"sv);
+static_assert(extract_topic("auth"sv) == "auth"sv);
+static_assert(extract_topic("market.btcusdt.bbo"sv) == "bbo"sv);
+static_assert(extract_topic("market.btcusdt.detail"sv) == "detail"sv);
+static_assert(extract_topic("market.btcusdt.mbp.20"sv) == "mbp"sv);
+static_assert(extract_topic("market.btcusdt.ticker"sv) == "ticker"sv);
+static_assert(extract_topic("market.btcusdt.trade.detail"sv) == "trade"sv);
+static_assert(extract_topic("orders#*"sv) == "orders"sv);
+// static_assert(extract_topic("trade.clearing#*"sv) == "trade"sv);
 }  // namespace
 
 // === IMPLEMENTATION ===
@@ -53,6 +88,7 @@ bool Parser::dispatch(
     TraceInfo const &trace_info,
     bool allow_unknown_event_types) {
   auto result = false;
+  Action action;
   auto helper = [&](auto &key, auto &value) {
     auto key_2 = utils::hash::FNV::compute(key);
     switch (key_2) {
@@ -76,11 +112,8 @@ bool Parser::dispatch(
           case PONG:
             // result = dispatch_helper<json::Pong>(handler, message, buffer_stack, trace_info);
             return true;
-            break;
           case PUSH:
-            // result = dispatch_helper<json::Push>(handler, message, buffer_stack, trace_info);
-            return true;
-            break;
+            break;  // need channel
         }
         break;
       }
@@ -111,6 +144,12 @@ bool Parser::dispatch(
             // result = dispatch_helper<json::Auth>(handler, message, buffer_stack, trace_info);
             return true;
             break;
+          case ACCOUNTS:
+            result = dispatch_helper<Accounts>(handler, message, buffer_stack, trace_info);
+            return true;
+          case ORDERS:
+            result = dispatch_helper<Orders>(handler, message, buffer_stack, trace_info);
+            return true;
         }
         break;
       }
