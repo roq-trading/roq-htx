@@ -199,7 +199,7 @@ Configuration
 
 .. code-block:: shell
 
-   $ --flagfile $CONDA_PREFIX/share/roq-htx/config.toml
+   $ --config_file $CONDA_PREFIX/share/roq-htx/config.toml
 
 .. important::
 
