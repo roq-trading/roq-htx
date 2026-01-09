@@ -523,6 +523,7 @@ void OrderEntry::place_order_ack(Trace<web::rest::Response> const &event, uint8_
           .text = text,
           .version = version,
           .request_id = {},
+          .external_order_id = {},
           .quantity = NaN,
           .price = NaN,
       };
@@ -555,6 +556,7 @@ void OrderEntry::operator()(Trace<json::PlaceOrderAck> const &event, uint8_t use
       .text = {},
       .version = version,
       .request_id = place_order_ack.client_order_id,
+      .external_order_id = {},
       .quantity = NaN,
       .price = NaN,
   };
@@ -619,6 +621,7 @@ void OrderEntry::cancel_order_ack(Trace<web::rest::Response> const &event, uint8
           .text = text,
           .version = version,
           .request_id = {},
+          .external_order_id = {},
           .quantity = NaN,
           .price = NaN,
       };
@@ -651,6 +654,7 @@ void OrderEntry::operator()(Trace<json::CancelOrderAck> const &event, uint8_t us
       .text = {},
       .version = version,
       .request_id = {},
+      .external_order_id = {},
       .quantity = NaN,
       .price = NaN,
   };
