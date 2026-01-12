@@ -91,7 +91,6 @@ bool Parser::dispatch(
     TraceInfo const &trace_info,
     bool allow_unknown_event_types) {
   auto result = false;
-  Action action;
   auto helper = [&](auto &key, auto &value) {
     auto key_2 = utils::hash::FNV::compute(key);
     switch (key_2) {
