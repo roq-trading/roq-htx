@@ -9,7 +9,7 @@ namespace htx {
 
 // === IMPLEMENTATION ===
 
-API API::create(Settings const &settings) {
+API API::create(Settings const &) {
   return {
       .market_data{
           .get_market_status = "/v2/market-status"sv,

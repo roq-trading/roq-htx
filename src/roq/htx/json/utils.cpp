@@ -35,11 +35,11 @@ static_assert(extract_symbol_helper("market.btcusdt.mbp.20"sv) == "btcusdt"sv);
 
 // === IMPLEMENTATION ===
 
-Error guess_error(int32_t err_code) {
+Error guess_error([[maybe_unused]] int32_t err_code) {
   return {};
 }
 
-Error guess_error(std::string_view const &message) {
+Error guess_error([[maybe_unused]] std::string_view const &message) {
   return {};
 }
 
