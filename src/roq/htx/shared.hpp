@@ -71,6 +71,7 @@ struct Shared final {
   Settings const &settings;
   core::limit::RateLimiter rate_limiter;
   core::Symbols symbols;
+  utils::unordered_set<std::string> all_symbols;
   utils::unordered_map<std::string, market::mbp::Sequencer> mbp_sequencer;
 };
 

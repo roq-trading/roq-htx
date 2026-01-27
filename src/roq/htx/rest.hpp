@@ -34,7 +34,7 @@ namespace htx {
 
 struct Rest final : public web::rest::Client::Handler {
   struct SymbolsUpdate final {
-    std::vector<Symbol> &symbols;
+    std::span<Symbol const> symbols;
   };
 
   struct Handler {
@@ -103,7 +103,6 @@ struct Rest final : public web::rest::Client::Handler {
   } latency_;
   // cache
   Shared &shared_;
-  utils::unordered_set<std::string> all_symbols_;
   // state
   bool ready_ = false;
   ConnectionStatus status_ = {};
