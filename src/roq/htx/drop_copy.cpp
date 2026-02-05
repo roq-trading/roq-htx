@@ -387,6 +387,8 @@ void DropCopy::operator()(Trace<json::Orders> const &event) {
       .external_order_id = external_order_id,
       .client_order_id = data.client_order_id,
       .order_status = map(data.order_status),
+      .error = {},
+      .text = {},
       .quantity = data.order_size,
       .price = data.order_price,
       .stop_price = NaN,
