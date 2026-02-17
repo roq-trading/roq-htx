@@ -20,7 +20,12 @@ namespace json {
 // operator  string  false operation charactor of stop price
 
 std::string_view Encoder::place_order(
-    std::string &buffer, CreateOrder const &create_order, server::oms::Order const &order, std::string_view const &request_id, int64_t account_id) {
+    std::string &buffer,
+    CreateOrder const &create_order,
+    server::oms::Order const &,
+    server::oms::RefData const &ref_data,
+    std::string_view const &request_id,
+    int64_t account_id) {
   buffer.clear();
   auto type = map(create_order.side, create_order.order_type, create_order.time_in_force, create_order.execution_instructions).template get<json::OrderType>();
   fmt::format_to(
@@ -35,9 +40,9 @@ std::string_view Encoder::place_order(
       create_order.symbol,
       request_id,
       type.as_raw_text(),
-      Decimal{create_order.quantity, order.quantity_precision.precision});
+      Decimal{create_order.quantity, ref_data.quantity.precision});
   if (!std::isnan(create_order.price)) {
-    fmt::format_to(std::back_inserter(buffer), R"(,"price":"{}")"sv, Decimal{create_order.price, order.price_precision.precision});
+    fmt::format_to(std::back_inserter(buffer), R"(,"price":"{}")"sv, Decimal{create_order.price, ref_data.price.precision});
   }
   fmt::format_to(
       std::back_inserter(buffer),
@@ -51,6 +56,7 @@ std::string_view Encoder::cancel_order(
     std::string &buffer,
     CancelOrder const &,
     server::oms::Order const &order,
+    server::oms::RefData const &,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   assert(!std::empty(order.external_order_id));
@@ -70,6 +76,7 @@ std::string_view Encoder::cancel_client_order(
     std::string &buffer,
     CancelOrder const &,
     server::oms::Order const &order,
+    server::oms::RefData const &,
     [[maybe_unused]] std::string_view const &request_id,
     [[maybe_unused]] std::string_view const &previous_request_id) {
   buffer.clear();

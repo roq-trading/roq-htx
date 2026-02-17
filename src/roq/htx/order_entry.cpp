@@ -144,8 +144,8 @@ void OrderEntry::operator()(metrics::Writer &writer) const {
 }
 
 uint16_t OrderEntry::operator()(
-    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &, std::string_view const &request_id) {
-  place_order(event, order, request_id);
+    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
+  place_order(event, order, ref_data, request_id);
   return stream_id_;
 }
 
@@ -161,10 +161,10 @@ uint16_t OrderEntry::operator()(
 uint16_t OrderEntry::operator()(
     Event<CancelOrder> const &event,
     server::oms::Order const &order,
-    server::oms::RefData const &,
+    server::oms::RefData const &ref_data,
     std::string_view const &request_id,
     std::string_view const &previous_request_id) {
-  cancel_order(event, order, request_id, previous_request_id);
+  cancel_order(event, order, ref_data, request_id, previous_request_id);
   return stream_id_;
 }
 
@@ -347,7 +347,6 @@ void OrderEntry::balance_ack(Trace<web::rest::Response> const &event) {
       }
     };
     auto handle_success = [&](auto &body) {
-      log::warn("DEBUG {}"sv, body);
       json::BalanceAck balance_ack{body, decode_buffer_};
       if (balance_ack.status == json::Status::OK) {
         Trace event_2{event, balance_ack};
@@ -487,7 +486,8 @@ void OrderEntry::operator()(Trace<json::OpenOrdersAck> const &event) {
 
 // place-order
 
-void OrderEntry::place_order(Event<CreateOrder> const &event, server::oms::Order const &order, std::string_view const &request_id) {
+void OrderEntry::place_order(
+    Event<CreateOrder> const &event, server::oms::Order const &order, server::oms::RefData const &ref_data, std::string_view const &request_id) {
   profile_.place_order([&]() {
     if (!ready()) {
       throw server::oms::NotReady{"not ready"sv};
@@ -497,7 +497,7 @@ void OrderEntry::place_order(Event<CreateOrder> const &event, server::oms::Order
     auto method = web::http::Method::POST;
     auto path = shared_.api.order_management.place_order;
     auto query = account_.create_query(method, path, now_utc);
-    auto body = json::Encoder::place_order(encode_buffer_, create_order, order, request_id, account_id_);
+    auto body = json::Encoder::place_order(encode_buffer_, create_order, order, ref_data, request_id, account_id_);
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -575,7 +575,11 @@ void OrderEntry::operator()(Trace<json::PlaceOrderAck> const &event, uint8_t use
 // cancel-order
 
 void OrderEntry::cancel_order(
-    Event<CancelOrder> const &event, server::oms::Order const &order, std::string_view const &request_id, std::string_view const &previous_request_id) {
+    Event<CancelOrder> const &event,
+    server::oms::Order const &order,
+    server::oms::RefData const &ref_data,
+    std::string_view const &request_id,
+    std::string_view const &previous_request_id) {
   profile_.cancel_order([&]() {
     if (!ready()) {
       throw server::oms::NotReady{"not ready"sv};
@@ -607,11 +611,11 @@ void OrderEntry::cancel_order(
     auto path = shared_.api.order_management.cancel_order;
     if (std::empty(order.external_order_id)) {
       auto path_2 = fmt::format("{}/submitCancelClientOrder"sv, path);
-      auto body = json::Encoder::cancel_client_order(encode_buffer_, cancel_order, order, request_id, previous_request_id);
+      auto body = json::Encoder::cancel_client_order(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id);
       helper(path_2, body);
     } else {
       auto path_2 = fmt::format("{}/{}/submitcancel"sv, path, order.external_order_id);
-      auto body = json::Encoder::cancel_order(encode_buffer_, cancel_order, order, request_id, previous_request_id);
+      auto body = json::Encoder::cancel_order(encode_buffer_, cancel_order, order, ref_data, request_id, previous_request_id);
       helper(path_2, body);
     }
   });
