@@ -129,7 +129,6 @@ void Rest::operator()(Trace<web::rest::Client::Connected> const &) {
   if (download_.downloading()) {
     download_.bump();
   } else {
-    (*this)(ConnectionStatus::DOWNLOADING);
     download_.begin();
   }
 }
@@ -154,26 +153,26 @@ void Rest::operator()(Trace<web::rest::Client::Latency> const &event) {
   latency_.ping.update(latency.sample);
 }
 
-void Rest::operator()(ConnectionStatus status) {
-  if (utils::update(status_, status)) {
-    TraceInfo trace_info;
-    auto stream_status = StreamStatus{
-        .stream_id = stream_id_,
-        .account = {},
-        .supports = SUPPORTS,
-        .transport = Transport::TCP,
-        .protocol = Protocol::HTTP,
-        .encoding = {Encoding::JSON},
-        .priority = Priority::PRIMARY,
-        .connection_status = status_,
-        .interface = (*connection_).get_interface(),
-        .authority = (*connection_).get_current_authority(),
-        .path = (*connection_).get_current_path(),
-        .proxy = (*connection_).get_proxy(),
-    };
-    log::info("stream_status={}"sv, stream_status);
-    create_trace_and_dispatch(handler_, trace_info, stream_status);
-  }
+void Rest::operator()(ConnectionStatus connection_status, std::string_view const &reason) {
+  connection_status_ = connection_status;
+  TraceInfo trace_info;
+  auto stream_status = StreamStatus{
+      .stream_id = stream_id_,
+      .account = {},
+      .supports = SUPPORTS,
+      .transport = Transport::TCP,
+      .protocol = Protocol::HTTP,
+      .encoding = {Encoding::JSON},
+      .priority = Priority::PRIMARY,
+      .connection_status = connection_status_,
+      .reason = reason,
+      .interface = (*connection_).get_interface(),
+      .authority = (*connection_).get_current_authority(),
+      .path = (*connection_).get_current_path(),
+      .proxy = (*connection_).get_proxy(),
+  };
+  log::info("stream_status={}"sv, stream_status);
+  create_trace_and_dispatch(handler_, trace_info, stream_status);
 }
 
 uint32_t Rest::download(RestState state) {
@@ -183,12 +182,15 @@ uint32_t Rest::download(RestState state) {
       assert(false);
       break;
     case MARKET_STATUS:
+      (*this)(ConnectionStatus::DOWNLOADING, "market-status"sv);
       get_market_status();
       return 1;
     case CURRENCIES:
+      (*this)(ConnectionStatus::DOWNLOADING, "currencies"sv);
       get_currencies();
       return 1;
     case SYMBOLS:
+      (*this)(ConnectionStatus::DOWNLOADING, "symbols"sv);
       get_symbols();
       return 1;
     case DONE:

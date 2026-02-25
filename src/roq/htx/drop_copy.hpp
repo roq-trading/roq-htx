@@ -55,7 +55,7 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
   void operator()(web::socket::Client::Binary const &) override;
 
  private:
-  void operator()(ConnectionStatus);
+  void operator()(ConnectionStatus, std::string_view const &reason = {});
 
   void send_pong(std::chrono::milliseconds timestamp);
 
@@ -110,7 +110,7 @@ struct DropCopy final : public web::socket::Client::Handler, public json::Parser
   Shared &shared_;
   // state
   bool ready_ = false;
-  ConnectionStatus status_ = {};
+  ConnectionStatus connection_status_ = {};
 };
 
 }  // namespace htx
