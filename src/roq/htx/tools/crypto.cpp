@@ -85,7 +85,6 @@ std::string_view Crypto::create_ws_auth(std::string_view const &path, std::chron
       hms.hours().count(),
       hms.minutes().count(),
       hms.seconds().count());
-  log::warn("DEBUG {}"sv, encode_buffer_);
   auto tmp4 = std::string_view{encode_buffer_};
   mac_.clear();
   mac_.update("GET\n"sv);

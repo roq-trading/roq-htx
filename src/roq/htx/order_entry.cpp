@@ -267,7 +267,6 @@ void OrderEntry::accounts() {
         .body = {},
         .quality_of_service = {},
     };
-    log::warn("DEBUG request={}"sv, request);
     auto callback = [this]([[maybe_unused]] auto &request_id, auto &response) {
       TraceInfo trace_info;
       Trace event{trace_info, response};
@@ -287,7 +286,6 @@ void OrderEntry::accounts_ack(Trace<web::rest::Response> const &event) {
       }
     };
     auto handle_success = [&](auto &body) {
-      log::warn("DEBUG {}"sv, body);
       json::AccountsAck accounts_ack{body, decode_buffer_};
       if (accounts_ack.status == json::Status::OK) {
         Trace event_2{event, accounts_ack};
@@ -306,7 +304,7 @@ void OrderEntry::operator()(Trace<json::AccountsAck> const &event) {
   log::info<2>("accounts_ack={}"sv, accounts_ack);
   for (auto &item : accounts_ack.data) {
     if (utils::update(account_id_, item.id)) {
-      log::warn("account_id={}"sv, account_id_);
+      log::warn("DEBUG account_id={}"sv, account_id_);
     }
   }
 }
@@ -329,7 +327,6 @@ void OrderEntry::balance() {
         .body = {},
         .quality_of_service = {},
     };
-    log::warn("DEBUG request={}"sv, request);
     auto callback = [this]([[maybe_unused]] auto &request_id, auto &response) {
       TraceInfo trace_info;
       Trace event{trace_info, response};
@@ -405,7 +402,6 @@ void OrderEntry::open_orders() {
         .body = {},
         .quality_of_service = {},
     };
-    log::warn("DEBUG request={}"sv, request);
     auto callback = [this]([[maybe_unused]] auto &request_id, auto &response) {
       TraceInfo trace_info;
       Trace event{trace_info, response};
@@ -425,7 +421,6 @@ void OrderEntry::open_orders_ack(Trace<web::rest::Response> const &event) {
       }
     };
     auto handle_success = [&](auto &body) {
-      log::warn("DEBUG {}"sv, body);
       json::OpenOrdersAck open_orders_ack{body, decode_buffer_};
       if (open_orders_ack.status == json::Status::OK) {
         Trace event_2{event, open_orders_ack};
@@ -511,7 +506,6 @@ void OrderEntry::place_order(
         .body = body,
         .quality_of_service = {},
     };
-    log::warn("DEBUG {}"sv, request);
     auto callback = [this, user_id = message_info.source, order_id = create_order.order_id]([[maybe_unused]] auto &request_id, auto &response) {
       auto version = 1;
       TraceInfo trace_info;
@@ -542,7 +536,6 @@ void OrderEntry::place_order_ack(Trace<web::rest::Response> const &event, uint8_
       (*this)(event_2, user_id, order_id);
     };
     auto handle_success = [&](auto &body) {
-      log::warn("DEBUG {}"sv, body);
       json::PlaceOrderAck place_order_ack{body, decode_buffer_};
       if (place_order_ack.status == json::Status::OK) {
         Trace event_2{event, place_order_ack};
@@ -602,7 +595,6 @@ void OrderEntry::cancel_order(
           .body = body,
           .quality_of_service = {},
       };
-      log::warn("DEBUG {}"sv, request);
       auto callback = [this, user_id = message_info.source, order_id = cancel_order.order_id]([[maybe_unused]] auto &request_id, auto &response) {
         auto version = 1;
         TraceInfo trace_info;
@@ -644,7 +636,6 @@ void OrderEntry::cancel_order_ack(Trace<web::rest::Response> const &event, uint8
       (*this)(event_2, user_id, order_id);
     };
     auto handle_success = [&](auto &body) {
-      log::warn("DEBUG {}"sv, body);
       json::CancelOrderAck cancel_order_ack{body, decode_buffer_};
       if (cancel_order_ack.status == json::Status::OK) {
         Trace event_2{event, cancel_order_ack};
@@ -699,7 +690,6 @@ void OrderEntry::cancel_all_orders(Event<CancelAllOrders> const &event, std::str
         .body = {},
         .quality_of_service = {},
     };
-    log::warn("DEBUG {}"sv, request);
     auto callback = [this](auto &request_id, auto &response) {
       TraceInfo trace_info;
       Trace event{trace_info, response};
@@ -759,7 +749,6 @@ void OrderEntry::cancel_all_orders_ack(Trace<web::rest::Response> const &event, 
       send_ack(origin, RequestStatus::REJECTED, error, text);
     };
     auto handle_success = [&](auto &body) {
-      log::warn("DEBUG {}"sv, body);
       json::CancelAllOrdersAck cancel_all_orders_ack{body, decode_buffer_};
       // XXX FIXME TODO ret_code ???
       Trace event_2{event, cancel_all_orders_ack};
