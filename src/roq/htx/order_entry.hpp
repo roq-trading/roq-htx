@@ -21,7 +21,6 @@
 #include "roq/server.hpp"
 
 #include "roq/htx/account.hpp"
-#include "roq/htx/order_entry_state.hpp"
 #include "roq/htx/shared.hpp"
 
 #include "roq/htx/json/accounts_ack.hpp"
@@ -79,7 +78,15 @@ struct OrderEntry final : public web::rest::Client::Handler {
 
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
-  uint32_t download(OrderEntryState state);
+  enum class State {
+    UNDEFINED = 0,
+    ACCOUNTS,
+    BALANCE,
+    OPEN_ORDERS,
+    DONE,
+  };
+
+  uint32_t download(State);
 
   // accounts
 
@@ -163,7 +170,7 @@ struct OrderEntry final : public web::rest::Client::Handler {
   Shared &shared_;
   // state
   ConnectionStatus connection_status_ = {};
-  core::Download<OrderEntryState> download_;
+  core::Download<State> download_;
   //
   std::string encode_buffer_;
   int64_t account_id_ = {};

@@ -22,7 +22,6 @@
 
 #include "roq/server.hpp"
 
-#include "roq/htx/rest_state.hpp"
 #include "roq/htx/shared.hpp"
 
 #include "roq/htx/json/currencies.hpp"
@@ -65,7 +64,15 @@ struct Rest final : public web::rest::Client::Handler {
 
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
-  uint32_t download(RestState state);
+  enum class State {
+    UNDEFINED = 0,
+    MARKET_STATUS,
+    CURRENCIES,
+    SYMBOLS,
+    DONE,
+  };
+
+  uint32_t download(State);
 
   void get_market_status();
   void get_market_status_ack(Trace<web::rest::Response> const &, uint32_t sequence);
@@ -106,7 +113,7 @@ struct Rest final : public web::rest::Client::Handler {
   // state
   bool ready_ = false;
   ConnectionStatus connection_status_ = {};
-  core::Download<RestState> download_;
+  core::Download<State> download_;
 };
 
 }  // namespace htx

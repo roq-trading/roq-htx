@@ -175,9 +175,9 @@ void Rest::operator()(ConnectionStatus connection_status, std::string_view const
   create_trace_and_dispatch(handler_, trace_info, stream_status);
 }
 
-uint32_t Rest::download(RestState state) {
+uint32_t Rest::download(State state) {
   switch (state) {
-    using enum RestState;
+    using enum State;
     case UNDEFINED:
       assert(false);
       break;
@@ -227,7 +227,7 @@ void Rest::get_market_status() {
 }
 
 void Rest::get_market_status_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
-  auto const STATE = RestState::MARKET_STATUS;
+  auto const STATE = State::MARKET_STATUS;
   profile_.market_status_ack([&]() {
     auto handle_error = [&](auto origin, auto status, auto error, auto text) {
       log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
@@ -280,7 +280,7 @@ void Rest::get_currencies() {
 }
 
 void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
-  auto const STATE = RestState::CURRENCIES;
+  auto const STATE = State::CURRENCIES;
   profile_.currencies_ack([&]() {
     auto handle_error = [&](auto origin, auto status, auto error, auto text) {
       log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
@@ -333,7 +333,7 @@ void Rest::get_symbols() {
 }
 
 void Rest::get_symbols_ack(Trace<web::rest::Response> const &event, uint32_t sequence) {
-  auto const STATE = RestState::SYMBOLS;
+  auto const STATE = State::SYMBOLS;
   profile_.symbols_ack([&]() {
     auto handle_error = [&](auto origin, auto status, auto error, auto text) {
       log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
