@@ -15,13 +15,14 @@
 
 #include "roq/htx/account.hpp"
 #include "roq/htx/config.hpp"
+#include "roq/htx/settings.hpp"
+#include "roq/htx/shared.hpp"
+
 #include "roq/htx/drop_copy.hpp"
 #include "roq/htx/market_data.hpp"
 #include "roq/htx/mbp_feed.hpp"
 #include "roq/htx/order_entry.hpp"
 #include "roq/htx/rest.hpp"
-#include "roq/htx/settings.hpp"
-#include "roq/htx/shared.hpp"
 
 namespace roq {
 namespace htx {
@@ -37,6 +38,8 @@ struct Gateway final : public server::Handler,
   Gateway(Gateway const &) = delete;
 
  protected:
+  // server::Handler
+
   void operator()(Event<Start> const &) override;
   void operator()(Event<Stop> const &) override;
   void operator()(Event<Timer> const &) override;
@@ -68,7 +71,7 @@ struct Gateway final : public server::Handler,
 
   void operator()(metrics::Writer &) const override;
 
-  // many
+  // streams
 
   void operator()(Trace<StreamStatus> const &) override;
   void operator()(Trace<ExternalLatency> const &) override;
@@ -83,9 +86,9 @@ struct Gateway final : public server::Handler,
 
   void operator()(Rest::SymbolsUpdate &) override;
 
-  void ensure_symbol_slices(size_t);
-
   // utilities
+
+  void ensure_symbol_slices(size_t);
 
   template <typename... Args>
   void dispatch(Args &&...);

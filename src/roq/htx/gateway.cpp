@@ -64,6 +64,8 @@ Gateway::Gateway(server::Dispatcher &dispatcher, Settings const &settings, Confi
   }
 }
 
+// server::Handler
+
 void Gateway::operator()(Event<Start> const &event) {
   log::info("Starting..."sv);
   assert(std::empty(market_data_));
@@ -100,83 +102,6 @@ void Gateway::operator()(Event<Connected> const &) {
 }
 
 void Gateway::operator()(Event<Disconnected> const &) {
-}
-
-void Gateway::operator()(Trace<StreamStatus> const &event) {
-  dispatcher_(event);
-}
-
-void Gateway::operator()(Trace<ExternalLatency> const &event) {
-  dispatcher_(event);
-}
-
-void Gateway::operator()(Trace<ReferenceData> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<MarketStatus> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<TopOfBook> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) {
-  auto callback = []([[maybe_unused]] auto &market_by_price) {};
-  dispatcher_(event, is_last, bids_, asks_, callback);
-}
-
-void Gateway::operator()(Trace<TradeSummary> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<StatisticsUpdate> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Trace<TradeUpdate> const &event, bool is_last, uint8_t user_id, std::string_view const &request_id) {
-  dispatcher_(event, is_last, user_id, request_id);
-}
-
-void Gateway::operator()(Trace<FundsUpdate> const &event, bool is_last) {
-  dispatcher_(event, is_last);
-}
-
-void Gateway::operator()(Rest::SymbolsUpdate &symbols_update) {
-  auto [size, start_from] = shared_.symbols(symbols_update.symbols);
-  ensure_symbol_slices(size);
-  for (auto &iter : market_data_) {
-    (*iter).subscribe(start_from);
-  }
-  for (auto &iter : mbp_feed_) {
-    (*iter).subscribe(start_from);
-  }
-}
-
-void Gateway::ensure_symbol_slices(size_t size) {
-  // market data
-  while (std::size(market_data_) < size) {
-    auto stream_id = ++stream_id_;
-    auto index = std::size(market_data_);
-    log::debug("Create MarketData (stream_id={}, index={})"sv, stream_id, index);
-    auto market_data = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index);
-    MessageInfo message_info;
-    Start start;
-    create_event_and_dispatch(*market_data, message_info, start);
-    market_data_.emplace_back(std::move(market_data));
-  }
-  // mbp feed
-  while (std::size(mbp_feed_) < size) {
-    auto stream_id = ++stream_id_;
-    auto index = std::size(mbp_feed_);
-    log::debug("Create MBPFeed (stream_id={}, index={})"sv, stream_id, index);
-    auto mbp_feed = std::make_unique<MBPFeed>(*this, context_, stream_id, shared_, index);
-    MessageInfo message_info;
-    Start start;
-    create_event_and_dispatch(*mbp_feed, message_info, start);
-    mbp_feed_.emplace_back(std::move(mbp_feed));
-  }
 }
 
 void Gateway::operator()(Event<Subscribe> const &event) {
@@ -238,6 +163,87 @@ uint16_t Gateway::operator()(Event<CancelQuotes> const &) {
 
 void Gateway::operator()(metrics::Writer &writer) const {
   dispatch_helper(*this, writer);
+}
+
+// streams
+
+void Gateway::operator()(Trace<StreamStatus> const &event) {
+  dispatcher_(event);
+}
+
+void Gateway::operator()(Trace<ExternalLatency> const &event) {
+  dispatcher_(event);
+}
+
+void Gateway::operator()(Trace<ReferenceData> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Trace<MarketStatus> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Trace<TopOfBook> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Trace<MarketByPriceUpdate> const &event, bool is_last) {
+  auto callback = []([[maybe_unused]] auto &market_by_price) {};
+  dispatcher_(event, is_last, bids_, asks_, callback);
+}
+
+void Gateway::operator()(Trace<TradeSummary> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Trace<StatisticsUpdate> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Trace<TradeUpdate> const &event, bool is_last, uint8_t user_id, std::string_view const &request_id) {
+  dispatcher_(event, is_last, user_id, request_id);
+}
+
+void Gateway::operator()(Trace<FundsUpdate> const &event, bool is_last) {
+  dispatcher_(event, is_last);
+}
+
+void Gateway::operator()(Rest::SymbolsUpdate &symbols_update) {
+  auto [size, start_from] = shared_.symbols(symbols_update.symbols);
+  ensure_symbol_slices(size);
+  for (auto &iter : market_data_) {
+    (*iter).subscribe(start_from);
+  }
+  for (auto &iter : mbp_feed_) {
+    (*iter).subscribe(start_from);
+  }
+}
+
+// utilities
+
+void Gateway::ensure_symbol_slices(size_t size) {
+  // market data
+  while (std::size(market_data_) < size) {
+    auto stream_id = ++stream_id_;
+    auto index = std::size(market_data_);
+    log::debug("Create MarketData (stream_id={}, index={})"sv, stream_id, index);
+    auto market_data = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index);
+    MessageInfo message_info;
+    Start start;
+    create_event_and_dispatch(*market_data, message_info, start);
+    market_data_.emplace_back(std::move(market_data));
+  }
+  // mbp feed
+  while (std::size(mbp_feed_) < size) {
+    auto stream_id = ++stream_id_;
+    auto index = std::size(mbp_feed_);
+    log::debug("Create MBPFeed (stream_id={}, index={})"sv, stream_id, index);
+    auto mbp_feed = std::make_unique<MBPFeed>(*this, context_, stream_id, shared_, index);
+    MessageInfo message_info;
+    Start start;
+    create_event_and_dispatch(*mbp_feed, message_info, start);
+    mbp_feed_.emplace_back(std::move(mbp_feed));
+  }
 }
 
 template <typename... Args>
