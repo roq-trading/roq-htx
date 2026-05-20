@@ -29,7 +29,8 @@ target_link_libraries(
           roq-utils::roq-utils
           roq-web::roq-web
           fmt::fmt
-          unordered_dense::unordered_dense)
+          unordered_dense::unordered_dense
+          ${ZLIB_NG_LIBRARIES})
 
 if(ROQ_BUILD_TYPE STREQUAL "Release")
   set_target_properties(${TARGET_NAME} PROPERTIES LINK_FLAGS_RELEASE -s)
