@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx/order_entry.hpp"
+#include "roq/htx/gateway/order_entry.hpp"
 
 #include <utility>
 
@@ -23,6 +23,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace htx {
+namespace gateway {
 
 // === CONSTANTS ===
 
@@ -832,5 +833,6 @@ void OrderEntry::operator()(Trace<server::oms::OrderUpdate> const &event, std::s
   }
 }
 
+}  // namespace gateway
 }  // namespace htx
 }  // namespace roq

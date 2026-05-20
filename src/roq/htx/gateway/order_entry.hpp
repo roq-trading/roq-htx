@@ -20,8 +20,8 @@
 
 #include "roq/server.hpp"
 
-#include "roq/htx/account.hpp"
-#include "roq/htx/shared.hpp"
+#include "roq/htx/gateway/account.hpp"
+#include "roq/htx/gateway/shared.hpp"
 
 #include "roq/htx/json/accounts_ack.hpp"
 #include "roq/htx/json/balance_ack.hpp"
@@ -33,6 +33,7 @@
 
 namespace roq {
 namespace htx {
+namespace gateway {
 
 struct OrderEntry final : public web::rest::Client::Handler {
   struct Handler {
@@ -176,5 +177,6 @@ struct OrderEntry final : public web::rest::Client::Handler {
   int64_t account_id_ = {};
 };
 
+}  // namespace gateway
 }  // namespace htx
 }  // namespace roq

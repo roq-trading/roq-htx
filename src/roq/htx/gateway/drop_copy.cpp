@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx/drop_copy.hpp"
+#include "roq/htx/gateway/drop_copy.hpp"
 
 #include "roq/mask.hpp"
 
@@ -22,6 +22,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace htx {
+namespace gateway {
 
 // === CONSTANTS ===
 
@@ -457,5 +458,6 @@ void DropCopy::operator()(Trace<json::Clearing> const &event) {
   create_trace_and_dispatch(handler_, trace_info, trade_update, true, SOURCE_NONE, data.client_order_id);
 }
 
+}  // namespace gateway
 }  // namespace htx
 }  // namespace roq

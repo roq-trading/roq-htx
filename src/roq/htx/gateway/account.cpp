@@ -1,9 +1,10 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx/account.hpp"
+#include "roq/htx/gateway/account.hpp"
 
 namespace roq {
 namespace htx {
+namespace gateway {
 
 // === IMPLEMENTATION ===
 
@@ -19,5 +20,6 @@ std::string_view Account::create_ws_auth(std::string_view const &path, std::chro
   return crypto_.create_ws_auth(path, now_utc);
 }
 
+}  // namespace gateway
 }  // namespace htx
 }  // namespace roq

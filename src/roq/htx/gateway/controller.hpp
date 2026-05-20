@@ -2,6 +2,8 @@
 
 #pragma once
 
+#include "roq/compat.hpp"
+
 #include <memory>
 #include <string>
 #include <utility>
@@ -13,29 +15,34 @@
 
 #include "roq/io/context.hpp"
 
-#include "roq/htx/account.hpp"
-#include "roq/htx/config.hpp"
-#include "roq/htx/settings.hpp"
-#include "roq/htx/shared.hpp"
+#include "roq/htx/gateway/account.hpp"
+#include "roq/htx/gateway/config.hpp"
+#include "roq/htx/gateway/settings.hpp"
+#include "roq/htx/gateway/shared.hpp"
 
-#include "roq/htx/drop_copy.hpp"
-#include "roq/htx/market_data.hpp"
-#include "roq/htx/mbp_feed.hpp"
-#include "roq/htx/order_entry.hpp"
-#include "roq/htx/rest.hpp"
+#include "roq/htx/gateway/drop_copy.hpp"
+#include "roq/htx/gateway/market_data.hpp"
+#include "roq/htx/gateway/mbp_feed.hpp"
+#include "roq/htx/gateway/order_entry.hpp"
+#include "roq/htx/gateway/rest.hpp"
 
 namespace roq {
 namespace htx {
+namespace gateway {
 
-struct Gateway final : public server::Handler,
-                       public Rest::Handler,
-                       public OrderEntry::Handler,
-                       public DropCopy::Handler,
-                       public MarketData::Handler,
-                       public MBPFeed::Handler {
-  Gateway(server::Dispatcher &, Settings const &, Config const &, io::Context &);
+struct Controller final : public server::Handler,
+                          public Rest::Handler,
+                          public OrderEntry::Handler,
+                          public DropCopy::Handler,
+                          public MarketData::Handler,
+                          public MBPFeed::Handler {
+  ROQ_PUBLIC static std::unique_ptr<server::Handler> create(server::Dispatcher &, Settings const &, Config const &, io::Context &);
 
-  Gateway(Gateway const &) = delete;
+  Controller(server::Dispatcher &, Settings const &, Config const &, io::Context &);
+
+  Controller(Controller const &) = delete;
+
+  virtual ~Controller() = default;
 
  protected:
   // server::Handler
@@ -118,5 +125,6 @@ struct Gateway final : public server::Handler,
   std::vector<MBPUpdate> bids_, asks_;
 };
 
+}  // namespace gateway
 }  // namespace htx
 }  // namespace roq

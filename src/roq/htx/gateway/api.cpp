@@ -1,11 +1,12 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx/api.hpp"
+#include "roq/htx/gateway/api.hpp"
 
 using namespace std::literals;
 
 namespace roq {
 namespace htx {
+namespace gateway {
 
 // === IMPLEMENTATION ===
 
@@ -28,5 +29,6 @@ API API::create(Settings const &) {
   };
 }
 
+}  // namespace gateway
 }  // namespace htx
 }  // namespace roq

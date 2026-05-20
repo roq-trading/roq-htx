@@ -19,11 +19,12 @@
 
 #include "roq/market/mbp/sequencer.hpp"
 
-#include "roq/htx/api.hpp"
-#include "roq/htx/settings.hpp"
+#include "roq/htx/gateway/api.hpp"
+#include "roq/htx/gateway/settings.hpp"
 
 namespace roq {
 namespace htx {
+namespace gateway {
 
 struct Shared final {
   Shared(server::Dispatcher &, Settings const &);
@@ -75,5 +76,6 @@ struct Shared final {
   utils::unordered_map<std::string, market::mbp::Sequencer> mbp_sequencer;
 };
 
+}  // namespace gateway
 }  // namespace htx
 }  // namespace roq

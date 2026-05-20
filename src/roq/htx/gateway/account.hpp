@@ -7,12 +7,13 @@
 #include <string_view>
 #include <utility>
 
-#include "roq/htx/config.hpp"
+#include "roq/htx/gateway/config.hpp"
 
 #include "roq/htx/tools/crypto.hpp"
 
 namespace roq {
 namespace htx {
+namespace gateway {
 
 struct Account final {
   Account(Config const &, std::string_view const &name, roq::io::web::URI const &);
@@ -31,5 +32,6 @@ struct Account final {
   tools::Crypto crypto_;
 };
 
+}  // namespace gateway
 }  // namespace htx
 }  // namespace roq

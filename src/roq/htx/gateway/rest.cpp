@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx/rest.hpp"
+#include "roq/htx/gateway/rest.hpp"
 
 #include <utility>
 
@@ -19,6 +19,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace htx {
+namespace gateway {
 
 // === CONSTANTS ===
 
@@ -467,5 +468,6 @@ void Rest::process_response(web::rest::Response const &response, SuccessHandler 
   }
 }
 
+}  // namespace gateway
 }  // namespace htx
 }  // namespace roq

@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx/market_data.hpp"
+#include "roq/htx/gateway/market_data.hpp"
 
 #include <algorithm>
 #include <utility>
@@ -25,6 +25,7 @@ using namespace std::literals;
 
 namespace roq {
 namespace htx {
+namespace gateway {
 
 // === CONSTANTS ===
 
@@ -453,5 +454,6 @@ void MarketData::check_request_queue(std::chrono::nanoseconds now) {
   request_queue_.dispatch(can_send_helper, send_helper, now);
 }
 
+}  // namespace gateway
 }  // namespace htx
 }  // namespace roq

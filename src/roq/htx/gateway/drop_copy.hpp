@@ -4,7 +4,6 @@
 
 #include <string>
 #include <string_view>
-#include <vector>
 
 #include "roq/utils/metrics/counter.hpp"
 #include "roq/utils/metrics/latency.hpp"
@@ -14,42 +13,38 @@
 
 #include "roq/web/socket/client.hpp"
 
-#include "roq/core/zlib/inflate.hpp"
-
-#include "roq/core/download.hpp"
-#include "roq/core/timer_queue.hpp"
-
 #include "roq/core/json/buffer_stack.hpp"
 
 #include "roq/server.hpp"
 
-#include "roq/htx/shared.hpp"
+#include "roq/htx/gateway/account.hpp"
+#include "roq/htx/gateway/shared.hpp"
 
 #include "roq/htx/json/parser.hpp"
 
 namespace roq {
 namespace htx {
+namespace gateway {
 
-struct MBPFeed final : public web::socket::Client::Handler, public json::Parser::Handler {
+struct DropCopy final : public web::socket::Client::Handler, public json::Parser::Handler {
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
-    virtual void operator()(Trace<MarketByPriceUpdate> const &, bool is_last) = 0;
+    virtual void operator()(Trace<TradeUpdate> const &, bool is_last, uint8_t user_id, std::string_view const &request_id) = 0;
+    virtual void operator()(Trace<FundsUpdate> const &, bool is_last) = 0;
   };
 
-  MBPFeed(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
+  DropCopy(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
 
-  MBPFeed(MBPFeed const &) = delete;
+  DropCopy(DropCopy const &) = delete;
 
-  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
+  bool ready() const;
 
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
   void operator()(Event<Timer> const &);
 
   void operator()(metrics::Writer &) const;
-
-  void subscribe(size_t start_from = 0);
 
  protected:
   void operator()(web::socket::Client::Connected const &) override;
@@ -63,13 +58,12 @@ struct MBPFeed final : public web::socket::Client::Handler, public json::Parser:
  private:
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
-  void subscribe(std::span<Symbol const> const &symbols);
-
-  void subscribe(std::string_view const &, std::string_view const &source, std::string_view const &theme);
-
-  void request(std::string_view const &symbol, std::string_view const &source, std::string_view const &theme);
-
   void send_pong(std::chrono::milliseconds timestamp);
+
+  void send_login();
+
+  void subscribe();
+  void subscribe(std::string_view const &channel);
 
   void parse(std::string_view const &message);
 
@@ -91,40 +85,35 @@ struct MBPFeed final : public web::socket::Client::Handler, public json::Parser:
   void operator()(Trace<json::Orders> const &) override;
   void operator()(Trace<json::Clearing> const &) override;
 
-  void check_request_queue(std::chrono::nanoseconds now);
-
  private:
   Handler &handler_;
   // config
   uint16_t const stream_id_;
   std::string const name_;
-  size_t const index_;
   // web socket
   std::unique_ptr<web::socket::Client> const connection_;
   // buffers
   core::json::BufferStack decode_buffer_;
-  // session
-  uint64_t request_id_ = {};
   // metrics
   struct {
-    utils::metrics::Counter disconnect, total_bytes_received;
+    utils::metrics::Counter disconnect;
   } counter_;
   struct {
-    utils::metrics::Profile parse, ping, error, subbed, mbp, mbp_snapshot;
+    utils::metrics::Profile parse,  //
+        req, ping, error, sub, outbound_account_info, outbound_account_position, balance_update, execution_report;
   } profile_;
   struct {
     utils::metrics::Latency ping, heartbeat;
   } latency_;
+  // account
+  Account &account_;
   // cache
   Shared &shared_;
   // state
+  bool ready_ = false;
   ConnectionStatus connection_status_ = {};
-  // zlib
-  core::zlib::Inflate inflate_;
-  std::vector<std::byte> inflate_buffer_;
-  // queue
-  core::TimerQueue<std::string> request_queue_;
 };
 
+}  // namespace gateway
 }  // namespace htx
 }  // namespace roq

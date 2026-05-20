@@ -22,7 +22,7 @@
 
 #include "roq/server.hpp"
 
-#include "roq/htx/shared.hpp"
+#include "roq/htx/gateway/shared.hpp"
 
 #include "roq/htx/json/currencies.hpp"
 #include "roq/htx/json/market_status.hpp"
@@ -30,6 +30,7 @@
 
 namespace roq {
 namespace htx {
+namespace gateway {
 
 struct Rest final : public web::rest::Client::Handler {
   struct SymbolsUpdate final {
@@ -116,5 +117,6 @@ struct Rest final : public web::rest::Client::Handler {
   core::Download<State> download_;
 };
 
+}  // namespace gateway
 }  // namespace htx
 }  // namespace roq

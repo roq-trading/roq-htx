@@ -23,26 +23,24 @@
 
 #include "roq/server.hpp"
 
-#include "roq/htx/shared.hpp"
+#include "roq/htx/gateway/shared.hpp"
 
 #include "roq/htx/json/parser.hpp"
 
 namespace roq {
 namespace htx {
+namespace gateway {
 
-struct MarketData final : public web::socket::Client::Handler, public json::Parser::Handler {
+struct MBPFeed final : public web::socket::Client::Handler, public json::Parser::Handler {
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
-    virtual void operator()(Trace<TopOfBook> const &, bool is_last) = 0;
-    virtual void operator()(Trace<TradeSummary> const &, bool is_last) = 0;
-    virtual void operator()(Trace<StatisticsUpdate> const &, bool is_last) = 0;
+    virtual void operator()(Trace<MarketByPriceUpdate> const &, bool is_last) = 0;
   };
 
-  MarketData(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
+  MBPFeed(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
 
-  MarketData(MarketData &&) = delete;
-  MarketData(MarketData const &) = delete;
+  MBPFeed(MBPFeed const &) = delete;
 
   bool ready() const { return connection_status_ == ConnectionStatus::READY; }
 
@@ -69,6 +67,8 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
   void subscribe(std::span<Symbol const> const &symbols);
 
   void subscribe(std::string_view const &, std::string_view const &source, std::string_view const &theme);
+
+  void request(std::string_view const &symbol, std::string_view const &source, std::string_view const &theme);
 
   void send_pong(std::chrono::milliseconds timestamp);
 
@@ -111,7 +111,7 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
     utils::metrics::Counter disconnect, total_bytes_received;
   } counter_;
   struct {
-    utils::metrics::Profile parse, ping, error, subbed, bbo, trade, detail, ticker;
+    utils::metrics::Profile parse, ping, error, subbed, mbp, mbp_snapshot;
   } profile_;
   struct {
     utils::metrics::Latency ping, heartbeat;
@@ -127,5 +127,6 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
   core::TimerQueue<std::string> request_queue_;
 };
 
+}  // namespace gateway
 }  // namespace htx
 }  // namespace roq
