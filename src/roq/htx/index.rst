@@ -13,8 +13,8 @@
 .. |footnote-3| unicode:: U+2778
 
 
-roq-htx
-=======
+`roq-htx <https://github.com/roq-trading/roq-htx/>`__
+=====================================================
 
 .. tab:: Unstable
 
@@ -308,6 +308,12 @@ Common
 * :ref:`Using Flags <abseil-cpp>`
 * :ref:`Gateway Flags <gateway-flags>`
 * :ref:`Gateway Config <gateway-config>`
+
+
+GitHub
+~~~~~~
+
+* `roq-htx <https://github.com/roq-trading/roq-htx/>`__
 
 
 Exchange
