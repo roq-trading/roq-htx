@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/htx/json/market_status.hpp"
+#include "roq/htx/protocol/json/market_status.hpp"
 
 using namespace roq;
 using namespace roq::htx;
@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::MarketStatus;
+using value_type = protocol::json::MarketStatus;
 
 TEST_CASE("simple", "[json_market_status]") {
   auto message = R"({)"

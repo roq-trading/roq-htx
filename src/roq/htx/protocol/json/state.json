@@ -1,0 +1,30 @@
+{
+  "name": "roq/htx/protocol/json/State",
+  "type": "enum",
+  "values": [
+    {
+      "name": "unknown"
+    },
+    {
+      "name": "not-online"
+    },
+    {
+      "name": "pre-online"
+    },
+    {
+      "name": "online"
+    },
+    {
+      "name": "suspend"
+    },
+    {
+      "name": "offline"
+    },
+    {
+      "name": "transfer-board"
+    },
+    {
+      "name": "fuse"
+    }
+  ]
+}

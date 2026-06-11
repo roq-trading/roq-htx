@@ -25,13 +25,13 @@
 
 #include "roq/htx/gateway/shared.hpp"
 
-#include "roq/htx/json/parser.hpp"
+#include "roq/htx/protocol/json/parser.hpp"
 
 namespace roq {
 namespace htx {
 namespace gateway {
 
-struct MarketData final : public web::socket::Client::Handler, public json::Parser::Handler {
+struct MarketData final : public web::socket::Client::Handler, public protocol::json::Parser::Handler {
   struct Handler {
     virtual void operator()(Trace<StreamStatus> const &) = 0;
     virtual void operator()(Trace<ExternalLatency> const &) = 0;
@@ -75,23 +75,23 @@ struct MarketData final : public web::socket::Client::Handler, public json::Pars
 
   void parse(std::string_view const &message);
 
-  void operator()(Trace<json::Req> const &) override;
-  void operator()(Trace<json::Ping> const &) override;
-  void operator()(Trace<json::Ping2> const &) override;
-  void operator()(Trace<json::Error> const &) override;
-  void operator()(Trace<json::Error2> const &) override;
-  void operator()(Trace<json::Sub> const &) override;
-  void operator()(Trace<json::Subbed> const &) override;
-  void operator()(Trace<json::BBO> const &) override;
-  void operator()(Trace<json::Trade> const &) override;
-  void operator()(Trace<json::Detail> const &) override;
-  void operator()(Trace<json::Ticker> const &) override;
-  void operator()(Trace<json::MBP> const &) override;
-  void operator()(Trace<json::MBPSnapshot> const &) override;
+  void operator()(Trace<protocol::json::Req> const &) override;
+  void operator()(Trace<protocol::json::Ping> const &) override;
+  void operator()(Trace<protocol::json::Ping2> const &) override;
+  void operator()(Trace<protocol::json::Error> const &) override;
+  void operator()(Trace<protocol::json::Error2> const &) override;
+  void operator()(Trace<protocol::json::Sub> const &) override;
+  void operator()(Trace<protocol::json::Subbed> const &) override;
+  void operator()(Trace<protocol::json::BBO> const &) override;
+  void operator()(Trace<protocol::json::Trade> const &) override;
+  void operator()(Trace<protocol::json::Detail> const &) override;
+  void operator()(Trace<protocol::json::Ticker> const &) override;
+  void operator()(Trace<protocol::json::MBP> const &) override;
+  void operator()(Trace<protocol::json::MBPSnapshot> const &) override;
   //
-  void operator()(Trace<json::Accounts> const &) override;
-  void operator()(Trace<json::Orders> const &) override;
-  void operator()(Trace<json::Clearing> const &) override;
+  void operator()(Trace<protocol::json::Accounts> const &) override;
+  void operator()(Trace<protocol::json::Orders> const &) override;
+  void operator()(Trace<protocol::json::Clearing> const &) override;
 
   void check_request_queue(std::chrono::nanoseconds now);
 

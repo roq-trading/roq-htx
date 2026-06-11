@@ -24,9 +24,9 @@
 
 #include "roq/htx/gateway/shared.hpp"
 
-#include "roq/htx/json/currencies.hpp"
-#include "roq/htx/json/market_status.hpp"
-#include "roq/htx/json/symbols.hpp"
+#include "roq/htx/protocol/json/currencies.hpp"
+#include "roq/htx/protocol/json/market_status.hpp"
+#include "roq/htx/protocol/json/symbols.hpp"
 
 namespace roq {
 namespace htx {
@@ -77,15 +77,15 @@ struct Rest final : public web::rest::Client::Handler {
 
   void get_market_status();
   void get_market_status_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::MarketStatus> const &);
+  void operator()(Trace<protocol::json::MarketStatus> const &);
 
   void get_currencies();
   void get_currencies_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::Currencies> const &);
+  void operator()(Trace<protocol::json::Currencies> const &);
 
   void get_symbols();
   void get_symbols_ack(Trace<web::rest::Response> const &, uint32_t sequence);
-  void operator()(Trace<json::Symbols> const &);
+  void operator()(Trace<protocol::json::Symbols> const &);
 
   template <typename SuccessHandler, typename ErrorHandler>
   void process_response(web::rest::Response const &, SuccessHandler, ErrorHandler);

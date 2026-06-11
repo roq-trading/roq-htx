@@ -1,0 +1,24 @@
+{
+  "name": "roq/htx/protocol/json/MBPTick",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "seqNum",
+      "type": "std/uint64"
+    },
+    {
+      "name": "prevSeqNum",
+      "type": "std/uint64"
+    },
+    {
+      "name": "bids",
+      "type": "roq/htx/protocol/json/Quotation",
+      "array": "std/span"
+    },
+    {
+      "name": "asks",
+      "type": "roq/htx/protocol/json/Quotation",
+      "array": "std/span"
+    }
+  ]
+}

@@ -1,0 +1,22 @@
+{
+  "name": "roq/htx/protocol/json/CancelAllOrdersAck",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "status",
+      "type": "roq/htx/protocol/json/Status"
+    },
+    {
+      "name": "data",
+      "type": "std/bool"
+    },
+    {
+      "name": "err-code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "err-msg",
+      "type": "std/string_view"
+    }
+  ]
+}

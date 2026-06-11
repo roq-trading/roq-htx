@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Error2;
+using value_type = protocol::json::Error2;
 
 TEST_CASE("simple", "[json_error_2]") {
   auto message = R"({)"

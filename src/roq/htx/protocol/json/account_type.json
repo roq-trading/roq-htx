@@ -1,0 +1,30 @@
+{
+  "name": "roq/htx/protocol/json/AccountType",
+  "type": "enum",
+  "values": [
+    {
+      "name": "spot"
+    },
+    {
+      "name": "margin"
+    },
+    {
+      "name": "point"
+    },
+    {
+      "name": "super-margin"
+    },
+    {
+      "name": "grid-trading"
+    },
+    {
+      "name": "otc-options"
+    },
+    {
+      "name": "trust-credit"
+    },
+    {
+      "name": "trade"
+    }
+  ]
+}

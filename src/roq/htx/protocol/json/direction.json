@@ -1,0 +1,12 @@
+{
+  "name": "roq/htx/protocol/json/Direction",
+  "type": "enum",
+  "values": [
+    {
+      "name": "buy"
+    },
+    {
+      "name": "sell"
+    }
+  ]
+}

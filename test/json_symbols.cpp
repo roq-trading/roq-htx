@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/htx/json/symbols.hpp"
+#include "roq/htx/protocol/json/symbols.hpp"
 
 using namespace roq;
 using namespace roq::htx;
@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Symbols;
+using value_type = protocol::json::Symbols;
 
 // note! heavily truncated
 TEST_CASE("simple", "[json_symbols]") {
@@ -66,7 +66,7 @@ TEST_CASE("simple", "[json_symbols]") {
                  R"(])"
                  R"(})";
   auto helper = [&](value_type &obj) {
-    CHECK(obj.status == json::Status::OK);
+    CHECK(obj.status == protocol::json::Status::OK);
     auto &data = obj.data;
     REQUIRE(std::size(data) == 2);
     auto &d0 = data[0];
@@ -74,9 +74,9 @@ TEST_CASE("simple", "[json_symbols]") {
     CHECK(d0.quote_currency == "eth"sv);
     CHECK(d0.price_precision == 8);
     CHECK(d0.amount_precision == 2);
-    CHECK(d0.symbol_partition == json::Partition::INNOVATION);
+    CHECK(d0.symbol_partition == protocol::json::Partition::INNOVATION);
     CHECK(d0.symbol == "stketh"sv);
-    CHECK(d0.state == json::State::OFFLINE);
+    CHECK(d0.state == protocol::json::State::OFFLINE);
     CHECK(d0.value_precision == 8);
     CHECK(d0.min_order_amt == 1.0_a);
     CHECK(d0.max_order_amt == 10000000.0_a);
@@ -88,16 +88,16 @@ TEST_CASE("simple", "[json_symbols]") {
     CHECK(d0.sell_market_min_order_amt == 1.0_a);
     CHECK(d0.sell_market_max_order_amt == 1000000.0_a);
     CHECK(d0.buy_market_max_order_value == 500.0_a);
-    CHECK(d0.api_trading == json::Trading::ENABLED);
+    CHECK(d0.api_trading == protocol::json::Trading::ENABLED);
     CHECK(d0.tags == ""sv);
     auto &d1 = data[1];
     CHECK(d1.base_currency == "poly"sv);
     CHECK(d1.quote_currency == "eth"sv);
     CHECK(d1.price_precision == 6);
     CHECK(d1.amount_precision == 4);
-    CHECK(d1.symbol_partition == json::Partition::INNOVATION);
+    CHECK(d1.symbol_partition == protocol::json::Partition::INNOVATION);
     CHECK(d1.symbol == "polyeth"sv);
-    CHECK(d1.state == json::State::ONLINE);
+    CHECK(d1.state == protocol::json::State::ONLINE);
     CHECK(d1.value_precision == 8);
     CHECK(d1.min_order_amt == 0.1_a);
     CHECK(d1.max_order_amt == 1000000.0_a);
@@ -109,7 +109,7 @@ TEST_CASE("simple", "[json_symbols]") {
     CHECK(d1.sell_market_min_order_amt == 0.1_a);
     CHECK(d1.sell_market_max_order_amt == 100000.0_a);
     CHECK(d1.buy_market_max_order_value == 50.0_a);
-    CHECK(d1.api_trading == json::Trading::ENABLED);
+    CHECK(d1.api_trading == protocol::json::Trading::ENABLED);
     CHECK(d1.tags == ""sv);
   };
   core::json::BufferStack buffers{8192, 1};

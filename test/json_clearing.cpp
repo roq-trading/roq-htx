@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Clearing;
+using value_type = protocol::json::Clearing;
 
 TEST_CASE("maker", "[json_clearing]") {
   auto message = R"({)"
@@ -43,7 +43,7 @@ TEST_CASE("maker", "[json_clearing]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "trade.clearing#*"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -78,7 +78,7 @@ TEST_CASE("taker", "[json_clearing]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "trade.clearing#*"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -113,7 +113,7 @@ TEST_CASE("partial_filled_1", "[json_clearing]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "trade.clearing#*"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -148,7 +148,7 @@ TEST_CASE("partial_filled_2", "[json_clearing]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "trade.clearing#*"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -183,7 +183,7 @@ TEST_CASE("partial_filled_3", "[json_clearing]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "trade.clearing#*"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);

@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Orders;
+using value_type = protocol::json::Orders;
 
 TEST_CASE("submitted", "[json_orders]") {
   auto message = R"({)"
@@ -34,7 +34,7 @@ TEST_CASE("submitted", "[json_orders]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "orders#*"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -63,7 +63,7 @@ TEST_CASE("canceled", "[json_orders]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "orders#*"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -94,7 +94,7 @@ TEST_CASE("filled", "[json_orders]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "orders#*"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -125,7 +125,7 @@ TEST_CASE("partial_filled_1", "[json_orders]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "orders#*"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -156,7 +156,7 @@ TEST_CASE("partial_filled_2", "[json_orders]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "orders#*"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -187,7 +187,7 @@ TEST_CASE("partial_filled_3", "[json_orders]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "orders#*"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);

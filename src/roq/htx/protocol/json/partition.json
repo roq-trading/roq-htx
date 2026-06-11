@@ -1,0 +1,28 @@
+{
+  "name": "roq/htx/protocol/json/Partition",
+  "type": "enum",
+  "values": [
+    {
+      "name": "innovation"
+    },
+    {
+      "name": "main"
+    },
+    {
+      "name": "potentials"
+    },
+    {
+      "name": "bifurcation"
+    },
+    {
+      "name": "pioneer"
+    },
+    {
+      "name": "default"
+    },
+    {
+      "name": "st",
+      "comment": "have seen 20220603 -- but what does it mean?"
+    }
+  ]
+}

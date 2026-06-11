@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::MBP;
+using value_type = protocol::json::MBP;
 
 TEST_CASE("simple", "[json_mbp]") {
   auto message = R"({)"

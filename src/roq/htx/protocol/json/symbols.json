@@ -1,0 +1,23 @@
+{
+  "name": "roq/htx/protocol/json/Symbols",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "status",
+      "type": "roq/htx/protocol/json/Status"
+    },
+    {
+      "name": "data",
+      "type": "roq/htx/protocol/json/SymbolsItem",
+      "array": "std/span"
+    },
+    {
+      "name": "err-code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "err-msg",
+      "type": "std/string_view"
+    }
+  ]
+}

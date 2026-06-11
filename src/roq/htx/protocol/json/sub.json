@@ -1,0 +1,22 @@
+{
+  "name": "roq/htx/protocol/json/Sub",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "action",
+      "type": "roq/htx/protocol/json/Action"
+    },
+    {
+      "name": "code",
+      "type": "std/int32"
+    },
+    {
+      "name": "ch",
+      "type": "std/string_view"
+    },
+    {
+      "name": "data",
+      "comment": "empty for sub, not sure about other types..."
+    }
+  ]
+}

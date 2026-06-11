@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Ping;
+using value_type = protocol::json::Ping;
 
 TEST_CASE("simple", "[json_ping]") {
   auto message = R"({)"
@@ -22,7 +22,7 @@ TEST_CASE("simple", "[json_ping]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PING);
+    CHECK(obj.action == protocol::json::Action::PING);
     CHECK(obj.data.ts == 1764299053602ms);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);

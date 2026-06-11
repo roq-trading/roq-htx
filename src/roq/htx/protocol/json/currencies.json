@@ -1,0 +1,23 @@
+{
+  "name": "roq/htx/protocol/json/Currencies",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "status",
+      "type": "roq/htx/protocol/json/Status"
+    },
+    {
+      "name": "data",
+      "type": "std/string_view",
+      "array": "std/span"
+    },
+    {
+      "name": "err-code",
+      "type": "std/string_view"
+    },
+    {
+      "name": "err-msg",
+      "type": "std/string_view"
+    }
+  ]
+}

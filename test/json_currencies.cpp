@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/htx/json/currencies.hpp"
+#include "roq/htx/protocol/json/currencies.hpp"
 
 using namespace roq;
 using namespace roq::htx;
@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Currencies;
+using value_type = protocol::json::Currencies;
 
 TEST_CASE("simple", "[json_currencies]") {
   auto message = R"({)"
@@ -459,7 +459,7 @@ TEST_CASE("simple", "[json_currencies]") {
                  R"(])"
                  R"(})";
   auto helper = [&](value_type &obj) {
-    CHECK(obj.status == json::Status::OK);
+    CHECK(obj.status == protocol::json::Status::OK);
     auto &data = obj.data;
     REQUIRE(std::size(data) == 436);
     auto &d0 = data[0];

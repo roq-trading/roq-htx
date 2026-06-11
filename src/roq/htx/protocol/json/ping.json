@@ -1,0 +1,14 @@
+{
+  "name": "roq/htx/protocol/json/Ping",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "action",
+      "type": "roq/htx/protocol/json/Action"
+    },
+    {
+      "name": "data",
+      "type": "roq/htx/protocol/json/PingData"
+    }
+  ]
+}

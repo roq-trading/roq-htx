@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Accounts;
+using value_type = protocol::json::Accounts;
 
 TEST_CASE("simple", "[json_accounts]") {
   auto message = R"({)"
@@ -30,7 +30,7 @@ TEST_CASE("simple", "[json_accounts]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "accounts.update"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -51,7 +51,7 @@ TEST_CASE("buy_btcusdt_usdt", "[json_accounts]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "accounts.update"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -72,7 +72,7 @@ TEST_CASE("buy_btcusdt_btc", "[json_accounts]") {
                  R"(})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::PUSH);
+    CHECK(obj.action == protocol::json::Action::PUSH);
     CHECK(obj.ch == "accounts.update"sv);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);

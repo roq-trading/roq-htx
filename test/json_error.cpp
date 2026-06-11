@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Error;
+using value_type = protocol::json::Error;
 
 TEST_CASE("simple", "[json_error]") {
   auto message = R"({)"
@@ -23,7 +23,7 @@ TEST_CASE("simple", "[json_error]") {
                  R"("err-msg":"The coin pair does not currently offer subscription services.")"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.status == json::Status::ERROR);
+    CHECK(obj.status == protocol::json::Status::ERROR);
     CHECK(obj.ts == 1764300263709ms);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);

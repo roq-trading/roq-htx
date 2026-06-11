@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Ticker;
+using value_type = protocol::json::Ticker;
 
 TEST_CASE("simple", "[json_ticker]") {
   auto message = R"({)"

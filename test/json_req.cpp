@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Req;
+using value_type = protocol::json::Req;
 
 TEST_CASE("auth_success", "[json_req]") {
   auto message = R"({)"
@@ -22,7 +22,7 @@ TEST_CASE("auth_success", "[json_req]") {
                  R"("data":{})"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::REQ);
+    CHECK(obj.action == protocol::json::Action::REQ);
     CHECK(obj.code == 200);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
@@ -36,7 +36,7 @@ TEST_CASE("auth_error", "[json_req]") {
                  R"("message":"invalid.authType")"
                  R"(})";
   auto helper = [](value_type const &obj) {
-    CHECK(obj.action == json::Action::REQ);
+    CHECK(obj.action == protocol::json::Action::REQ);
     CHECK(obj.code == 2001);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);

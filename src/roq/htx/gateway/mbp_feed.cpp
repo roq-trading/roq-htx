@@ -16,7 +16,7 @@
 
 #include "roq/web/socket/client.hpp"
 
-#include "roq/htx/json/utils.hpp"
+#include "roq/htx/protocol/json/utils.hpp"
 
 using namespace std::literals;
 
@@ -251,7 +251,7 @@ void MBPFeed::parse(std::string_view const &message) {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
       TraceInfo trace_info;
-      if (!json::Parser::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
+      if (!protocol::json::Parser::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
         log_message();
       }
     } catch (...) {
@@ -261,73 +261,73 @@ void MBPFeed::parse(std::string_view const &message) {
   });
 }
 
-void MBPFeed::operator()(Trace<json::Req> const &) {
+void MBPFeed::operator()(Trace<protocol::json::Req> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(Trace<json::Ping> const &event) {
+void MBPFeed::operator()(Trace<protocol::json::Ping> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.data.ts);
   });
 }
 
-void MBPFeed::operator()(Trace<json::Ping2> const &event) {
+void MBPFeed::operator()(Trace<protocol::json::Ping2> const &event) {
   profile_.ping([&]() {
     auto &[trace_info, ping] = event;
     send_pong(ping.ping);
   });
 }
 
-void MBPFeed::operator()(Trace<json::Error> const &event) {
+void MBPFeed::operator()(Trace<protocol::json::Error> const &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::error("error={}"sv, error);
   });
 }
 
-void MBPFeed::operator()(Trace<json::Error2> const &event) {
+void MBPFeed::operator()(Trace<protocol::json::Error2> const &event) {
   profile_.error([&]() {
     auto &[trace_info, error] = event;
     log::error("error={}"sv, error);
   });
 }
 
-void MBPFeed::operator()(Trace<json::Sub> const &event) {
+void MBPFeed::operator()(Trace<protocol::json::Sub> const &event) {
   profile_.subbed([&]() {
     auto &[trace_info, sub] = event;
     log::info<1>("sub={}"sv, sub);
   });
 }
 
-void MBPFeed::operator()(Trace<json::Subbed> const &event) {
+void MBPFeed::operator()(Trace<protocol::json::Subbed> const &event) {
   profile_.subbed([&]() {
     auto &[trace_info, subbed] = event;
     log::info<1>("subbed={}"sv, subbed);
   });
 }
 
-void MBPFeed::operator()(Trace<json::BBO> const &) {
+void MBPFeed::operator()(Trace<protocol::json::BBO> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(Trace<json::Trade> const &) {
+void MBPFeed::operator()(Trace<protocol::json::Trade> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(Trace<json::Detail> const &) {
+void MBPFeed::operator()(Trace<protocol::json::Detail> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(Trace<json::Ticker> const &) {
+void MBPFeed::operator()(Trace<protocol::json::Ticker> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(Trace<json::MBP> const &event) {
+void MBPFeed::operator()(Trace<protocol::json::MBP> const &event) {
   profile_.mbp([&]() {
     auto &[trace_info, mbp] = event;
     (*connection_).touch(trace_info.source_receive_time);
-    auto symbol = json::extract_symbol(mbp.ch);
+    auto symbol = protocol::json::extract_symbol(mbp.ch);
     auto &tick = mbp.tick;
     auto &sequencer = shared_.mbp_sequencer[symbol];
     auto &mbp_2 = shared_.get_mbp();
@@ -395,11 +395,11 @@ void MBPFeed::operator()(Trace<json::MBP> const &event) {
   });
 }
 
-void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
+void MBPFeed::operator()(Trace<protocol::json::MBPSnapshot> const &event) {
   profile_.mbp_snapshot([&]() {
     auto &[trace_info, mbp_snapshot] = event;
     (*connection_).touch(trace_info.source_receive_time);
-    auto symbol = json::extract_symbol(mbp_snapshot.rep);
+    auto symbol = protocol::json::extract_symbol(mbp_snapshot.rep);
     auto &data = mbp_snapshot.data;
     auto &sequencer = shared_.mbp_sequencer[symbol];
     auto &mbp = shared_.get_mbp();
@@ -459,15 +459,15 @@ void MBPFeed::operator()(Trace<json::MBPSnapshot> const &event) {
   });
 }
 
-void MBPFeed::operator()(Trace<json::Accounts> const &) {
+void MBPFeed::operator()(Trace<protocol::json::Accounts> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(Trace<json::Orders> const &) {
+void MBPFeed::operator()(Trace<protocol::json::Orders> const &) {
   log::fatal("Unexpected"sv);
 }
 
-void MBPFeed::operator()(Trace<json::Clearing> const &) {
+void MBPFeed::operator()(Trace<protocol::json::Clearing> const &) {
   log::fatal("Unexpected"sv);
 }
 

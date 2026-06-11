@@ -1,0 +1,22 @@
+{
+  "name": "roq/htx/protocol/json/Subbed",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "id",
+      "type": "std/int64"
+    },
+    {
+      "name": "subbed",
+      "type": "std/string_view"
+    },
+    {
+      "name": "ts",
+      "type": "std/milliseconds"
+    },
+    {
+      "name": "status",
+      "type": "roq/htx/protocol/json/Status"
+    }
+  ]
+}

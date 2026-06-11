@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::Subbed;
+using value_type = protocol::json::Subbed;
 
 TEST_CASE("simple", "[json_subbed]") {
   auto message = R"({)"
@@ -23,7 +23,7 @@ TEST_CASE("simple", "[json_subbed]") {
                  R"(})";
   auto helper = [](value_type const &obj) {
     CHECK(obj.id == 5000001);
-    CHECK(obj.status == json::Status::OK);
+    CHECK(obj.status == protocol::json::Status::OK);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }

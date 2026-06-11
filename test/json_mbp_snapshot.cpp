@@ -12,7 +12,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::MBPSnapshot;
+using value_type = protocol::json::MBPSnapshot;
 
 // note! reduced
 TEST_CASE("simple", "[json_mbp_snapshot]") {
@@ -35,7 +35,7 @@ TEST_CASE("simple", "[json_mbp_snapshot]") {
                  R"(})";
   auto helper = [](value_type const &obj) {
     CHECK(obj.id == 3000002);
-    CHECK(obj.status == json::Status::OK);
+    CHECK(obj.status == protocol::json::Status::OK);
   };
   ParserTester<value_type>::dispatch(helper, message, 8192, 1);
 }

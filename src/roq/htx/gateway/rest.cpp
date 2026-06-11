@@ -12,8 +12,8 @@
 
 #include "roq/web/rest/client.hpp"
 
-#include "roq/htx/json/map.hpp"
-#include "roq/htx/json/utils.hpp"
+#include "roq/htx/protocol/json/map.hpp"
+#include "roq/htx/protocol/json/utils.hpp"
 
 using namespace std::literals;
 
@@ -238,13 +238,13 @@ void Rest::get_market_status_ack(Trace<web::rest::Response> const &event, uint32
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        json::MarketStatus market_status{body, decode_buffer_};
+        protocol::json::MarketStatus market_status{body, decode_buffer_};
         if (market_status.code == 200) {
           Trace event_2{event, market_status};
           (*this)(event_2);
           download_.check(STATE);
         } else {
-          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(market_status.code), market_status.message);
+          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(market_status.code), market_status.message);
         }
       }
     };
@@ -252,7 +252,7 @@ void Rest::get_market_status_ack(Trace<web::rest::Response> const &event, uint32
   });
 }
 
-void Rest::operator()(Trace<json::MarketStatus> const &event) {
+void Rest::operator()(Trace<protocol::json::MarketStatus> const &event) {
   auto &[trace_info, market_status] = event;
   log::info<2>("market_status={}"sv, market_status);
 }
@@ -291,13 +291,13 @@ void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t 
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        json::Currencies currencies{body, decode_buffer_};
-        if (currencies.status == json::Status::OK) {
+        protocol::json::Currencies currencies{body, decode_buffer_};
+        if (currencies.status == protocol::json::Status::OK) {
           Trace event_2{event, currencies};
           (*this)(event_2);
           download_.check(STATE);
         } else {
-          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(currencies.err_code), currencies.err_msg);
+          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(currencies.err_code), currencies.err_msg);
         }
       }
     };
@@ -305,7 +305,7 @@ void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t 
   });
 }
 
-void Rest::operator()(Trace<json::Currencies> const &event) {
+void Rest::operator()(Trace<protocol::json::Currencies> const &event) {
   auto &[trace_info, currencies] = event;
   log::info<2>("currencies={}"sv, currencies);
 }
@@ -344,13 +344,13 @@ void Rest::get_symbols_ack(Trace<web::rest::Response> const &event, uint32_t seq
       if (download_.skip(sequence, STATE)) {
         log::info("Download state={} has already been processed"sv, STATE);
       } else {
-        json::Symbols symbols{body, decode_buffer_};
-        if (symbols.status == json::Status::OK) {
+        protocol::json::Symbols symbols{body, decode_buffer_};
+        if (symbols.status == protocol::json::Status::OK) {
           Trace event_2{event, symbols};
           (*this)(event_2);
           download_.check(STATE);
         } else {
-          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, json::guess_error(symbols.err_code), symbols.err_msg);
+          handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(symbols.err_code), symbols.err_msg);
         }
       }
     };
@@ -358,13 +358,13 @@ void Rest::get_symbols_ack(Trace<web::rest::Response> const &event, uint32_t seq
   });
 }
 
-void Rest::operator()(Trace<json::Symbols> const &event) {
+void Rest::operator()(Trace<protocol::json::Symbols> const &event) {
   auto &[trace_info, symbols] = event;
   log::info<2>("symbols={}"sv, symbols);
   std::vector<Symbol> symbols_2;
   size_t counter = {};
   for (auto &item : symbols.data) {
-    if (item.state != json::State::ONLINE || item.api_trading != json::Trading::ENABLED) {
+    if (item.state != protocol::json::State::ONLINE || item.api_trading != protocol::json::Trading::ENABLED) {
       log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
       continue;
     }

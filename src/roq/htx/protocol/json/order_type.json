@@ -1,0 +1,48 @@
+{
+  "name": "roq/htx/protocol/json/OrderType",
+  "type": "enum",
+  "values": [
+    {
+      "name": "buy-market"
+    },
+    {
+      "name": "sell-market"
+    },
+    {
+      "name": "buy-limit"
+    },
+    {
+      "name": "sell-limit"
+    },
+    {
+      "name": "buy-ioc"
+    },
+    {
+      "name": "sell-ioc"
+    },
+    {
+      "name": "buy-limit-maker"
+    },
+    {
+      "name": "sell-limit-maker"
+    },
+    {
+      "name": "buy-stop-limit"
+    },
+    {
+      "name": "sell-stop-limit"
+    },
+    {
+      "name": "buy-limit-fok"
+    },
+    {
+      "name": "sell-limit-fok"
+    },
+    {
+      "name": "buy-stop-limit-fok"
+    },
+    {
+      "name": "sell-stop-limit-fok"
+    }
+  ]
+}

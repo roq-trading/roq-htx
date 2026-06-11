@@ -1,0 +1,23 @@
+{
+  "name": "roq/htx/protocol/json/BalanceAckData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "id",
+      "type": "std/int64"
+    },
+    {
+      "name": "type",
+      "type": "roq/htx/protocol/json/AccountType"
+    },
+    {
+      "name": "state",
+      "type": "roq/htx/protocol/json/AccountState"
+    },
+    {
+      "name": "list",
+      "type": "roq/htx/protocol/json/BalanceAckDataListItem",
+      "array": "std/span"
+    }
+  ]
+}

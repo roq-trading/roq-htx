@@ -1,0 +1,21 @@
+{
+  "name": "roq/htx/protocol/json/Action",
+  "type": "enum",
+  "values": [
+    {
+      "name": "sub"
+    },
+    {
+      "name": "req"
+    },
+    {
+      "name": "ping"
+    },
+    {
+      "name": "pong"
+    },
+    {
+      "name": "push"
+    }
+  ]
+}

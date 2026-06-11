@@ -4,7 +4,7 @@
 
 #include "roq/core/json/buffer_stack.hpp"
 
-#include "roq/htx/json/accounts_ack.hpp"
+#include "roq/htx/protocol/json/accounts_ack.hpp"
 
 using namespace roq;
 using namespace roq::htx;
@@ -14,7 +14,7 @@ using namespace std::chrono_literals;
 
 using namespace Catch::literals;
 
-using value_type = json::AccountsAck;
+using value_type = protocol::json::AccountsAck;
 
 TEST_CASE("simple", "[json_accounts_ack]") {
   auto message = R"({)"
@@ -27,7 +27,7 @@ TEST_CASE("simple", "[json_accounts_ack]") {
                  R"(})"
                  R"(])"
                  R"(})";
-  auto helper = [&](value_type &obj) { CHECK(obj.status == json::Status::OK); };
+  auto helper = [&](value_type &obj) { CHECK(obj.status == protocol::json::Status::OK); };
   core::json::BufferStack buffers{8192, 1};
   value_type obj{message, buffers};
   helper(obj);

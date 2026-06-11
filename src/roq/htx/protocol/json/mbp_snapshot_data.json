@@ -1,0 +1,20 @@
+{
+  "name": "roq/htx/protocol/json/MBPSnapshotData",
+  "type": "dictionary",
+  "values": [
+    {
+      "name": "seqNum",
+      "type": "std/uint64"
+    },
+    {
+      "name": "bids",
+      "type": "roq/htx/protocol/json/Quotation",
+      "array": "std/span"
+    },
+    {
+      "name": "asks",
+      "type": "roq/htx/protocol/json/Quotation",
+      "array": "std/span"
+    }
+  ]
+}
