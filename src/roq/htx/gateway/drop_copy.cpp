@@ -405,7 +405,7 @@ void DropCopy::operator()(Trace<protocol::json::Orders> const &event) {
       .update_type = UpdateType::INCREMENTAL,
       .sending_time_utc = data.order_create_time,
   };
-  if (shared_.update_order(data.client_order_id, stream_id_, trace_info, order_update, [&]([[maybe_unused]] auto &order) {
+  if (shared_.update_order(stream_id_, trace_info, order_update, [&]([[maybe_unused]] auto &order) {
         // we don't have the fees from the fills => postpone to clearing
       })) {
   } else {
@@ -447,7 +447,7 @@ void DropCopy::operator()(Trace<protocol::json::Clearing> const &event) {
       .update_time_utc = data.trade_time,
       .external_account = external_account,
       .external_order_id = external_order_id,
-      .client_order_id = {},
+      .client_order_id = data.client_order_id,
       .fills = {&fill, 1},
       .routing_id = {},
       .update_type = UpdateType::INCREMENTAL,
@@ -455,7 +455,7 @@ void DropCopy::operator()(Trace<protocol::json::Clearing> const &event) {
       .user = {},
       .strategy_id = {},
   };
-  create_trace_and_dispatch(handler_, trace_info, trade_update, true, SOURCE_NONE, data.client_order_id);
+  create_trace_and_dispatch(handler_, trace_info, trade_update, true, SOURCE_NONE);
 }
 
 }  // namespace gateway
