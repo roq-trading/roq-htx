@@ -405,12 +405,7 @@ void DropCopy::operator()(Trace<protocol::json::Orders> const &event) {
       .update_type = UpdateType::INCREMENTAL,
       .sending_time_utc = data.order_create_time,
   };
-  if (shared_.update_order(stream_id_, trace_info, order_update, [&]([[maybe_unused]] auto &order) {
-        // we don't have the fees from the fills => postpone to clearing
-      })) {
-  } else {
-    log::warn<1>(R"(*** EXTERNAL ORDER *** (order_id="{}", client_order_id="{}"))"sv, data.order_id, data.client_order_id);
-  }
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_);
 }
 
 void DropCopy::operator()(Trace<protocol::json::Clearing> const &event) {
