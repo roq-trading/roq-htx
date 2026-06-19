@@ -161,7 +161,7 @@ void MBPFeed::operator()(web::socket::Client::Latency const &latency) {
       .account = {},
       .latency = latency.sample,
   };
-  create_trace_and_dispatch(handler_, trace_info, external_latency);
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, external_latency);
   latency_.ping.update(latency.sample);
 }
 
@@ -200,7 +200,7 @@ void MBPFeed::operator()(ConnectionStatus connection_status, std::string_view co
       .proxy = (*connection_).get_proxy(),
   };
   log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(handler_, trace_info, stream_status);
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
 }
 
 void MBPFeed::subscribe(std::span<Symbol const> const &symbols) {
@@ -368,14 +368,13 @@ void MBPFeed::operator()(Trace<protocol::json::MBP> const &event) {
       auto publish_update = [&](auto &bids, auto &asks) {
         // log::debug(R"(PUBLISH UPDATE symbol="{}")"sv, symbol);
         auto market_by_price_update = create_update(bids, asks, UpdateType::INCREMENTAL, tick.seq_num);
-        create_trace_and_dispatch(handler_, trace_info, market_by_price_update, true);
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, market_by_price_update, true, shared_.final_bids, shared_.final_asks);
       };
       auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence, [[maybe_unused]] auto retries, [[maybe_unused]] auto delay) {
         log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
         auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT, sequencer.last_sequence());
         auto apply_updates = [&](auto &market_by_price) { sequencer.apply(market_by_price, sequence, false); };
-        Trace event{trace_info, market_by_price_update};
-        shared_(event, true, apply_updates);
+        create_trace_and_dispatch(shared_.dispatcher, event, market_by_price_update, true, apply_updates);
       };
       auto request_snapshot = [&](auto retries) {
         log::debug(R"(REQUEST symbol="{}" (retries={}))"sv, symbol, retries);
@@ -438,8 +437,7 @@ void MBPFeed::operator()(Trace<protocol::json::MBPSnapshot> const &event) {
             .checksum = {},
         };
         auto apply_updates = [&](auto &market_by_price) { sequencer.apply(market_by_price, sequence, false); };
-        Trace event{trace_info, market_by_price_update};
-        shared_(event, true, apply_updates);
+        create_trace_and_dispatch(shared_.dispatcher, event, market_by_price_update, true, apply_updates);
       };
       auto request_snapshot = [&](auto retries) {
         log::debug(R"(REQUEST symbol="{}" (retries={}))"sv, symbol, retries);

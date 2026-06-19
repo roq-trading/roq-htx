@@ -198,7 +198,7 @@ void OrderEntry::operator()(Trace<web::rest::Client::Latency> const &event) {
       .account = account_.name,
       .latency = latency.sample,
   };
-  create_trace_and_dispatch(handler_, trace_info, external_latency);
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, external_latency);
   latency_.ping.update(latency.sample);
 }
 
@@ -221,7 +221,7 @@ void OrderEntry::operator()(ConnectionStatus connection_status, std::string_view
       .proxy = (*connection_).get_proxy(),
   };
   log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(handler_, trace_info, stream_status);
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
 }
 
 uint32_t OrderEntry::download(State state) {
@@ -381,7 +381,7 @@ void OrderEntry::operator()(Trace<protocol::json::BalanceAck> const &event) {
         .exchange_sequence = utils::safe_cast(item.seq_num),
         .sending_time_utc = {},
     };
-    create_trace_and_dispatch(handler_, trace_info, funds_update, true);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, funds_update, true);
   }
 }
 
@@ -717,8 +717,7 @@ void OrderEntry::cancel_all_orders(Event<CancelAllOrders> const &event, std::str
         .strategy_id = cancel_all_orders.strategy_id,
     };
     TraceInfo trace_info{event};
-    Trace event_2{trace_info, cancel_all_orders_ack};
-    shared_(event_2);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, cancel_all_orders_ack);
   });
 }
 
@@ -743,8 +742,7 @@ void OrderEntry::cancel_all_orders_ack(Trace<web::rest::Response> const &event, 
           .user = {},
           .strategy_id = {},
       };
-      Trace event_2{event, cancel_all_orders_ack};
-      shared_(event_2);
+      create_trace_and_dispatch(shared_.dispatcher, event, cancel_all_orders_ack);
     };
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
       log::debug(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);

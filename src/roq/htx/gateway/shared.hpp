@@ -2,9 +2,7 @@
 
 #pragma once
 
-#include <chrono>
 #include <string>
-#include <utility>
 #include <vector>
 
 #include "roq/api.hpp"
@@ -31,14 +29,17 @@ struct Shared final {
 
   Shared(Shared const &) = delete;
 
-  auto discard_symbol(std::string_view const &name) const { return dispatcher.discard_symbol(name); }
+  server::Dispatcher &dispatcher;
 
-  template <typename... Args>
-  auto operator()(Args &&...args) {
-    return dispatcher(std::forward<Args>(args)...);
-  }
-
+  Settings const &settings;
   API const api;
+
+  core::limit::RateLimiter rate_limiter;
+
+  core::Symbols symbols;
+  utils::unordered_set<std::string> all_symbols;
+
+  utils::unordered_map<std::string, market::mbp::Sequencer> mbp_sequencer;
 
  private:
   struct {
@@ -60,15 +61,7 @@ struct Shared final {
     return trades;
   }
 
- public:
-  server::Dispatcher &dispatcher;
-
- public:
-  Settings const &settings;
-  core::limit::RateLimiter rate_limiter;
-  core::Symbols symbols;
-  utils::unordered_set<std::string> all_symbols;
-  utils::unordered_map<std::string, market::mbp::Sequencer> mbp_sequencer;
+  std::vector<MBPUpdate> final_bids, final_asks;
 };
 
 }  // namespace gateway

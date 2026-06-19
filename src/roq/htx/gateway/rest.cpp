@@ -150,7 +150,7 @@ void Rest::operator()(Trace<web::rest::Client::Latency> const &event) {
       .account = {},
       .latency = latency.sample,
   };
-  create_trace_and_dispatch(handler_, trace_info, external_latency);
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, external_latency);
   latency_.ping.update(latency.sample);
 }
 
@@ -173,7 +173,7 @@ void Rest::operator()(ConnectionStatus connection_status, std::string_view const
       .proxy = (*connection_).get_proxy(),
   };
   log::info("stream_status={}"sv, stream_status);
-  create_trace_and_dispatch(handler_, trace_info, stream_status);
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, stream_status);
 }
 
 uint32_t Rest::download(State state) {
@@ -369,7 +369,7 @@ void Rest::operator()(Trace<protocol::json::Symbols> const &event) {
       continue;
     }
     auto &symbol = item.symbol;
-    auto discard = shared_.discard_symbol(item.symbol);
+    auto discard = shared_.dispatcher.discard_symbol(item.symbol);
     auto tick_size = std::pow(10.0, -item.price_precision);
     auto trade_vol_step_size = std::pow(10.0, -item.amount_precision);
     auto reference_data = ReferenceData{
@@ -406,7 +406,7 @@ void Rest::operator()(Trace<protocol::json::Symbols> const &event) {
         .sending_time_utc = {},
         .discard = discard,
     };
-    create_trace_and_dispatch(handler_, trace_info, reference_data, false);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, reference_data, false);
     if (discard) {
       log::info<1>(R"(Drop symbol="{}")"sv, item.symbol);
       continue;
@@ -425,7 +425,7 @@ void Rest::operator()(Trace<protocol::json::Symbols> const &event) {
         .exchange_sequence = {},
         .sending_time_utc = {},
     };
-    create_trace_and_dispatch(handler_, trace_info, market_status, true);
+    create_trace_and_dispatch(shared_.dispatcher, trace_info, market_status, true);
   }
   log::info("Symbols: including symbols {}/{}"sv, counter, std::size(symbols.data));
   if (!std::empty(symbols_2)) {
