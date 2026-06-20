@@ -2,15 +2,9 @@
 
 #include "roq/htx/gateway/rest.hpp"
 
-#include <utility>
-
 #include "roq/mask.hpp"
 
-#include "roq/utils/update.hpp"
-
 #include "roq/utils/metrics/factory.hpp"
-
-#include "roq/web/rest/client.hpp"
 
 #include "roq/htx/protocol/json/map.hpp"
 #include "roq/htx/protocol/json/utils.hpp"

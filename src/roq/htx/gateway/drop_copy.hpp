@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 
 #include "roq/utils/metrics/counter.hpp"
 #include "roq/utils/metrics/latency.hpp"
@@ -33,8 +32,6 @@ struct DropCopy final : public web::socket::Client::Handler, public protocol::js
 
   DropCopy(DropCopy const &) = delete;
 
-  bool ready() const;
-
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
   void operator()(Event<Timer> const &);
@@ -42,6 +39,8 @@ struct DropCopy final : public web::socket::Client::Handler, public protocol::js
   void operator()(metrics::Writer &) const;
 
  protected:
+  // web::socket::Client::Handler
+
   void operator()(web::socket::Client::Connected const &) override;
   void operator()(web::socket::Client::Disconnected const &) override;
   void operator()(web::socket::Client::Ready const &) override;
@@ -50,7 +49,10 @@ struct DropCopy final : public web::socket::Client::Handler, public protocol::js
   void operator()(web::socket::Client::Text const &) override;
   void operator()(web::socket::Client::Binary const &) override;
 
- private:
+  // helpers
+
+  bool ready() const;
+
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
   void send_pong(std::chrono::milliseconds timestamp);
@@ -61,6 +63,8 @@ struct DropCopy final : public web::socket::Client::Handler, public protocol::js
   void subscribe(std::string_view const &channel);
 
   void parse(std::string_view const &message);
+
+  // protocol::json::Parser::Handler
 
   void operator()(Trace<protocol::json::Req> const &) override;
   void operator()(Trace<protocol::json::Ping> const &) override;

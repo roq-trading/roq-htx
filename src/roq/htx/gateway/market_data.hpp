@@ -3,7 +3,6 @@
 #pragma once
 
 #include <string>
-#include <string_view>
 #include <vector>
 
 #include "roq/utils/metrics/counter.hpp"
@@ -16,7 +15,6 @@
 
 #include "roq/core/zlib/inflate.hpp"
 
-#include "roq/core/download.hpp"
 #include "roq/core/timer_queue.hpp"
 
 #include "roq/core/json/buffer_stack.hpp"
@@ -39,8 +37,6 @@ struct MarketData final : public web::socket::Client::Handler, public protocol::
   MarketData(MarketData &&) = delete;
   MarketData(MarketData const &) = delete;
 
-  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
-
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
   void operator()(Event<Timer> const &);
@@ -50,6 +46,8 @@ struct MarketData final : public web::socket::Client::Handler, public protocol::
   void subscribe(size_t start_from = 0);
 
  protected:
+  // web::socket::Client::Handler
+
   void operator()(web::socket::Client::Connected const &) override;
   void operator()(web::socket::Client::Disconnected const &) override;
   void operator()(web::socket::Client::Ready const &) override;
@@ -58,7 +56,10 @@ struct MarketData final : public web::socket::Client::Handler, public protocol::
   void operator()(web::socket::Client::Text const &) override;
   void operator()(web::socket::Client::Binary const &) override;
 
- private:
+  // helpers
+
+  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
+
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
   void subscribe(std::span<Symbol const> const &symbols);
@@ -68,6 +69,8 @@ struct MarketData final : public web::socket::Client::Handler, public protocol::
   void send_pong(std::chrono::milliseconds timestamp);
 
   void parse(std::string_view const &message);
+
+  // protocol::json::Parser::Handler
 
   void operator()(Trace<protocol::json::Req> const &) override;
   void operator()(Trace<protocol::json::Ping> const &) override;
@@ -86,6 +89,8 @@ struct MarketData final : public web::socket::Client::Handler, public protocol::
   void operator()(Trace<protocol::json::Accounts> const &) override;
   void operator()(Trace<protocol::json::Orders> const &) override;
   void operator()(Trace<protocol::json::Clearing> const &) override;
+
+  // helpers
 
   void check_request_queue(std::chrono::nanoseconds now);
 

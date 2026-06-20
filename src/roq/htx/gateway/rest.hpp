@@ -3,10 +3,6 @@
 #pragma once
 
 #include <string>
-#include <string_view>
-#include <vector>
-
-#include "roq/utils/container.hpp"
 
 #include "roq/utils/metrics/counter.hpp"
 #include "roq/utils/metrics/latency.hpp"
@@ -45,8 +41,6 @@ struct Rest final : public web::rest::Client::Handler {
 
   Rest(Rest const &) = delete;
 
-  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
-
   void operator()(Event<Start> const &);
   void operator()(Event<Stop> const &);
   void operator()(Event<Timer> const &);
@@ -54,9 +48,15 @@ struct Rest final : public web::rest::Client::Handler {
   void operator()(metrics::Writer &) const;
 
  protected:
+  // web::rest::Client::Handler
+
   void operator()(Trace<web::rest::Client::Connected> const &) override;
   void operator()(Trace<web::rest::Client::Disconnected> const &) override;
   void operator()(Trace<web::rest::Client::Latency> const &) override;
+
+  // helpers
+
+  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
 
   void operator()(ConnectionStatus, std::string_view const &reason = {});
 
@@ -70,17 +70,25 @@ struct Rest final : public web::rest::Client::Handler {
 
   uint32_t download(State);
 
+  // market-status
+
   void get_market_status();
   void get_market_status_ack(Trace<web::rest::Response> const &, uint32_t sequence);
   void operator()(Trace<protocol::json::MarketStatus> const &);
+
+  // currencies
 
   void get_currencies();
   void get_currencies_ack(Trace<web::rest::Response> const &, uint32_t sequence);
   void operator()(Trace<protocol::json::Currencies> const &);
 
+  // symbols
+
   void get_symbols();
   void get_symbols_ack(Trace<web::rest::Response> const &, uint32_t sequence);
   void operator()(Trace<protocol::json::Symbols> const &);
+
+  // helpers
 
   template <typename SuccessHandler, typename ErrorHandler>
   void process_response(web::rest::Response const &, SuccessHandler, ErrorHandler);
