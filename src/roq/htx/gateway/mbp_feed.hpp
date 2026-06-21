@@ -91,7 +91,7 @@ struct MBPFeed final : public web::socket::Client::Handler, public protocol::jso
   void check_request_queue(std::chrono::nanoseconds now);
 
  private:
-  Handler &handler_;
+  [[maybe_unused]] Handler &handler_;
   // config
   uint16_t const stream_id_;
   std::string const name_;
