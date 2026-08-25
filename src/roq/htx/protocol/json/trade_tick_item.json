@@ -26,6 +26,10 @@
     {
       "name": "direction",
       "type": "roq/htx/protocol/json/Direction"
+    },
+    {
+      "name": "isRpiTrade",
+      "type": "std/bool"
     }
   ]
 }
