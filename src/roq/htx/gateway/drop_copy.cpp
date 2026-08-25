@@ -251,8 +251,13 @@ void DropCopy::operator()(Trace<protocol::json::Req> const &event) {
         subscribe();
         (*this)(ConnectionStatus::READY);
       } else {
-        log::error("req={}"sv, req);
-        (*connection_).close();
+        if (shared_.settings.experimental.retry_logon) {
+          log::error("req={}"sv, req);
+          log::warn("Disconnecting..."sv);
+          (*connection_).close();
+        } else {
+          log::fatal("req={}"sv, req);
+        }
       }
     }
   });
