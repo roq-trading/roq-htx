@@ -373,6 +373,7 @@ void Rest::operator()(Trace<protocol::json::Symbols> const &event) {
         .description = {},
         .security_type = {},
         .external_security_id = {},
+        .market_segment = {},
         .cfi_code = {},
         .base_currency = item.base_currency,
         .quote_currency = item.quote_currency,
