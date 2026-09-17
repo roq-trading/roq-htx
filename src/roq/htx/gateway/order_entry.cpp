@@ -449,6 +449,7 @@ void OrderEntry::operator()(Trace<protocol::json::OpenOrdersAck> const &event) {
         .order_type = map(item.type),
         .time_in_force = map(item.type),
         .execution_instructions = map(item.type),
+        .execution_destination = {},
         .create_time_utc = item.created_at,
         .update_time_utc = item.created_at,
         .external_account = external_account,

@@ -382,6 +382,7 @@ void DropCopy::operator()(Trace<protocol::json::Orders> const &event) {
       .order_type = map(data.type),
       .time_in_force = map(data.type),
       .execution_instructions = map(data.type),
+      .execution_destination = {},
       .create_time_utc = data.order_create_time,
       .update_time_utc = update_time,
       .external_account = external_account,
