@@ -20,6 +20,8 @@
 #include "roq/htx/gateway/api.hpp"
 #include "roq/htx/gateway/settings.hpp"
 
+#include "roq/htx/tools/rate_limit.hpp"
+
 namespace roq {
 namespace htx {
 namespace gateway {
@@ -33,6 +35,8 @@ struct Shared final {
 
   Settings const &settings;
   API const api;
+
+  tools::RateLimit rate_limit;
 
   core::limit::RateLimiter rate_limiter;
 
