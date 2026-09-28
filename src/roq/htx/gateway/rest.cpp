@@ -62,7 +62,7 @@ auto create_connection(auto &handler, auto &settings, auto &context, auto &share
       .decode_buffer_size = settings.misc.decode_buffer_size,
       .encode_buffer_size = settings.misc.encode_buffer_size,
   };
-  return web::rest::Client::create(handler, context, config, shared.rate_limit);
+  return web::rest::Client::create(handler, context, config, shared.throttle);
 }
 
 struct create_metrics final : public utils::metrics::Factory {
@@ -242,7 +242,7 @@ void Rest::get_market_status_ack(Trace<web::rest::Response> const &event, uint32
         }
       }
     };
-    process_response(event, handle_success, handle_error);
+    process_response(event, handle_error, handle_success);
   });
 }
 
@@ -295,7 +295,7 @@ void Rest::get_currencies_ack(Trace<web::rest::Response> const &event, uint32_t 
         }
       }
     };
-    process_response(event, handle_success, handle_error);
+    process_response(event, handle_error, handle_success);
   });
 }
 
@@ -348,7 +348,7 @@ void Rest::get_symbols_ack(Trace<web::rest::Response> const &event, uint32_t seq
         }
       }
     };
-    process_response(event, handle_success, handle_error);
+    process_response(event, handle_error, handle_success);
   });
 }
 
@@ -431,8 +431,8 @@ void Rest::operator()(Trace<protocol::json::Symbols> const &event) {
   }
 }
 
-template <typename SuccessHandler, typename ErrorHandler>
-void Rest::process_response(web::rest::Response const &response, SuccessHandler success_handler, ErrorHandler error_handler) {
+void Rest::process_response(Trace<web::rest::Response> const &event, auto error_handler, auto success_handler) {
+  auto &[trace_info, response] = event;
   try {
     auto [status, category, body] = response.result();
     // log::debug(R"(status={}, category={}, body="{}")"sv, status, category, body);

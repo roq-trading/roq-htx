@@ -1,6 +1,6 @@
 /* Copyright (c) 2017-2026, Hans Erik Thrane */
 
-#include "roq/htx/tools/rate_limit.hpp"
+#include "roq/htx/tools/throttle.hpp"
 
 #include "roq/utils/compare.hpp"
 #include "roq/utils/update.hpp"
@@ -56,15 +56,15 @@ static_assert(parse_header("X-HB-RateLimit-Requests-Expire"sv) == Header::X_HB_R
 
 // === IMPLEMENTATION ===
 
-RateLimit::RateLimit(flags::Settings const &settings) : suspend_on_rate_limit_{settings.experimental.suspend_on_rate_limit} {
+Throttle::Throttle(server::Settings const &settings) : enabled_{settings.experimental.enable_rate_limit} {
 }
 
 // web::rest::Interceptor
 
-void RateLimit::operator()(Trace<web::rest::MessageBegin> const &) {
+void Throttle::operator()(Trace<web::rest::MessageBegin> const &) {
 }
 
-void RateLimit::operator()(Trace<web::rest::MessageHeader> const &event) {
+void Throttle::operator()(Trace<web::rest::MessageHeader> const &event) {
   auto &[trace_info, header] = event;
   auto update_value = [&](auto &result) {
     using value_type = std::remove_cvref_t<decltype(result)>;
@@ -72,7 +72,7 @@ void RateLimit::operator()(Trace<web::rest::MessageHeader> const &event) {
     return utils::update(result, value);
   };
   auto update_suspend_until = [&]() {
-    if (!suspend_on_rate_limit_) {
+    if (!enabled_) {
       return;
     }
     if (params_.requests_remain > 0 || params_.requests_expire == 0) {
@@ -107,9 +107,9 @@ void RateLimit::operator()(Trace<web::rest::MessageHeader> const &event) {
   }
 }
 
-void RateLimit::operator()(Trace<web::rest::MessageEnd> const &event) {
+void Throttle::operator()(Trace<web::rest::MessageEnd> const &event) {
   auto &[trace_info, message_end] = event;
-  if (!suspend_on_rate_limit_) {
+  if (!enabled_) {
     return;
   }
   switch (message_end.status) {
