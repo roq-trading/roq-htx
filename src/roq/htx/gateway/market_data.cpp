@@ -336,6 +336,8 @@ void MarketData::operator()(Trace<protocol::json::Trade> const &event) {
     auto &trades = shared_.get_trades();
     auto emplace_back = [](auto &result, auto &value) {
       auto trade = Trade{
+          .trade_conditions = {},
+          .trade_type = {},
           .side = map(value.direction),
           .price = value.price,
           .quantity = value.amount,
