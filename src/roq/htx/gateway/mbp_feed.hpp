@@ -16,12 +16,14 @@
 
 #include "roq/core/zlib/inflate.hpp"
 
-#include "roq/core/download.hpp"
+#include "roq/core/download_2.hpp"
 #include "roq/core/timer_queue.hpp"
 
 #include "roq/core/json/buffer_stack.hpp"
 
 #include "roq/server.hpp"
+
+#include "roq/server/stream.hpp"
 
 #include "roq/htx/gateway/shared.hpp"
 
@@ -31,24 +33,35 @@ namespace roq {
 namespace htx {
 namespace gateway {
 
-struct MBPFeed final : public web::socket::Client::Handler, public protocol::json::Parser::Handler {
+struct MBPFeed final : public Base<MBPFeed>, public server::MarketDataStream, public web::socket::Client::Handler, public protocol::json::Parser::Handler {
   struct Handler {};
 
   MBPFeed(Handler &, io::Context &, uint16_t stream_id, Shared &, size_t index);
 
-  MBPFeed(MBPFeed const &) = delete;
+  // protected:
+  friend base_type;
 
-  bool ready() const { return connection_status_ == ConnectionStatus::READY; }
+  // server::Stream
 
-  void operator()(Event<Start> const &);
-  void operator()(Event<Stop> const &);
-  void operator()(Event<Timer> const &);
+  uint16_t stream_id() const override { return stream_id_; }
 
-  void operator()(metrics::Writer &) const;
+  bool ready() const override { return connection_status_ == ConnectionStatus::READY; }
 
-  void subscribe(size_t start_from = 0);
+  void operator()(Event<Start> const &) override;
+  void operator()(Event<Stop> const &) override;
+  void operator()(Event<Timer> const &) override;
+
+  void operator()(metrics::Writer &) const override;
+
+  void operator()(Trace<ConnectionStatus> const &, std::string_view const &reason = {}) override;
+
+  // server::MarketDataStream
+
+  void subscribe(size_t start_from = 0) override;
 
  protected:
+  // web::socket::Client::Handler
+
   void operator()(Trace<web::socket::Connected> const &) override;
   void operator()(Trace<web::socket::Disconnected> const &) override;
   void operator()(Trace<web::socket::Ready> const &) override;
@@ -57,18 +70,7 @@ struct MBPFeed final : public web::socket::Client::Handler, public protocol::jso
   void operator()(Trace<web::socket::Text> const &) override;
   void operator()(Trace<web::socket::Binary> const &) override;
 
- private:
-  void operator()(ConnectionStatus, std::string_view const &reason = {});
-
-  void subscribe(std::span<Symbol const> const &symbols);
-
-  void subscribe(std::string_view const &, std::string_view const &source, std::string_view const &theme);
-
-  void request(std::string_view const &symbol, std::string_view const &source, std::string_view const &theme);
-
-  void send_pong(std::chrono::milliseconds timestamp);
-
-  void parse(std::string_view const &message);
+  // protocol::json::Parser::Handler
 
   void operator()(Trace<protocol::json::Req> const &) override;
   void operator()(Trace<protocol::json::Ping> const &) override;
@@ -88,7 +90,19 @@ struct MBPFeed final : public web::socket::Client::Handler, public protocol::jso
   void operator()(Trace<protocol::json::Orders> const &) override;
   void operator()(Trace<protocol::json::Clearing> const &) override;
 
+  // helpers
+
   void check_request_queue(std::chrono::nanoseconds now);
+
+  void subscribe(std::span<Symbol const> const &symbols);
+
+  void subscribe(std::string_view const &, std::string_view const &source, std::string_view const &theme);
+
+  void request(std::string_view const &symbol, std::string_view const &source, std::string_view const &theme);
+
+  void send_pong(std::chrono::milliseconds timestamp);
+
+  void parse(std::string_view const &message);
 
  private:
   [[maybe_unused]] Handler &handler_;
