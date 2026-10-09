@@ -221,12 +221,8 @@ void Rest::get_market_status() {
         .body = {},
         .quality_of_service = {},
     };
-    auto callback = [this, sequence = download_.sequence()]([[maybe_unused]] auto &request_id, auto &response) {
-      TraceInfo trace_info;
-      Trace event{trace_info, response};
-      get_market_status_ack(event, sequence);
-    };
-    (*connection_)("market_status"sv, request, callback);
+    auto callback = [this, sequence = download_.sequence()](auto &event, [[maybe_unused]] auto &request_id) { get_market_status_ack(event, sequence); };
+    (*connection_)(request, callback, "market_status"sv);
   });
 }
 
@@ -274,12 +270,8 @@ void Rest::get_currencies() {
         .body = {},
         .quality_of_service = {},
     };
-    auto callback = [this, sequence = download_.sequence()]([[maybe_unused]] auto &request_id, auto &response) {
-      TraceInfo trace_info;
-      Trace event{trace_info, response};
-      get_currencies_ack(event, sequence);
-    };
-    (*connection_)("currencies"sv, request, callback);
+    auto callback = [this, sequence = download_.sequence()](auto &event, [[maybe_unused]] auto &request_id) { get_currencies_ack(event, sequence); };
+    (*connection_)(request, callback, "currencies"sv);
   });
 }
 
@@ -327,12 +319,8 @@ void Rest::get_symbols() {
         .body = {},
         .quality_of_service = {},
     };
-    auto callback = [this, sequence = download_.sequence()]([[maybe_unused]] auto &request_id, auto &response) {
-      TraceInfo trace_info;
-      Trace event{trace_info, response};
-      get_symbols_ack(event, sequence);
-    };
-    (*connection_)("symbols"sv, request, callback);
+    auto callback = [this, sequence = download_.sequence()](auto &event, [[maybe_unused]] auto &request_id) { get_symbols_ack(event, sequence); };
+    (*connection_)(request, callback, "symbols"sv);
   });
 }
 
