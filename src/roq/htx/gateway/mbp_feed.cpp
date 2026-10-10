@@ -100,15 +100,15 @@ MBPFeed::MBPFeed(Handler &handler, io::Context &context, uint16_t stream_id, Sha
 
 // server::Stream
 
-void MBPFeed::operator()(Event<Start> const &) {
+void MBPFeed::operator()(Trace<Start> const &) {
   (*connection_).start();
 }
 
-void MBPFeed::operator()(Event<Stop> const &) {
+void MBPFeed::operator()(Trace<Stop> const &) {
   (*connection_).stop();
 }
 
-void MBPFeed::operator()(Event<Timer> const &event) {
+void MBPFeed::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
   (*connection_).refresh(timer.now);
   if (ready()) {
