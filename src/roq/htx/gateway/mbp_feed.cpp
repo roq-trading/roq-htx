@@ -206,7 +206,7 @@ void MBPFeed::operator()(Trace<web::socket::Binary> const &event) {
   if (inflate_.decode(binary.payload, inflate_buffer_, [&](auto &payload) {
         std::string_view message{reinterpret_cast<char const *>(std::data(payload)), std::size(payload)};
         log::info<5>(R"(message="{}")"sv, message);
-        parse(message);
+        parse(trace_info, message);
       })) {
   } else {
     log::fatal("Failed to decode message"sv);
@@ -329,7 +329,7 @@ void MBPFeed::operator()(Trace<protocol::json::MBP> const &event) {
         log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
         auto market_by_price_update = create_update(bids, asks, UpdateType::SNAPSHOT, sequencer.last_sequence());
         auto apply_updates = [&](auto &market_by_price) { sequencer.apply(market_by_price, sequence, false); };
-        create_trace_and_dispatch(shared_.dispatcher, event, market_by_price_update, true, apply_updates);
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, market_by_price_update, true, apply_updates);
       };
       auto request_snapshot = [&](auto retries) {
         log::debug(R"(REQUEST symbol="{}" (retries={}))"sv, symbol, retries);
@@ -392,7 +392,7 @@ void MBPFeed::operator()(Trace<protocol::json::MBPSnapshot> const &event) {
             .checksum = {},
         };
         auto apply_updates = [&](auto &market_by_price) { sequencer.apply(market_by_price, sequence, false); };
-        create_trace_and_dispatch(shared_.dispatcher, event, market_by_price_update, true, apply_updates);
+        create_trace_and_dispatch(shared_.dispatcher, trace_info, market_by_price_update, true, apply_updates);
       };
       auto request_snapshot = [&](auto retries) {
         log::debug(R"(REQUEST symbol="{}" (retries={}))"sv, symbol, retries);
@@ -475,11 +475,10 @@ void MBPFeed::send_pong(std::chrono::milliseconds timestamp) {
   (*connection_).send_text(message);  // note! special, can't delay
 }
 
-void MBPFeed::parse(std::string_view const &message) {
+void MBPFeed::parse(TraceInfo const &trace_info, std::string_view const &message) {
   profile_.parse([&]() {
     auto log_message = [&]() { log::warn(R"(*** PLEASE REPORT *** message="{}")"sv, message); };
     try {
-      TraceInfo trace_info;
       if (!protocol::json::Parser::dispatch(*this, message, decode_buffer_, trace_info, shared_.settings.experimental.allow_unknown_event_types)) {
         log_message();
       }
