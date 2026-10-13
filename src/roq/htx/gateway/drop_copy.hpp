@@ -84,7 +84,7 @@ struct DropCopy final : public Base<DropCopy>, public server::Stream, public web
 
   void send_pong(std::chrono::milliseconds timestamp);
 
-  void send_login();
+  void send_login(TraceInfo const &);
 
   void subscribe();
   void subscribe(std::string_view const &channel);

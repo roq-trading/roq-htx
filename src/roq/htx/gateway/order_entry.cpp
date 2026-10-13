@@ -240,15 +240,15 @@ int32_t OrderEntry::download(Trace<State> const &event) {
       break;
     case ACCOUNTS:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "accounts"sv);
-      accounts();
+      accounts(trace_info);
       return 1;
     case BALANCE:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "balance"sv);
-      balance();
+      balance(trace_info);
       return 1;
     case OPEN_ORDERS:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "open-orders"sv);
-      open_orders();
+      open_orders(trace_info);
       return 1;
     case DONE:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
@@ -260,12 +260,11 @@ int32_t OrderEntry::download(Trace<State> const &event) {
 
 // accounts
 
-void OrderEntry::accounts() {
+void OrderEntry::accounts(TraceInfo const &trace_info) {
   profile_.accounts([&]() {
-    auto now_utc = clock::get_realtime<std::chrono::seconds>();
     auto method = web::http::Method::GET;
     auto path = shared_.api.order_management.accounts;
-    auto query = account_.create_query(method, path, now_utc);
+    auto query = account_.create_query(trace_info, method, path);
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -316,12 +315,11 @@ void OrderEntry::operator()(Trace<protocol::json::AccountsAck> const &event) {
 
 // balance
 
-void OrderEntry::balance() {
+void OrderEntry::balance(TraceInfo const &trace_info) {
   profile_.balance([&]() {
-    auto now_utc = clock::get_realtime<std::chrono::seconds>();
     auto method = web::http::Method::GET;
     auto path = fmt::format("{}/{}/balance"sv, shared_.api.order_management.accounts, account_id_);
-    auto query = account_.create_query(method, path, now_utc);
+    auto query = account_.create_query(trace_info, method, path);
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -387,12 +385,11 @@ void OrderEntry::operator()(Trace<protocol::json::BalanceAck> const &event) {
 
 // open-orders
 
-void OrderEntry::open_orders() {
+void OrderEntry::open_orders(TraceInfo const &trace_info) {
   profile_.open_orders([&]() {
-    auto now_utc = clock::get_realtime<std::chrono::seconds>();
     auto method = web::http::Method::GET;
     auto path = shared_.api.order_management.open_orders;
-    auto query = account_.create_query(method, path, now_utc);
+    auto query = account_.create_query(trace_info, method, path);
     auto request = web::rest::Request{
         .method = method,
         .path = path,
@@ -488,10 +485,9 @@ void OrderEntry::place_order(
       throw server::oms::NotReady{"not ready"sv};
     }
     auto &[message_info, create_order] = event;
-    auto now_utc = clock::get_realtime<std::chrono::seconds>();
     auto method = web::http::Method::POST;
     auto path = shared_.api.order_management.place_order;
-    auto query = account_.create_query(method, path, now_utc);
+    auto query = account_.create_query(message_info, method, path);
     auto body = protocol::json::Encoder::place_order(encode_buffer_, create_order, order, ref_data, request_id, account_id_);
     auto request = web::rest::Request{
         .method = method,
@@ -577,9 +573,8 @@ void OrderEntry::cancel_order(
     }
     auto &[message_info, cancel_order] = event;
     auto helper = [&](auto &path, auto &body) {
-      auto now_utc = clock::get_realtime<std::chrono::seconds>();
       auto method = web::http::Method::POST;
-      auto query = account_.create_query(method, path, now_utc);
+      auto query = account_.create_query(message_info, method, path);
       auto request = web::rest::Request{
           .method = method,
           .path = path,
@@ -669,10 +664,9 @@ void OrderEntry::cancel_all_orders(Event<CancelAllOrders> const &event, std::str
       throw server::oms::NotReady{"not ready"sv};
     }
     auto &[message_info, cancel_all_orders] = event;
-    auto now_utc = clock::get_realtime<std::chrono::seconds>();
     auto method = web::http::Method::GET;
     auto path = shared_.api.order_management.cancel_all_orders;
-    auto query = account_.create_query(method, path, now_utc);
+    auto query = account_.create_query(message_info, method, path);
     auto request = web::rest::Request{
         .method = method,
         .path = path,

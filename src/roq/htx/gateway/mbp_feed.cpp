@@ -5,6 +5,8 @@
 #include <algorithm>
 #include <utility>
 
+#include "roq/logging.hpp"
+
 #include "roq/mask.hpp"
 
 #include "roq/utils/safe_cast.hpp"
@@ -95,7 +97,7 @@ MBPFeed::MBPFeed(Handler &handler, io::Context &context, uint16_t stream_id, Sha
           .ping = create_metrics(shared.settings, name_, "ping"sv),
           .heartbeat = create_metrics(shared.settings, name_, "heartbeat"sv),
       },
-      shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER}, request_queue_{shared.settings.ws.request_delay} {
+      shared_{shared}, inflate_{core::zlib::Inflate::GZIP_NO_HEADER}, request_queue_{shared_.rate_limiter, shared.settings.ws.request_delay} {
 }
 
 // server::Stream
@@ -112,7 +114,7 @@ void MBPFeed::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
   (*connection_).refresh(timer.now);
   if (ready()) {
-    check_request_queue(timer.now);
+    check_request_queue(trace_info);
   }
 }
 
@@ -426,10 +428,9 @@ void MBPFeed::operator()(Trace<protocol::json::Clearing> const &) {
 
 // helpers
 
-void MBPFeed::check_request_queue(std::chrono::nanoseconds now) {
-  auto can_send_helper = [&](auto now) { return shared_.rate_limiter.can_request(now); };
-  auto send_helper = [&](auto &message) { (*connection_).send_text(message); };
-  request_queue_.dispatch(can_send_helper, send_helper, now);
+void MBPFeed::check_request_queue(TraceInfo const &trace_info) {
+  auto callback = [&]([[maybe_unused]] auto &trace_info, auto &message) { (*connection_).send_text(message); };
+  request_queue_.dispatch(trace_info, callback);
 }
 
 void MBPFeed::subscribe(std::span<Symbol const> const &symbols) {

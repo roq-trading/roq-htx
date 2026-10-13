@@ -15,9 +15,9 @@
 
 #include "roq/core/zlib/inflate.hpp"
 
-#include "roq/core/timer_queue.hpp"
-
 #include "roq/core/json/buffer_stack.hpp"
+
+#include "roq/core/limit/queue.hpp"
 
 #include "roq/server.hpp"
 
@@ -93,7 +93,7 @@ struct MarketData final : public Base<MarketData>,
 
   // helpers
 
-  void check_request_queue(std::chrono::nanoseconds now);
+  void check_request_queue(TraceInfo const &);
 
   // helpers
 
@@ -135,7 +135,7 @@ struct MarketData final : public Base<MarketData>,
   core::zlib::Inflate inflate_;
   std::vector<std::byte> inflate_buffer_;
   // queue
-  core::TimerQueue<std::string> request_queue_;
+  core::limit::Queue<std::string> request_queue_;
 };
 
 }  // namespace gateway

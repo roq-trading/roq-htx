@@ -172,7 +172,7 @@ void DropCopy::operator()(Trace<web::socket::Disconnected> const &event) {
 
 void DropCopy::operator()(Trace<web::socket::Ready> const &event) {
   auto &[trace_info, ready] = event;
-  send_login();
+  send_login(trace_info);
   create_trace_and_dispatch_2(trace_info, ConnectionStatus::LOGIN_SENT);
 }
 
@@ -448,9 +448,8 @@ void DropCopy::send_pong(std::chrono::milliseconds timestamp) {
   (*connection_).send_text(message);
 }
 
-void DropCopy::send_login() {
-  auto now_utc = clock::get_realtime<std::chrono::seconds>();
-  auto message = account_.create_ws_auth("/ws/v2"sv, now_utc);
+void DropCopy::send_login(TraceInfo const &trace_info) {
+  auto message = account_.create_ws_auth(trace_info, "/ws/v2"sv);
   log::debug(R"(message="{}")"sv, message);
   (*connection_).send_text(message);
 }

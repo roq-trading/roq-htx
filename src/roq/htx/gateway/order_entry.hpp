@@ -98,19 +98,19 @@ struct OrderEntry final : public Base<OrderEntry>, public server::OrderActionStr
 
   // accounts
 
-  void accounts();
+  void accounts(TraceInfo const &);
   void accounts_ack(Trace<web::rest::Response> const &);
   void operator()(Trace<protocol::json::AccountsAck> const &);
 
   // balance
 
-  void balance();
+  void balance(TraceInfo const &);
   void balance_ack(Trace<web::rest::Response> const &);
   void operator()(Trace<protocol::json::BalanceAck> const &);
 
   // open-orders
 
-  void open_orders();
+  void open_orders(TraceInfo const &);
   void open_orders_ack(Trace<web::rest::Response> const &);
   void operator()(Trace<protocol::json::OpenOrdersAck> const &);
 
