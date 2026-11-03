@@ -80,7 +80,7 @@ struct create_metrics final : public utils::metrics::Factory {
 
 // === IMPLEMENTATION ===
 
-OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared)
+OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, Request &request)
     : handler_{handler}, stream_id_{stream_id}, name_{create_name(stream_id_, account.name)},
       connection_{create_connection(*this, shared.settings, context, shared)}, decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
@@ -93,6 +93,8 @@ OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_i
           .balance_ack = create_metrics(shared.settings, name_, "balance_ack"sv),
           .open_orders = create_metrics(shared.settings, name_, "open_orders"sv),
           .open_orders_ack = create_metrics(shared.settings, name_, "open_orders_ack"sv),
+          .order = create_metrics(shared.settings, name_, "order"sv),
+          .order_ack = create_metrics(shared.settings, name_, "order_ack"sv),
           .place_order = create_metrics(shared.settings, name_, "place_order"sv),
           .place_order_ack = create_metrics(shared.settings, name_, "place_order_ack"sv),
           .cancel_order = create_metrics(shared.settings, name_, "cancel_order"sv),
@@ -103,7 +105,7 @@ OrderEntry::OrderEntry(Handler &handler, io::Context &context, uint16_t stream_i
       latency_{
           .ping = create_metrics(shared.settings, name_, "ping"sv),
       },
-      account_{account}, shared_{shared}, download_{shared.settings.rest.request_timeout, [this](auto &event) { return download(event); }} {
+      account_{account}, shared_{shared}, request_{request} {
 }
 
 // server::Stream
@@ -120,6 +122,7 @@ void OrderEntry::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
   if ((*connection_).refresh(timer.now)) {
     if (ready()) {
+      check_request_queue(trace_info);
     }
   }
 }
@@ -135,6 +138,8 @@ void OrderEntry::operator()(metrics::Writer &writer) const {
       .write(profile_.balance_ack, metrics::Type::PROFILE)
       .write(profile_.open_orders, metrics::Type::PROFILE)
       .write(profile_.open_orders_ack, metrics::Type::PROFILE)
+      .write(profile_.order, metrics::Type::PROFILE)
+      .write(profile_.order_ack, metrics::Type::PROFILE)
       .write(profile_.place_order, metrics::Type::PROFILE)
       .write(profile_.place_order_ack, metrics::Type::PROFILE)
       .write(profile_.cancel_order, metrics::Type::PROFILE)
@@ -203,20 +208,13 @@ uint16_t OrderEntry::operator()(Event<CancelAllOrders> const &event, std::string
 
 void OrderEntry::operator()(Trace<web::rest::Connected> const &event) {
   auto &[trace_info, connected] = event;
-  if (download_.downloading()) {
-    download_.bump(trace_info);
-  } else {
-    download_.begin(trace_info);
-  }
+  create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
 }
 
 void OrderEntry::operator()(Trace<web::rest::Disconnected> const &event) {
   auto &[trace_info, disconnected] = event;
   ++counter_.disconnect;
   create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
-  if (!download_.downloading()) {
-    download_.reset();
-  }
   account_id_ = {};  // ???
 }
 
@@ -229,36 +227,6 @@ void OrderEntry::operator()(Trace<web::rest::Latency> const &event) {
   };
   create_trace_and_dispatch(shared_.dispatcher, trace_info, external_latency);
   latency_.ping.update(latency.sample);
-}
-
-// core::Download
-
-int32_t OrderEntry::download(Trace<State> const &event) {
-  auto &[trace_info, state] = event;
-  auto publish_downloading = [&]() { create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, magic_enum::enum_name(state)); };
-  switch (state) {
-    using enum State;
-    case UNDEFINED:
-      assert(false);
-      break;
-    case ACCOUNTS:
-      publish_downloading();
-      accounts(trace_info);
-      return 1;
-    case BALANCE:
-      publish_downloading();
-      balance(trace_info);
-      return 1;
-    case OPEN_ORDERS:
-      publish_downloading();
-      open_orders(trace_info);
-      return 1;
-    case DONE:
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
-      return {};
-  }
-  assert(false);
-  return {};
 }
 
 // accounts
@@ -284,25 +252,21 @@ void OrderEntry::accounts(TraceInfo const &trace_info) {
 }
 
 void OrderEntry::accounts_ack(Trace<web::rest::Response> const &event) {
-  auto const STATE = State::ACCOUNTS;
   profile_.accounts_ack([&]() {
     auto &[trace_info, response] = event;
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
       log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
-      if (download_.downloading()) {
-        download_.retry(STATE);
-      }
     };
     auto handle_success = [&](auto &body) {
       protocol::json::AccountsAck accounts_ack{body, decode_buffer_};
       if (accounts_ack.status == protocol::json::Status::OK) {
         create_trace_and_dispatch_2(trace_info, accounts_ack);
-        download_.check_relaxed(trace_info, STATE);
       } else {
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(accounts_ack.err_code), accounts_ack.err_msg);
       }
     };
     process_response(event, handle_error, handle_success);
+    request_.account.commit(trace_info);
   });
 }
 
@@ -339,25 +303,21 @@ void OrderEntry::balance(TraceInfo const &trace_info) {
 }
 
 void OrderEntry::balance_ack(Trace<web::rest::Response> const &event) {
-  auto const STATE = State::BALANCE;
   profile_.balance_ack([&]() {
     auto &[trace_info, response] = event;
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
       log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
-      if (download_.downloading()) {
-        download_.retry(STATE);
-      }
     };
     auto handle_success = [&](auto &body) {
       protocol::json::BalanceAck balance_ack{body, decode_buffer_};
       if (balance_ack.status == protocol::json::Status::OK) {
         create_trace_and_dispatch_2(trace_info, balance_ack);
-        download_.check_relaxed(trace_info, STATE);
       } else {
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(balance_ack.err_code), balance_ack.err_msg);
       }
     };
     process_response(event, handle_error, handle_success);
+    request_.balances.commit(trace_info);
   });
 }
 
@@ -409,25 +369,21 @@ void OrderEntry::open_orders(TraceInfo const &trace_info) {
 }
 
 void OrderEntry::open_orders_ack(Trace<web::rest::Response> const &event) {
-  auto const STATE = State::OPEN_ORDERS;
   profile_.open_orders_ack([&]() {
     auto &[trace_info, response] = event;
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
       log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
-      if (download_.downloading()) {
-        download_.retry(STATE);
-      }
     };
     auto handle_success = [&](auto &body) {
       protocol::json::OpenOrdersAck open_orders_ack{body, decode_buffer_};
       if (open_orders_ack.status == protocol::json::Status::OK) {
         create_trace_and_dispatch_2(trace_info, open_orders_ack);
-        download_.check_relaxed(trace_info, STATE);
       } else {
         handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(open_orders_ack.err_code), open_orders_ack.err_msg);
       }
     };
     process_response(event, handle_error, handle_success);
+    request_.open_orders.commit(trace_info);
   });
 }
 
@@ -477,6 +433,62 @@ void OrderEntry::operator()(Trace<protocol::json::OpenOrdersAck> const &event) {
     };
     create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id_);
   }
+}
+
+// order
+
+void OrderEntry::get_order(TraceInfo const &trace_info, std::string_view const &client_order_id, std::string_view const &external_order_id) {
+  profile_.order([&]() {
+    auto method = web::http::Method::GET;
+    auto path = shared_.api.order_management.order;
+    // XXX FIXME TODO pass client_order_id as query param
+    auto query = account_.create_query(trace_info, method, path);
+    auto request = web::rest::Request{
+        .method = method,
+        .path = path,
+        .query = query,
+        .accept = web::http::Accept::APPLICATION_JSON,
+        .content_type = web::http::ContentType::APPLICATION_JSON,
+        .headers = {},
+        .body = {},
+        .quality_of_service = {},
+    };
+    auto callback = [this, client_order_id = std::string{client_order_id}](auto &event, [[maybe_unused]] auto &request_id) {
+      get_order_ack(event, client_order_id);
+    };
+    (*connection_)(request, callback, "order"sv);
+  });
+}
+
+void OrderEntry::get_order_ack(Trace<web::rest::Response> const &event, std::string_view const &client_order_id) {
+  profile_.order_ack([&]() {
+    auto &[trace_info, response] = event;
+    auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
+      log::warn(R"(origin={}, error={}, status={}, text="{}")"sv, origin, error, status, text);
+    };
+    auto handle_success = [&](auto &body) {
+      log::warn("DEBUG {}"sv, body);
+      /*
+      protocol::json::OpenOrdersAck open_orders_ack{body, decode_buffer_};
+      if (open_orders_ack.status == protocol::json::Status::OK) {
+        create_trace_and_dispatch_2(trace_info, open_orders_ack);
+      } else {
+        handle_error(Origin::EXCHANGE, RequestStatus::REJECTED, protocol::json::guess_error(open_orders_ack.err_code), open_orders_ack.err_msg);
+      }
+      */
+    };
+    process_response(event, handle_error, handle_success);
+    //
+    if (download_stale_orders_counter_) {
+      --download_stale_orders_counter_;
+    } else {
+      log::fatal("Unexpected"sv);
+    }
+    log::warn("DEBUG remaining orders: {}"sv, download_stale_orders_counter_);
+    if (download_stale_orders_counter_ == 0) {
+      request_.stale_orders.commit(trace_info);
+    }
+  });
 }
 
 // place-order
@@ -749,6 +761,24 @@ void OrderEntry::operator()(Trace<protocol::json::CancelAllOrdersAck> const &eve
 }
 
 // helpers
+
+void OrderEntry::check_request_queue(TraceInfo const &trace_info) {
+  request_.account.check_pending(trace_info, [this](auto &trace_info) { accounts(trace_info); });
+  request_.balances.check_pending(trace_info, [this](auto &trace_info) { balance(trace_info); });
+  request_.open_orders.check_pending(trace_info, [this](auto &trace_info) { open_orders(trace_info); });
+  request_.stale_orders.check_pending(trace_info, [this](auto &trace_info) {
+    // XXX FIXME TODO throttle requests
+    auto helper = [&](auto &order) { get_order(trace_info, order.client_order_id, order.external_order_id); };
+    for (auto &[user_id, order_id] : request_.details_stale_orders) {
+      if (shared_.dispatcher.find_order(user_id, order_id, helper)) {
+        ++download_stale_orders_counter_;
+      } else {
+        log::warn("Unexpected: user_id={}, order_id={}"sv, user_id, order_id);
+      }
+    }
+    request_.details_stale_orders.clear();
+  });
+}
 
 void OrderEntry::process_response(Trace<web::rest::Response> const &event, auto error_handler, auto success_handler) {
   auto &[trace_info, response] = event;

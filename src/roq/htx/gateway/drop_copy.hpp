@@ -12,6 +12,8 @@
 
 #include "roq/web/socket/client.hpp"
 
+#include "roq/core/download_2.hpp"
+
 #include "roq/core/json/buffer_stack.hpp"
 
 #include "roq/server.hpp"
@@ -19,6 +21,7 @@
 #include "roq/server/stream.hpp"
 
 #include "roq/htx/gateway/account.hpp"
+#include "roq/htx/gateway/request.hpp"
 #include "roq/htx/gateway/shared.hpp"
 
 #include "roq/htx/protocol/json/parser.hpp"
@@ -30,7 +33,7 @@ namespace gateway {
 struct DropCopy final : public Base<DropCopy>, public server::Stream, public web::socket::Client::Handler, public protocol::json::Parser::Handler {
   struct Handler {};
 
-  DropCopy(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+  DropCopy(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &, Request &);
 
   // protected:
   friend base_type;
@@ -60,6 +63,22 @@ struct DropCopy final : public Base<DropCopy>, public server::Stream, public web
   void operator()(Trace<web::socket::Text> const &) override;
   void operator()(Trace<web::socket::Binary> const &) override;
 
+  // core::Download
+
+  enum class State {
+    UNDEFINED = 0,
+    GET_ACCOUNT,
+    SUBSCRIBE_BALANCES,
+    GET_BALANCES,
+    SUBSCRIBE_ORDERS,
+    GET_OPEN_ORDERS,
+    GET_STALE_ORDERS,
+    SUBSCRIBE_TRADES,
+    DONE,
+  };
+
+  int32_t download(Trace<State> const &);
+
   // protocol::json::Parser::Handler
 
   void operator()(Trace<protocol::json::Req> const &) override;
@@ -86,8 +105,12 @@ struct DropCopy final : public Base<DropCopy>, public server::Stream, public web
 
   void send_login(TraceInfo const &);
 
-  void subscribe();
   void subscribe(std::string_view const &channel);
+
+  void check_request_queue(TraceInfo const &);
+
+  bool check_stale_orders();
+  void check_stale_orders(TraceInfo const &);
 
   void parse(TraceInfo const &, std::string_view const &message);
 
@@ -115,9 +138,12 @@ struct DropCopy final : public Base<DropCopy>, public server::Stream, public web
   Account &account_;
   // cache
   Shared &shared_;
+  Request &request_;
   // state
-  bool ready_ = false;
   ConnectionStatus connection_status_ = {};
+  core::Download2<State> download_;
+  //
+  std::chrono::nanoseconds next_check_stale_orders_ = {};
 };
 
 }  // namespace gateway

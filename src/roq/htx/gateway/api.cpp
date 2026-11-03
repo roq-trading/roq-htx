@@ -21,6 +21,7 @@ API API::create(Settings const &) {
       .order_management{
           .accounts = "/v1/account/accounts"sv,
           .open_orders = "/v1/order/openOrders"sv,
+          .order = "/v1/order/orders/getClientOrder"sv,
           .place_order = "/v1/order/orders/place"sv,
           .cancel_order = "/v1/order/orders"sv,
           .cancel_client_order = "/v1/order/orders/submitCancelClientOrder"sv,

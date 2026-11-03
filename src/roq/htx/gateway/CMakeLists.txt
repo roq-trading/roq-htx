@@ -9,6 +9,7 @@ set(SOURCES
     market_data.cpp
     mbp_feed.cpp
     order_entry.cpp
+    request.cpp
     rest.cpp
     shared.cpp)
 

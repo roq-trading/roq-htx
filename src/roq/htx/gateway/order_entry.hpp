@@ -12,8 +12,6 @@
 
 #include "roq/web/rest/client.hpp"
 
-#include "roq/core/download_2.hpp"
-
 #include "roq/core/json/buffer_stack.hpp"
 
 #include "roq/server.hpp"
@@ -21,6 +19,7 @@
 #include "roq/server/stream.hpp"
 
 #include "roq/htx/gateway/account.hpp"
+#include "roq/htx/gateway/request.hpp"
 #include "roq/htx/gateway/shared.hpp"
 
 #include "roq/htx/protocol/json/accounts_ack.hpp"
@@ -38,7 +37,7 @@ namespace gateway {
 struct OrderEntry final : public Base<OrderEntry>, public server::OrderActionStream, public web::rest::Client::Handler {
   struct Handler {};
 
-  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &);
+  OrderEntry(Handler &, io::Context &, uint16_t stream_id, Account &, Shared &, Request &);
 
   // protected:
   friend base_type;
@@ -82,20 +81,6 @@ struct OrderEntry final : public Base<OrderEntry>, public server::OrderActionStr
   void operator()(Trace<web::rest::Disconnected> const &) override;
   void operator()(Trace<web::rest::Latency> const &) override;
 
-  // helpers
-
-  // core::Download
-
-  enum class State {
-    UNDEFINED = 0,
-    ACCOUNTS,
-    BALANCE,
-    OPEN_ORDERS,
-    DONE,
-  };
-
-  int32_t download(Trace<State> const &);
-
   // accounts
 
   void accounts(TraceInfo const &);
@@ -113,6 +98,12 @@ struct OrderEntry final : public Base<OrderEntry>, public server::OrderActionStr
   void open_orders(TraceInfo const &);
   void open_orders_ack(Trace<web::rest::Response> const &);
   void operator()(Trace<protocol::json::OpenOrdersAck> const &);
+
+  // order
+
+  void get_order(TraceInfo const &, std::string_view const &client_order_id, std::string_view const &external_order_id);
+  void get_order_ack(Trace<web::rest::Response> const &, std::string_view const &client_order_id);
+  // void operator()(Trace<protocol::json::OpenOrdersAck> const &);
 
   // place-order
 
@@ -139,6 +130,8 @@ struct OrderEntry final : public Base<OrderEntry>, public server::OrderActionStr
 
   // helpers
 
+  void check_request_queue(TraceInfo const &);
+
   void process_response(Trace<web::rest::Response> const &, auto error_handler, auto success_handler);
 
  private:
@@ -160,6 +153,7 @@ struct OrderEntry final : public Base<OrderEntry>, public server::OrderActionStr
         accounts_ack,                    //
         balance, balance_ack,            //
         open_orders, open_orders_ack,    //
+        order, order_ack,                //
         place_order, place_order_ack,    //
         cancel_order, cancel_order_ack,  //
         cancel_all_orders, cancel_all_orders_ack;
@@ -171,12 +165,13 @@ struct OrderEntry final : public Base<OrderEntry>, public server::OrderActionStr
   Account &account_;
   // shared
   Shared &shared_;
+  Request &request_;
   // state
   ConnectionStatus connection_status_ = {};
-  core::Download2<State> download_;
   //
   std::string encode_buffer_;
   int64_t account_id_ = {};
+  size_t download_stale_orders_counter_ = {};
 };
 
 }  // namespace gateway

@@ -29,24 +29,45 @@ R create_accounts(auto &config, auto &settings) {
 }
 
 template <typename R>
-R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared) {
+R create_requests(auto &config, auto &shared) {
+  using result_type = std::remove_cvref_t<R>;
+  result_type result;
+  for (auto &[_, account] : config.accounts) {
+    auto obj = std::make_unique<Request>(shared);
+    result.try_emplace(account.name, std::move(obj));
+  }
+  return result;
+}
+
+Request &get_request(auto &requests, auto &account) {
+  auto iter = requests.find(account);
+  if (iter == std::end(requests)) {
+    log::fatal("Unexpected"sv);
+  }
+  return *(*iter).second;
+}
+
+template <typename R>
+R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto &requests) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[_, item] : accounts) {
     auto &account = *item;
-    auto obj = std::make_unique<OrderEntry>(gateway, context, ++stream_id, account, shared);
+    auto &request = get_request(requests, account.name);
+    auto obj = std::make_unique<OrderEntry>(gateway, context, ++stream_id, account, shared, request);
     result.try_emplace(account.name, std::move(obj));
   }
   return result;
 }
 
 template <typename R>
-R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared) {
+R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared, auto &requests) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[_, item] : accounts) {
     auto &account = *item;
-    auto obj = std::make_unique<DropCopy>(gateway, context, ++stream_id, account, shared);
+    auto &request = get_request(requests, account.name);
+    auto obj = std::make_unique<DropCopy>(gateway, context, ++stream_id, account, shared, request);
     result.try_emplace(account.name, std::move(obj));
   }
   return result;
@@ -65,8 +86,9 @@ uint8_t Controller::parse_api(Settings const &) {
 
 Controller::Controller(server::Dispatcher &dispatcher, Settings const &settings, Config const &config, io::Context &context)
     : dispatcher_{dispatcher}, accounts_{create_accounts<decltype(accounts_)>(config, settings)}, context_{context}, shared_{dispatcher, settings},
-      rest_{*this, context_, ++stream_id_, shared_}, order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, accounts_, shared_)},
-      drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, accounts_, shared_)} {
+      requests_{create_requests<decltype(requests_)>(config, shared_)}, rest_{*this, context_, ++stream_id_, shared_},
+      order_entry_{create_order_entry<decltype(order_entry_)>(*this, context_, stream_id_, accounts_, shared_, requests_)},
+      drop_copy_{create_drop_copy<decltype(drop_copy_)>(*this, context_, stream_id_, accounts_, shared_, requests_)} {
   if (settings.rest.cancel_on_disconnect) {
     log::fatal("Exchange does *NOT* support cancel on disconnect"sv);
   }

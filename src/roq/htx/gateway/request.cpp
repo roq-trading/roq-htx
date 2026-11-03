@@ -1,0 +1,28 @@
+/* Copyright (c) 2017-2026, Hans Erik Thrane */
+
+#include "roq/htx/gateway/request.hpp"
+
+#include "roq/logging.hpp"
+
+using namespace std::literals;
+
+namespace roq {
+namespace htx {
+namespace gateway {
+
+// === IMPLEMENTATION ===
+
+Request::Request(Shared &shared) : account{*this}, balances{*this}, open_orders{*this}, stale_orders{*this}, shared_{shared} {
+}
+
+bool Request::ready() const {
+  return account.ready() && balances.ready() && open_orders.ready() && stale_orders.ready();
+}
+
+bool Request::can_request(TraceInfo const &trace_info) {
+  return shared_.rate_limiter.can_request(trace_info);
+}
+
+}  // namespace gateway
+}  // namespace htx
+}  // namespace roq
