@@ -27,11 +27,10 @@ namespace {
 auto const NAME = "om"sv;
 
 auto const SUPPORTS = Mask{
+    SupportType::FUNDS,
     SupportType::CREATE_ORDER,
     SupportType::CANCEL_ORDER,
-    SupportType::ORDER,
     SupportType::ORDER_ACK,
-    SupportType::FUNDS,
 };
 
 size_t const MAX_DECODE_BUFFER_DEPTH = 1;
@@ -119,7 +118,10 @@ void OrderEntry::operator()(Trace<Stop> const &) {
 
 void OrderEntry::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  (*connection_).refresh(timer.now);
+  if ((*connection_).refresh(timer.now)) {
+    if (ready()) {
+    }
+  }
 }
 
 void OrderEntry::operator()(metrics::Writer &writer) const {

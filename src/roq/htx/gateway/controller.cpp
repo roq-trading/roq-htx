@@ -22,7 +22,8 @@ R create_accounts(auto &config, auto &settings) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
   for (auto &[_, account] : config.accounts) {
-    result.try_emplace(static_cast<std::string_view>(account.name), std::make_unique<Account>(config, account.name, settings.rest.uri));
+    auto obj = std::make_unique<Account>(config, account.name, settings.rest.uri);
+    result.try_emplace(account.name, std::move(obj));
   }
   return result;
 }
@@ -31,8 +32,10 @@ template <typename R>
 R create_order_entry(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
-  for (auto &[name, account] : accounts) {
-    result.try_emplace(static_cast<std::string_view>(name), std::make_unique<OrderEntry>(gateway, context, ++stream_id, *account, shared));
+  for (auto &[_, item] : accounts) {
+    auto &account = *item;
+    auto obj = std::make_unique<OrderEntry>(gateway, context, ++stream_id, account, shared);
+    result.try_emplace(account.name, std::move(obj));
   }
   return result;
 }
@@ -41,8 +44,10 @@ template <typename R>
 R create_drop_copy(auto &gateway, auto &context, auto &stream_id, auto &accounts, auto &shared) {
   using result_type = std::remove_cvref_t<R>;
   result_type result;
-  for (auto &[name, account] : accounts) {
-    result.try_emplace(static_cast<std::string_view>(name), std::make_unique<DropCopy>(gateway, context, ++stream_id, *account, shared));
+  for (auto &[_, item] : accounts) {
+    auto &account = *item;
+    auto obj = std::make_unique<DropCopy>(gateway, context, ++stream_id, account, shared);
+    result.try_emplace(account.name, std::move(obj));
   }
   return result;
 }
@@ -194,20 +199,20 @@ void Controller::ensure_symbol_slices(TraceInfo const &trace_info, size_t size) 
     auto stream_id = ++stream_id_;
     auto index = std::size(market_data_);
     log::debug("Create MarketData (stream_id={}, index={})"sv, stream_id, index);
-    auto market_data = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index);
+    auto obj = std::make_unique<MarketData>(*this, context_, stream_id, shared_, index);
     Start start;
-    create_trace_and_dispatch(*market_data, trace_info, start);
-    market_data_.emplace_back(std::move(market_data));
+    create_trace_and_dispatch(*obj, trace_info, start);
+    market_data_.emplace_back(std::move(obj));
   }
   // mbp feed
   while (std::size(mbp_feed_) < size) {
     auto stream_id = ++stream_id_;
     auto index = std::size(mbp_feed_);
     log::debug("Create MBPFeed (stream_id={}, index={})"sv, stream_id, index);
-    auto mbp_feed = std::make_unique<MBPFeed>(*this, context_, stream_id, shared_, index);
+    auto obj = std::make_unique<MBPFeed>(*this, context_, stream_id, shared_, index);
     Start start;
-    create_trace_and_dispatch(*mbp_feed, trace_info, start);
-    mbp_feed_.emplace_back(std::move(mbp_feed));
+    create_trace_and_dispatch(*obj, trace_info, start);
+    mbp_feed_.emplace_back(std::move(obj));
   }
 }
 

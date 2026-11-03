@@ -112,9 +112,10 @@ void MBPFeed::operator()(Trace<Stop> const &) {
 
 void MBPFeed::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  (*connection_).refresh(timer.now);
-  if (ready()) {
-    check_request_queue(trace_info);
+  if ((*connection_).refresh(timer.now)) {
+    if (ready()) {
+      check_request_queue(trace_info);
+    }
   }
 }
 

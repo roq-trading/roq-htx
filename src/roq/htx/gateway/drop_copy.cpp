@@ -100,10 +100,6 @@ DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, A
 
 // server::Stream
 
-bool DropCopy::ready() const {
-  return (*connection_).ready();
-}
-
 void DropCopy::operator()(Trace<Start> const &) {
   (*connection_).start();
 }
@@ -114,7 +110,10 @@ void DropCopy::operator()(Trace<Stop> const &) {
 
 void DropCopy::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  (*connection_).refresh(timer.now);
+  if ((*connection_).refresh(timer.now)) {
+    if (ready()) {
+    }
+  }
 }
 
 void DropCopy::operator()(metrics::Writer &writer) const {
