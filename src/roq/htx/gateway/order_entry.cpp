@@ -235,21 +235,22 @@ void OrderEntry::operator()(Trace<web::rest::Latency> const &event) {
 
 int32_t OrderEntry::download(Trace<State> const &event) {
   auto &[trace_info, state] = event;
+  auto publish_downloading = [&]() { create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, magic_enum::enum_name(state)); };
   switch (state) {
     using enum State;
     case UNDEFINED:
       assert(false);
       break;
     case ACCOUNTS:
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "accounts"sv);
+      publish_downloading();
       accounts(trace_info);
       return 1;
     case BALANCE:
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "balance"sv);
+      publish_downloading();
       balance(trace_info);
       return 1;
     case OPEN_ORDERS:
-      create_trace_and_dispatch_2(trace_info, ConnectionStatus::DOWNLOADING, "open-orders"sv);
+      publish_downloading();
       open_orders(trace_info);
       return 1;
     case DONE:
