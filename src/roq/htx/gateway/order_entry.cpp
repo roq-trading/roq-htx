@@ -437,7 +437,7 @@ void OrderEntry::operator()(Trace<protocol::json::OpenOrdersAck> const &event) {
 
 // order
 
-void OrderEntry::get_order(TraceInfo const &trace_info, std::string_view const &client_order_id, std::string_view const &external_order_id) {
+void OrderEntry::get_order(TraceInfo const &trace_info, std::string_view const &client_order_id, [[maybe_unused]] std::string_view const &external_order_id) {
   profile_.order([&]() {
     auto method = web::http::Method::GET;
     auto path = shared_.api.order_management.order;
@@ -460,7 +460,7 @@ void OrderEntry::get_order(TraceInfo const &trace_info, std::string_view const &
   });
 }
 
-void OrderEntry::get_order_ack(Trace<web::rest::Response> const &event, std::string_view const &client_order_id) {
+void OrderEntry::get_order_ack(Trace<web::rest::Response> const &event, [[maybe_unused]] std::string_view const &client_order_id) {
   profile_.order_ack([&]() {
     auto &[trace_info, response] = event;
     auto handle_error = [&](auto origin, auto status, auto error, auto const &text) {
