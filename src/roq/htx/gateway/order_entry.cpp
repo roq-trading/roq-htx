@@ -409,6 +409,7 @@ void OrderEntry::operator()(Trace<protocol::json::OpenOrdersAck> const &event) {
         .execution_destination = {},
         .create_time_utc = item.created_at,
         .update_time_utc = item.created_at,
+        .external_trace_id = {},
         .external_account = external_account,
         .external_order_id = external_order_id,
         .client_order_id = item.client_order_id,
