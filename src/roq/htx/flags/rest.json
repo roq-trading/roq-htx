@@ -35,26 +35,6 @@
       "validator": "roq/flags/validators/TimePeriod",
       "default": "30s",
       "description": "Request timeout"
-    },
-    {
-      "name": "listen_key_refresh",
-      "type": "std/nanoseconds",
-      "validator": "roq/flags/validators/TimePeriod",
-      "default": "1800s",
-      "description": "Listen key refresh period"
-    },
-    {
-      "name": "order_recv_window",
-      "type": "std/nanoseconds",
-      "validator": "roq/flags/validators/TimePeriod",
-      "default": "5000ms",
-      "description": "Receive window"
-    },
-    {
-      "name": "cancel_on_disconnect",
-      "type": "std/bool",
-      "default": false,
-      "description": "Cancel orders on disconnect?"
     }
   ]
 }
