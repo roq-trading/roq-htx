@@ -162,7 +162,6 @@ void Rest::operator()(Trace<web::rest::Connected> const &event) {
 void Rest::operator()(Trace<web::rest::Disconnected> const &event) {
   auto &[trace_info, disconnected] = event;
   ++counter_.disconnect;
-  ready_ = false;
   create_trace_and_dispatch_2(trace_info, ConnectionStatus::DISCONNECTED);
   if (!download_.downloading()) {
     download_.reset();
@@ -203,8 +202,6 @@ int32_t Rest::download(Trace<State> const &event) {
       return 1;
     case DONE:
       create_trace_and_dispatch_2(trace_info, ConnectionStatus::READY);
-      assert(!ready_);
-      ready_ = true;
       return {};
   }
   assert(false);
