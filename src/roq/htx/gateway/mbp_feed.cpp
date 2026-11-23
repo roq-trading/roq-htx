@@ -102,17 +102,17 @@ MBPFeed::MBPFeed(Handler &handler, io::Context &context, uint16_t stream_id, Sha
 
 // server::Stream
 
-void MBPFeed::operator()(Trace<Start> const &) {
-  (*connection_).start();
+void MBPFeed::operator()(Trace<Start> const &event) {
+  (*connection_)(event);
 }
 
-void MBPFeed::operator()(Trace<Stop> const &) {
-  (*connection_).stop();
+void MBPFeed::operator()(Trace<Stop> const &event) {
+  (*connection_)(event);
 }
 
 void MBPFeed::operator()(Trace<Timer> const &event) {
   auto &[trace_info, timer] = event;
-  if ((*connection_).refresh(trace_info)) {
+  if ((*connection_)(event)) {
     if (ready()) {
       check_request_queue(trace_info);
     }
