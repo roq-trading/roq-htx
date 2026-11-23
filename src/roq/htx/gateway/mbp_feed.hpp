@@ -42,10 +42,6 @@ struct MBPFeed final : public Base<MBPFeed>, public server::MarketDataStream, pu
 
   // server::Stream
 
-  uint16_t stream_id() const override { return stream_id_; }
-
-  bool ready() const override { return connection_status_ == ConnectionStatus::READY; }
-
   void operator()(Trace<Start> const &) override;
   void operator()(Trace<Stop> const &) override;
   void operator()(Trace<Timer> const &) override;
@@ -105,7 +101,6 @@ struct MBPFeed final : public Base<MBPFeed>, public server::MarketDataStream, pu
  private:
   [[maybe_unused]] Handler &handler_;
   //
-  uint16_t const stream_id_;
   std::string const name_;
   size_t const index_;
   std::unique_ptr<web::socket::Client> const connection_;
@@ -124,7 +119,6 @@ struct MBPFeed final : public Base<MBPFeed>, public server::MarketDataStream, pu
     utils::metrics::Latency ping, heartbeat;
   } latency_;
   Shared &shared_;
-  ConnectionStatus connection_status_ = {};
   core::zlib::Inflate inflate_;
   std::vector<std::byte> inflate_buffer_;
   core::limit::Queue<std::string> request_queue_;
