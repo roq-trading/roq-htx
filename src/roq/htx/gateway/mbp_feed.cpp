@@ -78,7 +78,7 @@ struct create_metrics final : public utils::metrics::Factory {
 // === IMPLEMENTATION ===
 
 MBPFeed::MBPFeed(Handler &handler, io::Context &context, uint16_t stream_id, Shared &shared, size_t index)
-    : server::MarketDataStream{stream_id}, handler_{handler}, name_{create_name(stream_id)}, index_{index},
+    : server::MarketDataStream{stream_id, {}, SUPPORTS}, handler_{handler}, name_{create_name(stream_id)}, index_{index},
       connection_{create_connection(*this, shared.settings, context, shared)}, decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       request_id_{static_cast<uint64_t>(stream_id) * 1000000},  // scale (debugging)
       counter_{
@@ -140,9 +140,9 @@ void MBPFeed::operator()(Trace<ConnectionStatus> const &event, std::string_view 
   auto &[trace_info, connection_status] = event;
   if (update(connection_status, reason)) {
     auto stream_status = StreamStatus{
-        .stream_id = stream_id(),
-        .account = {},
-        .supports = SUPPORTS,
+        .stream_id = stream_id,
+        .account = account,
+        .supports = supports,
         .transport = Transport::TCP,
         .protocol = Protocol::WS,
         .encoding = {Encoding::JSON},
@@ -194,7 +194,7 @@ void MBPFeed::operator()(Trace<web::socket::Close> const &event) {
 void MBPFeed::operator()(Trace<web::socket::Latency> const &event) {
   auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
-      .stream_id = stream_id(),
+      .stream_id = stream_id,
       .account = {},
       .latency = latency.sample,
   };
@@ -311,7 +311,7 @@ void MBPFeed::operator()(Trace<protocol::json::MBP> const &event) {
     try {
       auto create_update = [&](auto &bids, auto &asks, auto update_type, auto exchange_sequence) -> MarketByPriceUpdate {
         return {
-            .stream_id = stream_id(),
+            .stream_id = stream_id,
             .exchange = shared_.settings.exchange,
             .symbol = symbol,
             .bids = bids,
@@ -383,7 +383,7 @@ void MBPFeed::operator()(Trace<protocol::json::MBPSnapshot> const &event) {
       auto publish_snapshot = [&](auto &bids, auto &asks, auto sequence, [[maybe_unused]] auto retries, [[maybe_unused]] auto delay) {
         log::debug(R"(PUBLISH SNAPSHOT symbol="{}", sequence={})"sv, symbol, sequence);
         auto market_by_price_update = MarketByPriceUpdate{
-            .stream_id = stream_id(),
+            .stream_id = stream_id,
             .exchange = shared_.settings.exchange,
             .symbol = symbol,
             .bids = bids,

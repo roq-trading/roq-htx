@@ -81,8 +81,8 @@ struct create_metrics final : public utils::metrics::Factory {
 // === IMPLEMENTATION ===
 
 DropCopy::DropCopy(Handler &handler, io::Context &context, uint16_t stream_id, Account &account, Shared &shared, Request &request)
-    : server::Stream{stream_id}, handler_{handler}, name_{create_name(stream_id)}, connection_{create_connection(*this, shared.settings, context, shared)},
-      decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
+    : server::Stream{stream_id, account.name, SUPPORTS}, handler_{handler}, name_{create_name(stream_id)},
+      connection_{create_connection(*this, shared.settings, context, shared)}, decode_buffer_{shared.settings.misc.decode_buffer_size, MAX_DECODE_BUFFER_DEPTH},
       counter_{
           .disconnect = create_metrics(shared.settings, name_, "disconnect"sv),
       },
@@ -147,9 +147,9 @@ void DropCopy::operator()(Trace<ConnectionStatus> const &event, std::string_view
   auto &[trace_info, connection_status] = event;
   if (update(connection_status, reason)) {
     auto stream_status = StreamStatus{
-        .stream_id = stream_id(),
-        .account = account_.name,
-        .supports = SUPPORTS,
+        .stream_id = stream_id,
+        .account = account,
+        .supports = supports,
         .transport = Transport::TCP,
         .protocol = Protocol::HTTP,
         .encoding = {Encoding::JSON},
@@ -192,7 +192,7 @@ void DropCopy::operator()(Trace<web::socket::Close> const &event) {
 void DropCopy::operator()(Trace<web::socket::Latency> const &event) {
   auto &[trace_info, latency] = event;
   auto external_latency = ExternalLatency{
-      .stream_id = stream_id(),
+      .stream_id = stream_id,
       .account = account_.name,
       .latency = latency.sample,
   };
@@ -364,7 +364,7 @@ void DropCopy::operator()(Trace<protocol::json::Accounts> const &event) {
   auto external_account = fmt::format("{}"sv, data.account_id);
   auto update_type = std::empty(data.change_type) ? UpdateType::SNAPSHOT : UpdateType::INCREMENTAL;
   auto funds_update = FundsUpdate{
-      .stream_id = stream_id(),
+      .stream_id = stream_id,
       .account = account_.name,
       .currency = data.currency,
       .margin_mode = {},
@@ -440,7 +440,7 @@ void DropCopy::operator()(Trace<protocol::json::Orders> const &event) {
       .update_type = UpdateType::INCREMENTAL,
       .sending_time_utc = data.order_create_time,
   };
-  create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id());
+  create_trace_and_dispatch(shared_.dispatcher, trace_info, order_update, stream_id);
 }
 
 void DropCopy::operator()(Trace<protocol::json::Clearing> const &event) {
@@ -464,7 +464,7 @@ void DropCopy::operator()(Trace<protocol::json::Clearing> const &event) {
   };
   utils::charconv::to_string(std::back_inserter(fill.external_trade_id), data.trade_id);
   auto trade_update = TradeUpdate{
-      .stream_id = stream_id(),
+      .stream_id = stream_id,
       .account = account_.name,
       .order_id = {},
       .exchange = shared_.settings.exchange,
