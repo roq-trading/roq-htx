@@ -102,23 +102,6 @@ MBPFeed::MBPFeed(Handler &handler, io::Context &context, uint16_t stream_id, Sha
 
 // server::Stream
 
-void MBPFeed::operator()(Trace<Start> const &event) {
-  (*connection_)(event);
-}
-
-void MBPFeed::operator()(Trace<Stop> const &event) {
-  (*connection_)(event);
-}
-
-void MBPFeed::operator()(Trace<Timer> const &event) {
-  auto &[trace_info, timer] = event;
-  if ((*connection_)(event)) {
-    if (ready()) {
-      check_request_queue(trace_info);
-    }
-  }
-}
-
 void MBPFeed::operator()(metrics::Writer &writer) const {
   writer
       // counter
@@ -134,6 +117,23 @@ void MBPFeed::operator()(metrics::Writer &writer) const {
       // latency
       .write(latency_.ping, metrics::Type::LATENCY)
       .write(latency_.heartbeat, metrics::Type::LATENCY);
+}
+
+void MBPFeed::operator()(Trace<Start> const &event) {
+  (*connection_)(event);
+}
+
+void MBPFeed::operator()(Trace<Stop> const &event) {
+  (*connection_)(event);
+}
+
+void MBPFeed::operator()(Trace<Timer> const &event) {
+  auto &[trace_info, timer] = event;
+  if ((*connection_)(event)) {
+    if (ready()) {
+      check_request_queue(trace_info);
+    }
+  }
 }
 
 void MBPFeed::operator()(Trace<ConnectionStatus> const &event, std::string_view const &reason) {
